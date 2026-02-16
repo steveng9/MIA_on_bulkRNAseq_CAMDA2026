@@ -1,13 +1,10 @@
-"""Train shadow NoisyDiffusion models on synthetic data."""
+"""Train shadow diffusion models (unconditional)."""
 
 import os
 import sys
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, TensorDataset
-from sklearn.preprocessing import QuantileTransformer
-from imblearn.over_sampling import SMOTE
-from collections import Counter
 
 # Add NoisyDiffusion source to path so we can import the model classes.
 _nd_brca = os.path.join(
@@ -19,11 +16,13 @@ if _nd_brca not in sys.path:
 from model import EmbeddedDiffusion, DiffusionTrainer
 
 from . import config
-from .data_utils import load_nd_synthetic, encode_labels, fit_quantile_scaler
+from .data_utils import load_challenge_synthetic, fit_quantile_scaler
 
 
-def build_model(num_classes, device):
+def build_model(num_classes=None, device=None):
     """Instantiate an EmbeddedDiffusion matching the target config."""
+    num_classes = num_classes if num_classes is not None else config.UNCONDITIONAL_NUM_CLASSES
+    device = device or config.DEVICE
     model = EmbeddedDiffusion(
         input_dim=config.INPUT_DIM,
         num_classes=num_classes,
@@ -54,32 +53,27 @@ def build_diffusion_trainer(device):
     )
 
 
-def train_shadow_model(dataset_name, split_no, device=None):
-    """Train a shadow model on the NoisyDiffusion repo's synthetic data for one split.
+def train_shadow_model(X_train, save_path, split_no, device=None):
+    """Train a shadow model on the provided data (unconditional, dummy label).
 
-    Replicates the target training pipeline: SMOTE upsampling → QuantileTransformer
-    → OneCycleLR → DP noise.
+    Parameters
+    ----------
+    X_train : np.ndarray, shape (n_samples, 978) – raw (unscaled) training data
+    save_path : str – where to save the checkpoint (.pt)
+    split_no : int – used as seed offset for reproducibility
+    device : str
 
-    Returns (model, diffusion_trainer, scaler).
+    Returns
+    -------
+    (model, diffusion_trainer, scaler)
     """
     device = device or config.DEVICE
-    ds = config.DATASETS[dataset_name]
-    num_classes = ds["num_classes"]
-    label_list = ds["label_list"]
 
-    # ── Load labeled synthetic data ──────────────────────────────────────
-    X_syn, y_syn_str = load_nd_synthetic(dataset_name, split_no)
-    y_int = encode_labels(y_syn_str, label_list)
-
-    # ── SMOTE upsampling ─────────────────────────────────────────────────
-    print(f"[shadow {dataset_name} split {split_no}] Before SMOTE: {Counter(y_int)}")
-    sampling_strategy = {i: config.SMOTE_UPSAMPLE_TO for i in range(num_classes)}
-    smote = SMOTE(sampling_strategy=sampling_strategy)
-    X_syn, y_int = smote.fit_resample(X_syn.astype(np.float64), y_int)
-    print(f"[shadow {dataset_name} split {split_no}] After SMOTE:  {Counter(y_int)}")
+    y_int = np.full(len(X_train), config.DUMMY_LABEL, dtype=np.int64)
+    print(f"[shadow split {split_no}] training samples: {len(X_train)}, dummy label={config.DUMMY_LABEL}")
 
     # ── QuantileTransformer ──────────────────────────────────────────────
-    scaler, X_scaled = fit_quantile_scaler(X_syn)
+    scaler, X_scaled = fit_quantile_scaler(X_train)
 
     # ── DataLoader ───────────────────────────────────────────────────────
     ds_torch = TensorDataset(
@@ -88,8 +82,12 @@ def train_shadow_model(dataset_name, split_no, device=None):
     )
     loader = DataLoader(ds_torch, batch_size=config.SHADOW_BATCH_SIZE, shuffle=True)
 
+    # ── Seed for reproducibility (different per split) ─────────────────
+    torch.manual_seed(config.SEED + split_no)
+    np.random.seed(config.SEED + split_no)
+
     # ── Model / optimizer / scheduler ────────────────────────────────────
-    model = build_model(num_classes, device)
+    model = build_model(config.UNCONDITIONAL_NUM_CLASSES, device)
     diff_trainer = build_diffusion_trainer(device)
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=config.SHADOW_LR, weight_decay=config.SHADOW_LR_WEIGHT_DECAY,
@@ -119,7 +117,7 @@ def train_shadow_model(dataset_name, split_no, device=None):
 
         avg_loss = total_loss / len(loader)
         if epoch % 10 == 0 or epoch == config.SHADOW_EPOCHS - 1:
-            print(f"  [shadow {dataset_name} split {split_no}] epoch {epoch:3d}  loss={avg_loss:.6f}")
+            print(f"  [shadow split {split_no}] epoch {epoch:3d}  loss={avg_loss:.6f}")
 
         if config.SHADOW_EARLY_STOPPING:
             if avg_loss < best_loss - config.SHADOW_EARLY_STOPPING_MIN_DELTA:
@@ -129,7 +127,7 @@ def train_shadow_model(dataset_name, split_no, device=None):
             else:
                 no_improve += 1
             if no_improve >= config.SHADOW_EARLY_STOPPING_PATIENCE:
-                print(f"  [shadow {dataset_name} split {split_no}] early stop @ epoch {epoch}")
+                print(f"  [shadow split {split_no}] early stop @ epoch {epoch}")
                 break
 
     if best_state is not None:
@@ -137,21 +135,42 @@ def train_shadow_model(dataset_name, split_no, device=None):
         model.to(device)
 
     # ── Save ─────────────────────────────────────────────────────────────
-    save_dir = os.path.join(config.SHADOW_MODEL_DIR, dataset_name)
-    os.makedirs(save_dir, exist_ok=True)
-    ckpt = os.path.join(save_dir, f"shadow_split_{split_no}.pt")
-    torch.save(model.state_dict(), ckpt)
-    print(f"  [shadow {dataset_name} split {split_no}] saved → {ckpt}")
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    torch.save(model.state_dict(), save_path)
+    print(f"  [shadow split {split_no}] saved → {save_path}")
 
     return model, diff_trainer, scaler
 
 
-def load_shadow_model(dataset_name, split_no, device=None):
+def train_target_proxy(dataset_name, device=None):
+    """Train a proxy model on challenge synthetic data for challenge inference.
+
+    Returns (model, diffusion_trainer, scaler).
+    """
+    device = device or config.DEVICE
+    X_syn = load_challenge_synthetic(dataset_name)
+    save_dir = os.path.join(config.SHADOW_MODEL_DIR, dataset_name)
+    save_path = os.path.join(save_dir, "target_proxy.pt")
+    return train_shadow_model(X_syn, save_path, split_no=0, device=device)
+
+
+def load_shadow_model(dataset_name, split_no, device=None, num_classes=None):
     """Load a saved shadow model. Returns (model, diffusion_trainer)."""
     device = device or config.DEVICE
-    ds = config.DATASETS[dataset_name]
-    model = build_model(ds["num_classes"], device)
+    num_classes = num_classes if num_classes is not None else config.UNCONDITIONAL_NUM_CLASSES
+    model = build_model(num_classes, device)
     ckpt = os.path.join(config.SHADOW_MODEL_DIR, dataset_name, f"shadow_split_{split_no}.pt")
+    model.load_state_dict(torch.load(ckpt, map_location=device))
+    model.eval()
+    return model, build_diffusion_trainer(device)
+
+
+def load_target_proxy(dataset_name, device=None, num_classes=None):
+    """Load a saved target proxy model. Returns (model, diffusion_trainer)."""
+    device = device or config.DEVICE
+    num_classes = num_classes if num_classes is not None else config.UNCONDITIONAL_NUM_CLASSES
+    model = build_model(num_classes, device)
+    ckpt = os.path.join(config.SHADOW_MODEL_DIR, dataset_name, "target_proxy.pt")
     model.load_state_dict(torch.load(ckpt, map_location=device))
     model.eval()
     return model, build_diffusion_trainer(device)

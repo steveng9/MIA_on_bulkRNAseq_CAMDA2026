@@ -3,7 +3,7 @@ import os
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ── Challenge data paths ─────────────────────────────────────────────────────
-CHALLENGE_DIR = "/Users/stevengolob/Documents/school/CAMDA-26"
+CHALLENGE_DIR = "/home/golobs/data/CAMDA26"
 BRCA_CHALLENGE_DIR = os.path.join(CHALLENGE_DIR, "RED_TCGA-BRCA")
 COMBINED_CHALLENGE_DIR = os.path.join(CHALLENGE_DIR, "RED_TCGA-COMBINED")
 
@@ -75,7 +75,8 @@ SHADOW_EARLY_STOPPING_PATIENCE = 30
 SHADOW_EARLY_STOPPING_MIN_DELTA = 0.0001
 SHADOW_DP_NOISE_MULTIPLIER = 0.00001
 SHADOW_MAX_GRAD_NORM = 1.0
-SMOTE_UPSAMPLE_TO = 3000
+DUMMY_LABEL = 0
+UNCONDITIONAL_NUM_CLASSES = 1
 
 # ── Loss-feature extraction ──────────────────────────────────────────────────
 T_LIST = [5, 10, 20, 30, 40, 50, 100]

@@ -88,6 +88,20 @@ def load_nd_synthetic(dataset_name, split_no):
     return X, y
 
 
+def load_real_split(dataset_name, split_no):
+    """Load the real-data training subset for a given CV split.
+
+    Returns:
+        X_train : np.ndarray, shape (~871, 978) – member samples for this split
+    """
+    X_real, _ = load_real_data(dataset_name)
+    splits = load_splits_yaml(dataset_name)
+    split_key = f"split_{split_no}"
+    test_ids = set(splits[split_key]["test_index"])
+    train_mask = np.array([sid not in test_ids for sid in X_real.index])
+    return X_real.values[train_mask].astype(np.float32)
+
+
 def get_membership_labels(dataset_name, split_no):
     """Determine ground-truth membership for one CV split.
 

@@ -1,14 +1,14 @@
 """End-to-end MIA pipeline orchestration.
 
-Pipeline overview:
-  1. Train shadow models on NoisyDiffusion repo's labeled synthetic data (5 splits).
+Pipeline overview (principled shadow-model approach):
+  1. Train 5 shadow models on real data subsets (one per YAML split).
+     Each split's ~871 training samples are known members for that model.
   2. Extract loss-trajectory features for all real samples using each shadow model.
-     - Real sample labels (subtypes) are inferred via KNN on labeled synthetic data.
-     - Scaler is fitted on the same SMOTE-upsampled synthetic data used for training.
-  3. Train MLP classifier on features from splits 1-3 (using ground-truth membership
-     from the splits YAML), validate on splits 4-5.
-  4. For the challenge: extract features using the shadow model and predict membership
-     for all real samples.
+     Scaler is fitted on the same real data subset used for training that shadow.
+  3. Train MLP classifier on features from splits 1-3, validate on splits 4-5.
+     Labels are known ground truth (in/out of each shadow's training set).
+  4. Challenge inference: train a "target proxy" on challenge synthetic data,
+     extract features for all real samples, apply MLP.
 """
 
 import os
@@ -19,57 +19,35 @@ import torch
 from . import config
 from .data_utils import (
     load_real_data,
-    load_nd_synthetic,
-    load_splits_yaml,
+    load_real_split,
+    load_challenge_synthetic,
     get_membership_labels,
-    encode_labels,
     fit_quantile_scaler,
-    infer_labels_knn,
 )
-from .shadow_model import train_shadow_model, load_shadow_model
+from .shadow_model import (
+    train_shadow_model,
+    train_target_proxy,
+    load_shadow_model,
+    load_target_proxy,
+)
 from .loss_features import extract_loss_features
 from .classifier import train_classifier, load_classifier, _tpr_at_fpr
-
-from imblearn.over_sampling import SMOTE
-from collections import Counter
-
-
-def _reconstruct_scaler(dataset_name, split_no):
-    """Reconstruct the QuantileTransformer fitted during shadow model training.
-
-    Must replicate the exact same SMOTE + scaler pipeline.
-    """
-    ds = config.DATASETS[dataset_name]
-    X_syn, y_syn_str = load_nd_synthetic(dataset_name, split_no)
-    y_int = encode_labels(y_syn_str, ds["label_list"])
-
-    sampling_strategy = {i: config.SMOTE_UPSAMPLE_TO for i in range(ds["num_classes"])}
-    smote = SMOTE(sampling_strategy=sampling_strategy)
-    X_syn, _ = smote.fit_resample(X_syn.astype(np.float64), y_int)
-
-    scaler, _ = fit_quantile_scaler(X_syn)
-    return scaler
-
-
-def _get_real_labels(dataset_name, X_real_np, split_no=1):
-    """Predict integer subtype labels for real samples using KNN on labeled synthetic data."""
-    ds = config.DATASETS[dataset_name]
-    X_syn, y_syn_str = load_nd_synthetic(dataset_name, split_no)
-    y_syn_int = encode_labels(y_syn_str, ds["label_list"])
-    return infer_labels_knn(X_real_np, X_syn, y_syn_int, k=5)
 
 
 # ── Step 1 ───────────────────────────────────────────────────────────────────
 
 def step_train_shadows(dataset_name, splits=None, device=None):
-    """Train shadow models for the requested splits."""
+    """Train shadow models on real data subsets (one per split)."""
     splits = splits or list(range(1, config.NUM_SPLITS + 1))
     device = device or config.DEVICE
     for s in splits:
         print(f"\n{'='*60}")
         print(f"Training shadow model: {dataset_name} split {s}")
         print(f"{'='*60}")
-        train_shadow_model(dataset_name, s, device=device)
+        X_train = load_real_split(dataset_name, s)
+        save_dir = os.path.join(config.SHADOW_MODEL_DIR, dataset_name)
+        save_path = os.path.join(save_dir, f"shadow_split_{s}.pt")
+        train_shadow_model(X_train, save_path, split_no=s, device=device)
 
 
 # ── Step 2 ───────────────────────────────────────────────────────────────────
@@ -79,10 +57,9 @@ def step_extract_features(dataset_name, splits=None, device=None):
 
     For each split, we:
       - Load the shadow model
-      - Reconstruct the scaler (same SMOTE + QuantileTransformer)
-      - Predict subtype labels for real samples via KNN
-      - Scale real data with that scaler
-      - Extract loss-trajectory features
+      - Fit scaler on the same real data subset used for training that shadow
+      - Scale all real data with that scaler
+      - Extract loss-trajectory features (dummy label, unconditional)
       - Save alongside ground-truth membership labels from the splits YAML
     """
     splits = splits or list(range(1, config.NUM_SPLITS + 1))
@@ -94,19 +71,21 @@ def step_extract_features(dataset_name, splits=None, device=None):
     X_real_np = X_real_df.values.astype(np.float32)
     sample_ids = list(X_real_df.index)
 
+    # Dummy labels for all real samples
+    y_int = np.full(len(X_real_np), config.DUMMY_LABEL, dtype=np.int64)
+
     for s in splits:
         print(f"\n{'='*60}")
         print(f"Extracting features: {dataset_name} split {s}")
         print(f"{'='*60}")
 
         model, diff_trainer = load_shadow_model(dataset_name, s, device=device)
-        scaler = _reconstruct_scaler(dataset_name, s)
 
-        # Predict subtype labels for real samples
-        y_int = _get_real_labels(dataset_name, X_real_np, split_no=s)
-        print(f"  Predicted label distribution: {Counter(y_int)}")
+        # Fit scaler on the same real data subset used for training this shadow
+        X_train_split = load_real_split(dataset_name, s)
+        scaler, _ = fit_quantile_scaler(X_train_split)
 
-        # Scale real data
+        # Scale all real data with this scaler
         X_scaled = scaler.transform(X_real_np.astype(np.float64)).astype(np.float32)
 
         # Extract features
@@ -152,11 +131,11 @@ def step_train_classifier(dataset_name, train_splits=None, val_splits=None, devi
 
 # ── Step 4: Challenge inference ──────────────────────────────────────────────
 
-def step_predict_challenge(dataset_name, shadow_split=1, device=None):
+def step_predict_challenge(dataset_name, device=None):
     """Produce membership predictions for the challenge's real data.
 
-    Uses a trained shadow model + trained MLP classifier.
-    Outputs a CSV with sample_id and membership score.
+    Trains (or loads) a target proxy model on challenge synthetic data,
+    fits scaler on challenge synthetic data, extracts features, applies MLP.
     """
     device = device or config.DEVICE
 
@@ -165,12 +144,20 @@ def step_predict_challenge(dataset_name, shadow_split=1, device=None):
     X_real_np = X_real_df.values.astype(np.float32)
     sample_ids = list(X_real_df.index)
 
-    # Shadow model + scaler
-    model, diff_trainer = load_shadow_model(dataset_name, shadow_split, device=device)
-    scaler = _reconstruct_scaler(dataset_name, shadow_split)
+    # Train or load target proxy
+    proxy_ckpt = os.path.join(config.SHADOW_MODEL_DIR, dataset_name, "target_proxy.pt")
+    if os.path.exists(proxy_ckpt):
+        print("  Loading existing target proxy...")
+        model, diff_trainer = load_target_proxy(dataset_name, device=device)
+        # Reconstruct scaler by fitting on challenge synthetic data
+        X_syn = load_challenge_synthetic(dataset_name)
+        scaler, _ = fit_quantile_scaler(X_syn)
+    else:
+        print("  Training target proxy on challenge synthetic data...")
+        model, diff_trainer, scaler = train_target_proxy(dataset_name, device=device)
 
-    # Predict labels + scale
-    y_int = _get_real_labels(dataset_name, X_real_np, split_no=shadow_split)
+    # Dummy labels + scale
+    y_int = np.full(len(X_real_np), config.DUMMY_LABEL, dtype=np.int64)
     X_scaled = scaler.transform(X_real_np.astype(np.float64)).astype(np.float32)
 
     # Extract features
@@ -198,7 +185,7 @@ def run_full_pipeline(dataset_name, device=None):
     device = device or config.DEVICE
 
     print("\n" + "=" * 70)
-    print(f"STEP 1: Training shadow models ({dataset_name})")
+    print(f"STEP 1: Training shadow models on real data subsets ({dataset_name})")
     print("=" * 70)
     step_train_shadows(dataset_name, device=device)
 
@@ -241,6 +228,8 @@ def run_full_pipeline(dataset_name, device=None):
 
 
 if __name__ == "__main__":
+    import sys
+    sys.stdout.reconfigure(line_buffering=True)
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", choices=["BRCA", "COMBINED"], default="BRCA")

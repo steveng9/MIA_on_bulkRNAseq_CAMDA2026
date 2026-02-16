@@ -72,8 +72,8 @@ def extract_loss_features(
 
         for ti, t_val in enumerate(t_list):
             # Compute x_t for all noise vectors at once
-            sqrt_abar = diffusion_trainer.sqrt_alpha_bar[t_val]
-            sqrt_1m_abar = diffusion_trainer.sqrt_one_minus_alpha_bar[t_val]
+            sqrt_abar = diffusion_trainer.sqrt_alpha_bar[t_val].item()
+            sqrt_1m_abar = diffusion_trainer.sqrt_one_minus_alpha_bar[t_val].item()
 
             x_noisy = (sqrt_abar * x0_exp + sqrt_1m_abar * noise_bank).to(device)
             t_tensor = torch.full((n_noise,), t_val, dtype=torch.float32, device=device)
