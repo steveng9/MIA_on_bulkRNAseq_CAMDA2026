@@ -18,6 +18,28 @@
   train shadow models with known membership and let the MLP learn the signal from raw per-noise-vector
   losses. Fundamentally different philosophy.
 
+IGNORE ABOVE...
+
+I was completely wrong about the ratio. Apologies for the confusion — the earlier search hit code from  
+  other MIDST baselines in that repo, not the actual Tartan_Federer submission.
+                                                                                                          
+  Their actual approach (from Single_Table_Black_Box_MIA.ipynb) is essentially the same as ours:
+                                                                                                          
+  1. One shadow model per competition fold, trained on synthetic data                                     
+  2. 300 fixed noise vectors × 7 timesteps [5, 10, 20, 30, 40, 50, 100] — same as ours
+  3. Per-sample loss = MSE between predicted noise and true noise, averaged across feature dims — same as
+  ours
+  4. 3-layer MLP (input → 200 → 200 → 1, tanh activations, sigmoid output, BCE loss, 750 epochs) —
+  identical architecture and hyperparams
+  5. Best checkpoint by val TPR@10%FPR — same
+
+  The ratio/activate_3 code was from a different attack implementation in ~/MIA_on_diffusion/ (likely a
+  TabSyn baseline), not Tartan_Federer's actual submission. Our pipeline is a faithful adaptation of their
+   approach — the main difference is just the data domain (RNA-seq vs tabular transactions) and that we
+  adapted the shadow training strategy.
+
+
+
   2. Do our config params match NoisyDiffusion?
 
   Yes, exact match on every parameter. Confirmed against

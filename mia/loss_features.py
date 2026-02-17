@@ -101,3 +101,41 @@ def extract_loss_features(
     # Reshape to (n_samples, n_t * n_noise)
     features = all_losses.reshape(n_samples, n_t * n_noise)
     return features
+
+
+def summarize_features(raw, n_noise, n_t):
+    """Summarize raw loss features into per-timestep statistics.
+
+    Parameters
+    ----------
+    raw : np.ndarray, shape (n_samples, n_noise * n_t)
+    n_noise : int
+    n_t : int
+
+    Returns
+    -------
+    summary : np.ndarray, shape (n_samples, n_t * 4)
+        Per-timestep mean, std, min, max across noise vectors.
+    """
+    n_samples = raw.shape[0]
+    # Reshape to (n_samples, n_t, n_noise)
+    reshaped = raw.reshape(n_samples, n_t, n_noise)
+    mean = reshaped.mean(axis=2)
+    std = reshaped.std(axis=2)
+    mn = reshaped.min(axis=2)
+    mx = reshaped.max(axis=2)
+    # Stack: (n_samples, n_t, 4) → (n_samples, n_t * 4)
+    summary = np.stack([mean, std, mn, mx], axis=2).reshape(n_samples, n_t * 4)
+    return summary
+
+
+def prepare_features(raw):
+    """Dispatch on config.FEATURE_MODE: 'raw' returns as-is, 'summary' summarizes."""
+    if config.FEATURE_MODE == "raw":
+        return raw
+    elif config.FEATURE_MODE == "summary":
+        n_noise = config.N_NOISE
+        n_t = len(config.T_LIST)
+        return summarize_features(raw, n_noise, n_t)
+    else:
+        raise ValueError(f"Unknown FEATURE_MODE: {config.FEATURE_MODE}")

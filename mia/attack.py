@@ -33,8 +33,13 @@ from .shadow_model import (
     load_shadow_model,
     load_target_proxy,
 )
-from .loss_features import extract_loss_features
+from .loss_features import extract_loss_features, prepare_features
 from .classifier import train_classifier, load_classifier, _tpr_at_fpr
+
+
+def _force(stage):
+    """Return True if the given stage should be forced to re-run."""
+    return "all" in config.FORCE_STAGES or stage in config.FORCE_STAGES
 
 
 def _num_shadow_splits():
@@ -63,16 +68,20 @@ def step_generate_splits(dataset_name):
 # ── Step 1 ───────────────────────────────────────────────────────────────────
 
 def step_train_shadows(dataset_name, splits=None, device=None):
-    """Train shadow models on real data subsets (one per split)."""
+    """Train shadow models on real data subsets (one per split).  Skips if checkpoint exists."""
     splits = splits or list(range(1, _num_shadow_splits() + 1))
     device = device or config.DEVICE
+    force = _force("shadows")
     for s in splits:
+        save_dir = os.path.join(config.SHADOW_MODEL_DIR, dataset_name)
+        save_path = os.path.join(save_dir, f"shadow_split_{s}.pt")
+        if not force and os.path.exists(save_path):
+            print(f"  Shadow split {s} exists: {save_path} (skipping)")
+            continue
         print(f"\n{'='*60}")
         print(f"Training shadow model: {dataset_name} split {s}")
         print(f"{'='*60}")
         X_train = load_real_split(dataset_name, s)
-        save_dir = os.path.join(config.SHADOW_MODEL_DIR, dataset_name)
-        save_path = os.path.join(save_dir, f"shadow_split_{s}.pt")
         train_shadow_model(X_train, save_path, split_no=s, device=device)
 
 
@@ -100,7 +109,12 @@ def step_extract_features(dataset_name, splits=None, device=None):
     # Dummy labels for all real samples
     y_int = np.full(len(X_real_np), config.DUMMY_LABEL, dtype=np.int64)
 
+    force = _force("features")
     for s in splits:
+        out_path = os.path.join(config.FEATURES_DIR, dataset_name, f"features_split_{s}.npz")
+        if not force and os.path.exists(out_path):
+            print(f"  Features split {s} exist: {out_path} (skipping)")
+            continue
         print(f"\n{'='*60}")
         print(f"Extracting features: {dataset_name} split {s}")
         print(f"{'='*60}")
@@ -120,7 +134,6 @@ def step_extract_features(dataset_name, splits=None, device=None):
         # Ground-truth membership
         _, y_member = get_membership_labels(dataset_name, s)
 
-        out_path = os.path.join(config.FEATURES_DIR, dataset_name, f"features_split_{s}.npz")
         np.savez(out_path, features=features, y_member=y_member,
                  y_label_int=y_int, sample_ids=sample_ids)
         print(f"  Saved {out_path}  shape={features.shape}")
@@ -141,14 +154,14 @@ def step_train_classifier(dataset_name, train_splits=None, val_splits=None, devi
         Xs, ys = [], []
         for s in split_list:
             d = np.load(os.path.join(feat_dir, f"features_split_{s}.npz"))
-            Xs.append(d["features"])
+            Xs.append(prepare_features(d["features"]))
             ys.append(d["y_member"])
         return np.concatenate(Xs), np.concatenate(ys)
 
     X_train, y_train = _load(train_splits)
     X_val, y_val = _load(val_splits)
 
-    print(f"\nMLP train: {len(X_train)} samples "
+    print(f"\nMLP train: {len(X_train)} samples (dim={X_train.shape[1]}) "
           f"(members={y_train.sum()}, non-members={len(y_train)-y_train.sum()})")
     print(f"MLP val:   {len(X_val)} samples "
           f"(members={y_val.sum()}, non-members={len(y_val)-y_val.sum()})")
@@ -181,36 +194,43 @@ def step_validate_synthetic(dataset_name, device=None):
     os.makedirs(os.path.join(config.SYNTH_VAL_MODEL_DIR, dataset_name), exist_ok=True)
     os.makedirs(os.path.join(config.SYNTH_VAL_FEATURES_DIR, dataset_name), exist_ok=True)
 
+    force_sv = _force("synth_val")
     for s in range(1, config.NUM_SPLITS + 1):
         print(f"\n  --- Synthetic validation: split {s} ---")
 
-        # Load ND synthetic data (ignore labels — unconditional model)
-        X_syn, _ = load_nd_synthetic(dataset_name, s)
-
-        # Train diffusion model on synthetic data
-        save_path = os.path.join(
-            config.SYNTH_VAL_MODEL_DIR, dataset_name, f"synth_val_split_{s}.pt"
-        )
-        model, diff_trainer, scaler = train_shadow_model(
-            X_syn, save_path, split_no=100 + s, device=device
-        )
-
-        # Scale all real data with synth-fitted scaler
-        X_scaled = scaler.transform(X_real_np.astype(np.float64)).astype(np.float32)
-
-        # Extract features
-        features = extract_loss_features(model, diff_trainer, X_scaled, y_int, device=device)
-
-        # Save features
         feat_path = os.path.join(
             config.SYNTH_VAL_FEATURES_DIR, dataset_name, f"features_synth_val_split_{s}.npz"
         )
-        _, y_member_nd = get_nd_membership_labels(dataset_name, s)
-        np.savez(feat_path, features=features, y_member=y_member_nd)
 
-        # Predict with MLP
+        if not force_sv and os.path.exists(feat_path):
+            print(f"    Features exist: {feat_path} (loading)")
+            d = np.load(feat_path)
+            features, y_member_nd = d["features"], d["y_member"]
+        else:
+            # Load ND synthetic data (ignore labels — unconditional model)
+            X_syn, _ = load_nd_synthetic(dataset_name, s)
+
+            # Train diffusion model on synthetic data
+            save_path = os.path.join(
+                config.SYNTH_VAL_MODEL_DIR, dataset_name, f"synth_val_split_{s}.pt"
+            )
+            model, diff_trainer, scaler = train_shadow_model(
+                X_syn, save_path, split_no=100 + s, device=device
+            )
+
+            # Scale all real data with synth-fitted scaler
+            X_scaled = scaler.transform(X_real_np.astype(np.float64)).astype(np.float32)
+
+            # Extract features
+            features = extract_loss_features(model, diff_trainer, X_scaled, y_int, device=device)
+
+            _, y_member_nd = get_nd_membership_labels(dataset_name, s)
+            np.savez(feat_path, features=features, y_member=y_member_nd)
+
+        # Predict with MLP (always re-run — classifier may have changed)
+        features_prep = prepare_features(features)
         with torch.no_grad():
-            scores = clf(torch.tensor(features, dtype=torch.float32)).squeeze(1).numpy()
+            scores = clf(torch.tensor(features_prep, dtype=torch.float32)).squeeze(1).numpy()
 
         tpr = _tpr_at_fpr(y_member_nd, scores, fpr_target=0.10)
         acc = ((scores > 0.5).astype(int) == y_member_nd).mean()
@@ -235,7 +255,7 @@ def step_predict_challenge(dataset_name, device=None):
 
     # Train or load target proxy
     proxy_ckpt = os.path.join(config.SHADOW_MODEL_DIR, dataset_name, "target_proxy.pt")
-    if not config.ALWAYS_RETRAIN and os.path.exists(proxy_ckpt):
+    if not _force("challenge") and os.path.exists(proxy_ckpt):
         print("  Loading existing target proxy...")
         model, diff_trainer = load_target_proxy(dataset_name, device=device)
         # Reconstruct scaler by fitting on challenge synthetic data
@@ -251,6 +271,7 @@ def step_predict_challenge(dataset_name, device=None):
 
     # Extract features
     features = extract_loss_features(model, diff_trainer, X_scaled, y_int, device=device)
+    features = prepare_features(features)
 
     # Classify
     clf = load_classifier()
@@ -313,7 +334,7 @@ def run_full_pipeline(dataset_name, device=None):
 
     for s in range(1, N + 1):
         d = np.load(os.path.join(feat_dir, f"features_split_{s}.npz"))
-        features, y_member = d["features"], d["y_member"]
+        features, y_member = prepare_features(d["features"]), d["y_member"]
 
         model.eval()
         with torch.no_grad():
@@ -346,5 +367,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", choices=["BRCA", "COMBINED"], default="BRCA")
     parser.add_argument("--device", default=config.DEVICE)
+    parser.add_argument("--profile", choices=list(config.PROFILES.keys()), default=None,
+                        help="Named config profile (default: use current config values)")
+    parser.add_argument("--force", default="",
+                        help="Force re-run of stages (comma-separated: shadows,features,classifier,"
+                             "synth_val,challenge) or 'all'")
     args = parser.parse_args()
+    if args.force:
+        config.FORCE_STAGES = set(s.strip() for s in args.force.split(","))
+    if args.profile:
+        config.apply_profile(args.profile)
+    print(f"Active profile: {config.ACTIVE_PROFILE}  "
+          f"(FEATURE_MODE={config.FEATURE_MODE}, MLP_INPUT_DIM={config.MLP_INPUT_DIM}, "
+          f"MLP_DROPOUT={config.MLP_DROPOUT}, MLP_WEIGHT_DECAY={config.MLP_WEIGHT_DECAY})")
     run_full_pipeline(args.dataset, device=args.device)

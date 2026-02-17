@@ -12,17 +12,18 @@ from . import config
 class MembershipMLP(nn.Module):
     """MLP: input → hidden → hidden → 1 (tanh activations, sigmoid output)."""
 
-    def __init__(self, input_dim=None, hidden_dim=None):
+    def __init__(self, input_dim=None, hidden_dim=None, dropout=0.0):
         super().__init__()
         input_dim = input_dim or config.MLP_INPUT_DIM
         hidden_dim = hidden_dim or config.MLP_HIDDEN_DIM
-        self.net = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.Tanh(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.Tanh(),
-            nn.Linear(hidden_dim, 1),
-        )
+        layers = [nn.Linear(input_dim, hidden_dim), nn.Tanh()]
+        if dropout > 0:
+            layers.append(nn.Dropout(dropout))
+        layers += [nn.Linear(hidden_dim, hidden_dim), nn.Tanh()]
+        if dropout > 0:
+            layers.append(nn.Dropout(dropout))
+        layers.append(nn.Linear(hidden_dim, 1))
+        self.net = nn.Sequential(*layers)
 
     def forward(self, x):
         return torch.sigmoid(self.net(x))
@@ -77,8 +78,8 @@ def train_classifier(
     lr = lr or config.MLP_LR
     device = device or config.DEVICE
 
-    model = MembershipMLP(input_dim=X_train.shape[1]).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    model = MembershipMLP(input_dim=X_train.shape[1], dropout=config.MLP_DROPOUT).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=config.MLP_WEIGHT_DECAY)
     criterion = nn.BCELoss()
 
     train_ds = TensorDataset(
@@ -147,7 +148,7 @@ def train_classifier(
 def load_classifier(device=None):
     """Load a trained MembershipMLP from disk."""
     device = device or "cpu"
-    model = MembershipMLP()
+    model = MembershipMLP(dropout=config.MLP_DROPOUT)
     ckpt_path = os.path.join(config.CLASSIFIER_DIR, "mlp_best.pt")
     model.load_state_dict(torch.load(ckpt_path, map_location=device))
     model.eval()

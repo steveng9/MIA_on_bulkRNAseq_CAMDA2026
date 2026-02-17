@@ -78,7 +78,12 @@ SHADOW_MAX_GRAD_NORM = 1.0
 DUMMY_LABEL = 0
 UNCONDITIONAL_NUM_CLASSES = 1
 
-ALWAYS_RETRAIN = True
+# ── Skip / force logic ──────────────────────────────────────────────────────
+# Stages that should be forced to re-run even if outputs exist.
+# Populated by --force CLI arg.  Valid stage names:
+#   "shadows", "features", "classifier", "synth_val", "challenge"
+# Use "all" to force everything.
+FORCE_STAGES = set()
 
 # ── Loss-feature extraction ──────────────────────────────────────────────────
 T_LIST = [5, 10, 20, 30, 40, 50, 100]
@@ -90,10 +95,57 @@ MLP_HIDDEN_DIM = 200
 MLP_EPOCHS = 750
 MLP_LR = 1e-4
 MLP_BATCH_SIZE = 64
+MLP_DROPOUT = 0.0
+MLP_WEIGHT_DECAY = 0.0
+
+# ── Feature mode ─────────────────────────────────────────────────────────────
+FEATURE_MODE = "raw"   # "raw" or "summary"
+
+# ── Named profiles ───────────────────────────────────────────────────────────
+ACTIVE_PROFILE = "baseline"
+
+PROFILES = {
+    "baseline": {
+        "T_LIST": [5, 10, 20, 30, 40, 50, 100],
+        "N_NOISE": 300,
+        "FEATURE_MODE": "raw",
+        "MLP_HIDDEN_DIM": 200,
+        "MLP_DROPOUT": 0.0,
+        "MLP_WEIGHT_DECAY": 0.0,
+        "MLP_EPOCHS": 750,
+        "MLP_LR": 1e-4,
+    },
+    "tuned": {
+        "T_LIST": [1, 2, 5, 10, 20, 50, 100, 200],
+        "N_NOISE": 100,
+        "FEATURE_MODE": "summary",
+        "MLP_HIDDEN_DIM": 64,
+        "MLP_DROPOUT": 0.3,
+        "MLP_WEIGHT_DECAY": 1e-3,
+        "MLP_EPOCHS": 2000,
+        "MLP_LR": 1e-4,
+    },
+}
+
+
+def apply_profile(name):
+    """Apply a named profile, setting module-level variables."""
+    import sys
+    mod = sys.modules[__name__]
+    if name not in PROFILES:
+        raise ValueError(f"Unknown profile '{name}'. Choose from: {list(PROFILES.keys())}")
+    for key, val in PROFILES[name].items():
+        setattr(mod, key, val)
+    mod.ACTIVE_PROFILE = name
+    # Recompute derived values
+    if mod.FEATURE_MODE == "summary":
+        mod.MLP_INPUT_DIM = len(mod.T_LIST) * 4  # mean, std, min, max per timestep
+    else:
+        mod.MLP_INPUT_DIM = mod.N_NOISE * len(mod.T_LIST)
 
 # ── Split configuration ─────────────────────────────────────────────────────
 SPLIT_MODE = "custom"  # "custom" or "noisydiffusion"
-NUM_CUSTOM_SPLITS = 5
+NUM_CUSTOM_SPLITS = 15
 CUSTOM_SPLIT_RATIO = 0.8  # fraction of real data used as "members" per split
 CUSTOM_SPLITS_DIR = os.path.join(MIA_OUTPUT_DIR, "splits")
 

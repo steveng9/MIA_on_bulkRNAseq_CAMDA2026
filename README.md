@@ -7,11 +7,11 @@ for the CAMDA 2026 Health Privacy Challenge (Red Team).
 
 | Module | Purpose |
 |--------|---------|
-| `config.py` | Paths, hyperparameters, dataset configs (BRCA + COMBINED), split mode settings |
+| `config.py` | Paths, hyperparameters, dataset configs (BRCA + COMBINED), split modes, named profiles |
 | `data_utils.py` | Data loading, splits YAML, custom split generation, label prediction |
 | `shadow_model.py` | Train/load EmbeddedDiffusion shadow models (QuantileTransformer + OneCycleLR + DP noise) |
-| `loss_features.py` | Extract 2100-dim loss trajectories (300 noises x 7 timesteps) |
-| `classifier.py` | MembershipMLP (2100->200->200->1, tanh+sigmoid, BCE, best by TPR@10%FPR) |
+| `loss_features.py` | Extract loss trajectories, `summarize_features` (per-timestep stats), `prepare_features` (dispatch on profile) |
+| `classifier.py` | MembershipMLP (configurable dims, optional dropout, weight decay; best by TPR@10%FPR) |
 | `attack.py` | Main pipeline: real-data shadows + synthetic validation |
 | `attack_synth_shadow.py` | Alternative pipeline: synthetic-data shadows (no domain gap) |
 
@@ -38,6 +38,9 @@ Split modes (configured via `SPLIT_MODE` in `config.py`):
 
 ```bash
 python -m mia.attack --dataset BRCA --device cuda:0
+python -m mia.attack --dataset BRCA --profile tuned          # use tuned profile
+python -m mia.attack --dataset BRCA --force shadows,features  # force re-run of steps 1-2
+python -m mia.attack --dataset BRCA --force all               # force re-run of everything
 ```
 
 ### 2. Synth-shadow pipeline (`attack_synth_shadow.py`)
@@ -58,7 +61,42 @@ Challenge predictions: `synthetic_data_1_predictions_synth_shadow.csv`.
 
 ```bash
 python -m mia.attack_synth_shadow --dataset BRCA --device cuda:0
+python -m mia.attack_synth_shadow --dataset BRCA --profile tuned --force all
 ```
+
+## Config Profiles
+
+Two named profiles switchable via `--profile baseline|tuned`:
+
+| Parameter | `baseline` | `tuned` |
+|-----------|-----------|---------|
+| T_LIST | [5,10,20,30,40,50,100] | [1,2,5,10,20,50,100,200] |
+| N_NOISE | 300 | 100 |
+| FEATURE_MODE | "raw" (2100 dims) | "summary" (32 dims) |
+| MLP_HIDDEN_DIM | 200 | 64 |
+| MLP_DROPOUT | 0.0 | 0.3 |
+| MLP_WEIGHT_DECAY | 0.0 | 1e-3 |
+| MLP_EPOCHS | 750 | 2000 |
+| MLP_LR | 1e-4 | 1e-4 |
+
+**Summary mode** computes per-timestep mean, std, min, max across noise vectors (4 x len(T_LIST) features).
+Raw features are always saved as-is; summarization happens at MLP time.
+Changing profiles never requires re-running shadow training. Only re-extract features if T_LIST or N_NOISE change.
+
+## Skip Logic
+
+Steps 0-2 (splits, shadow training, feature extraction) and synthetic validation skip when their
+outputs already exist. Use `--force <stages>` to override:
+
+| Stage name | What it forces |
+|------------|---------------|
+| `shadows` | Re-train shadow models |
+| `features` | Re-extract loss features |
+| `synth_val` | Re-train synth validation models + features |
+| `challenge` | Re-train target proxy |
+| `all` | Force everything |
+
+Comma-separated: `--force shadows,features`. MLP training and evaluation always re-run.
 
 ## Key Design Decisions
 
@@ -70,10 +108,9 @@ python -m mia.attack_synth_shadow --dataset BRCA --device cuda:0
 
 ## Hyperparameters
 
-- Shadow: 200 epochs, batch 32, LR 0.001, OneCycleLR, DP noise 1e-5
-- Features: T_LIST=[5,10,20,30,40,50,100], N_NOISE=300 -> 2100 dims
-- MLP: 750 epochs, LR 1e-4, batch 64, tanh activations, BCE loss
-- Model: EmbeddedDiffusion, hidden [2048,2048], time_emb 128, label_emb 64
+- Shadow model: 200 epochs, batch 32, LR 0.001, OneCycleLR, DP noise 1e-5
+- Diffusion model: EmbeddedDiffusion, hidden [2048,2048], time_emb 128, label_emb 64
+- Feature extraction & MLP: see **Config Profiles** above
 
 ## Results (BRCA, real-data shadows)
 
