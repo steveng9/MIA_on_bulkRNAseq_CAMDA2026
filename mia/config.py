@@ -91,6 +91,16 @@ MLP_EPOCHS = 750
 MLP_LR = 1e-4
 MLP_BATCH_SIZE = 64
 
-NUM_SPLITS = 5
+# ── Split configuration ─────────────────────────────────────────────────────
+SPLIT_MODE = "custom"  # "custom" or "noisydiffusion"
+NUM_CUSTOM_SPLITS = 5
+CUSTOM_SPLIT_RATIO = 0.8  # fraction of real data used as "members" per split
+CUSTOM_SPLITS_DIR = os.path.join(MIA_OUTPUT_DIR, "splits")
+
+# ── Synthetic validation ────────────────────────────────────────────────────
+SYNTH_VAL_MODEL_DIR = os.path.join(MIA_OUTPUT_DIR, "synth_val_models")
+SYNTH_VAL_FEATURES_DIR = os.path.join(MIA_OUTPUT_DIR, "synth_val_features")
+
+NUM_SPLITS = 5  # NoisyDiffusion splits (always 5)
 DEVICE = "cuda:0"
 SEED = 42

@@ -10,6 +10,7 @@ The NoisyDiffusion repo provides:
 """
 
 import os
+import json
 import yaml
 import numpy as np
 import pandas as pd
@@ -88,17 +89,76 @@ def load_nd_synthetic(dataset_name, split_no):
     return X, y
 
 
+def generate_custom_splits(dataset_name, n_splits=None, ratio=None, seed=None, force=False):
+    """Generate random train/test splits of the real data and save to JSON.
+
+    Each split randomly assigns `ratio` fraction of samples as members (train)
+    and the remainder as non-members (test).
+
+    Idempotent: skips if the splits file already exists (unless force=True).
+    """
+    n_splits = n_splits or config.NUM_CUSTOM_SPLITS
+    ratio = ratio or config.CUSTOM_SPLIT_RATIO
+    seed = seed or config.SEED
+
+    out_dir = os.path.join(config.CUSTOM_SPLITS_DIR, dataset_name)
+    out_path = os.path.join(out_dir, "splits.json")
+
+    if not force and os.path.exists(out_path):
+        print(f"  Custom splits already exist: {out_path} (skipping)")
+        return out_path
+
+    X_real, _ = load_real_data(dataset_name)
+    all_ids = list(X_real.index)
+    n_samples = len(all_ids)
+    n_train = int(n_samples * ratio)
+
+    splits = {}
+    for i in range(1, n_splits + 1):
+        rng = np.random.RandomState(seed + i)
+        perm = rng.permutation(n_samples)
+        train_idx = sorted(perm[:n_train].tolist())
+        test_idx = sorted(perm[n_train:].tolist())
+        splits[f"split_{i}"] = {
+            "train_ids": [all_ids[j] for j in train_idx],
+            "test_ids": [all_ids[j] for j in test_idx],
+        }
+
+    os.makedirs(out_dir, exist_ok=True)
+    with open(out_path, "w") as f:
+        json.dump(splits, f, indent=2)
+    print(f"  Generated {n_splits} custom splits → {out_path}")
+    return out_path
+
+
+def load_custom_splits(dataset_name):
+    """Load saved custom splits from JSON."""
+    path = os.path.join(config.CUSTOM_SPLITS_DIR, dataset_name, "splits.json")
+    with open(path) as f:
+        return json.load(f)
+
+
 def load_real_split(dataset_name, split_no):
     """Load the real-data training subset for a given CV split.
 
+    Dispatches on config.SPLIT_MODE:
+      - "custom": uses saved custom splits (train_ids)
+      - "noisydiffusion": uses splits YAML (complement of test_index)
+
     Returns:
-        X_train : np.ndarray, shape (~871, 978) – member samples for this split
+        X_train : np.ndarray, shape (n_train, 978) – member samples for this split
     """
     X_real, _ = load_real_data(dataset_name)
-    splits = load_splits_yaml(dataset_name)
-    split_key = f"split_{split_no}"
-    test_ids = set(splits[split_key]["test_index"])
-    train_mask = np.array([sid not in test_ids for sid in X_real.index])
+
+    if config.SPLIT_MODE == "custom":
+        splits = load_custom_splits(dataset_name)
+        train_ids = set(splits[f"split_{split_no}"]["train_ids"])
+        train_mask = np.array([sid in train_ids for sid in X_real.index])
+    else:
+        splits = load_splits_yaml(dataset_name)
+        test_ids = set(splits[f"split_{split_no}"]["test_index"])
+        train_mask = np.array([sid not in test_ids for sid in X_real.index])
+
     return X_real.values[train_mask].astype(np.float32)
 
 
@@ -108,6 +168,10 @@ def get_membership_labels(dataset_name, split_no):
     Members (1) = samples in the training set for this split.
     Non-members (0) = samples in the test set for this split.
 
+    Dispatches on config.SPLIT_MODE:
+      - "custom": uses saved custom splits (test_ids)
+      - "noisydiffusion": uses splits YAML (test_index)
+
     Returns:
         sample_ids : list[str]  – all sample IDs in the real data
         y_member : np.ndarray (n_samples,) – 0/1 membership labels
@@ -115,10 +179,27 @@ def get_membership_labels(dataset_name, split_no):
     X_real, _ = load_real_data(dataset_name)
     all_ids = list(X_real.index)
 
-    splits = load_splits_yaml(dataset_name)
-    split_key = f"split_{split_no}"
-    test_ids = set(splits[split_key]["test_index"])
+    if config.SPLIT_MODE == "custom":
+        splits = load_custom_splits(dataset_name)
+        test_ids = set(splits[f"split_{split_no}"]["test_ids"])
+    else:
+        splits = load_splits_yaml(dataset_name)
+        test_ids = set(splits[f"split_{split_no}"]["test_index"])
 
+    y_member = np.array([0 if sid in test_ids else 1 for sid in all_ids], dtype=np.int64)
+    return all_ids, y_member
+
+
+def get_nd_membership_labels(dataset_name, split_no):
+    """Get ground-truth membership labels from NoisyDiffusion splits YAML.
+
+    Always uses NoisyDiffusion splits regardless of SPLIT_MODE.
+    Used by synthetic validation step (which evaluates ND synthetic models).
+    """
+    X_real, _ = load_real_data(dataset_name)
+    all_ids = list(X_real.index)
+    splits = load_splits_yaml(dataset_name)
+    test_ids = set(splits[f"split_{split_no}"]["test_index"])
     y_member = np.array([0 if sid in test_ids else 1 for sid in all_ids], dtype=np.int64)
     return all_ids, y_member
 
