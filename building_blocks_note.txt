@@ -92,7 +92,7 @@
   known membership, and let an MLP learn the membership signal from 2,100-dimensional loss trajectories rather
   than relying on a heuristic ratio.
 
-  
+
 Other notes:
 
   During MLP training (inside train_classifier, step 3): validation is computed on concatenated splits 4-5 as one pool (~2,178 samples). It's used epoch-by-epoch to

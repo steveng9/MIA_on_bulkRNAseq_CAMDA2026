@@ -78,6 +78,8 @@ SHADOW_MAX_GRAD_NORM = 1.0
 DUMMY_LABEL = 0
 UNCONDITIONAL_NUM_CLASSES = 1
 
+ALWAYS_RETRAIN = True
+
 # ── Loss-feature extraction ──────────────────────────────────────────────────
 T_LIST = [5, 10, 20, 30, 40, 50, 100]
 N_NOISE = 300

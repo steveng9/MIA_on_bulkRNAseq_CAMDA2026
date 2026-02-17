@@ -146,7 +146,7 @@ def step_predict_challenge(dataset_name, device=None):
 
     # Train or load target proxy
     proxy_ckpt = os.path.join(config.SHADOW_MODEL_DIR, dataset_name, "target_proxy.pt")
-    if os.path.exists(proxy_ckpt):
+    if not config.ALWAYS_RETRAIN and os.path.exists(proxy_ckpt):
         print("  Loading existing target proxy...")
         model, diff_trainer = load_target_proxy(dataset_name, device=device)
         # Reconstruct scaler by fitting on challenge synthetic data
