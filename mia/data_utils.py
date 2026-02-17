@@ -105,8 +105,12 @@ def generate_custom_splits(dataset_name, n_splits=None, ratio=None, seed=None, f
     out_path = os.path.join(out_dir, "splits.json")
 
     if not force and os.path.exists(out_path):
-        print(f"  Custom splits already exist: {out_path} (skipping)")
-        return out_path
+        with open(out_path) as f:
+            existing = json.load(f)
+        if len(existing) >= n_splits:
+            print(f"  Custom splits already exist ({len(existing)} splits): {out_path} (skipping)")
+            return out_path
+        print(f"  Existing splits.json has {len(existing)} splits but need {n_splits} — regenerating")
 
     X_real, _ = load_real_data(dataset_name)
     all_ids = list(X_real.index)
