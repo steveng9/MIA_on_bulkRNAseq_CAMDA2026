@@ -101,6 +101,12 @@ CUSTOM_SPLITS_DIR = os.path.join(MIA_OUTPUT_DIR, "splits")
 SYNTH_VAL_MODEL_DIR = os.path.join(MIA_OUTPUT_DIR, "synth_val_models")
 SYNTH_VAL_FEATURES_DIR = os.path.join(MIA_OUTPUT_DIR, "synth_val_features")
 
+# ── Synth-shadow variant (shadows trained on synthetic data) ────────────────
+SYNTH_SHADOW_OUTPUT_DIR = os.path.join(MIA_OUTPUT_DIR, "synth_shadow")
+SYNTH_SHADOW_MODEL_DIR = os.path.join(SYNTH_SHADOW_OUTPUT_DIR, "shadow_models")
+SYNTH_SHADOW_FEATURES_DIR = os.path.join(SYNTH_SHADOW_OUTPUT_DIR, "features")
+SYNTH_SHADOW_CLASSIFIER_DIR = os.path.join(SYNTH_SHADOW_OUTPUT_DIR, "classifiers")
+
 NUM_SPLITS = 5  # NoisyDiffusion splits (always 5)
 DEVICE = "cuda:0"
 SEED = 42

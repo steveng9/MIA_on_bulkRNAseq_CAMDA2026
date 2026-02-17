@@ -56,7 +56,7 @@ def _tpr_at_fpr(y_true, y_score, fpr_target=0.10):
 
 def train_classifier(
     X_train, y_train, X_val, y_val,
-    epochs=None, lr=None, device=None,
+    epochs=None, lr=None, device=None, save_dir=None,
 ):
     """Train a MembershipMLP on loss features.
 
@@ -135,8 +135,9 @@ def train_classifier(
     model.cpu()
 
     # ── Save ─────────────────────────────────────────────────────────────
-    os.makedirs(config.CLASSIFIER_DIR, exist_ok=True)
-    ckpt_path = os.path.join(config.CLASSIFIER_DIR, "mlp_best.pt")
+    save_dir = save_dir or config.CLASSIFIER_DIR
+    os.makedirs(save_dir, exist_ok=True)
+    ckpt_path = os.path.join(save_dir, "mlp_best.pt")
     torch.save(model.state_dict(), ckpt_path)
     print(f"  [MLP] best TPR@10%FPR = {best_metric:.4f}  →  saved to {ckpt_path}")
 
