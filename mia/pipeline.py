@@ -34,7 +34,11 @@ from .data_utils import (
     generate_custom_splits,
     fit_quantile_scaler,
 )
-from .classifier import train_classifier, load_classifier_from_dir, _tpr_at_fpr
+from .classifier import (
+    train_classifier, train_rf_classifier,
+    load_classifier_from_dir, load_rf_classifier,
+    predict_scores, _tpr_at_fpr,
+)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -48,9 +52,7 @@ def _hdr(msg: str):
 
 
 def _eval_scores(clf, features: np.ndarray, y_member: np.ndarray) -> dict:
-    clf.eval()
-    with torch.no_grad():
-        scores = clf(torch.tensor(features, dtype=torch.float32)).squeeze(1).numpy()
+    scores = predict_scores(clf, features)
     tpr   = _tpr_at_fpr(y_member, scores, fpr_target=0.10)
     auc   = float(roc_auc_score(y_member, scores)) if len(np.unique(y_member)) > 1 else float("nan")
     acc   = float((((scores > 0.5).astype(int)) == y_member).mean())
@@ -189,16 +191,21 @@ def ensure_features(backend, split_nos: list, source: str,
 
 def train_mlp(backend, train_splits: list, val_splits: list,
               source: str, device: str, force: bool = False):
-    """Train membership MLP on features from train_splits, validate on val_splits.
+    """Train the membership classifier on features from train_splits.
 
-    Saves best checkpoint to backend.classifier_dir(source).
-    Returns (model, history).
+    Dispatches to MLP or Random Forest based on config.CLASSIFIER_TYPE.
+    Saves to backend.classifier_dir(source)/<classifier_type>/.
+    Returns (clf, history).
     """
-    save_dir  = backend.classifier_dir(source)
-    ckpt_path = os.path.join(save_dir, "mlp_best.pt")
+    clf_type  = config.CLASSIFIER_TYPE
+    save_dir  = os.path.join(backend.classifier_dir(source), clf_type)
+    ckpt_file = "rf_best.pkl" if clf_type == "rf" else "mlp_best.pt"
+    ckpt_path = os.path.join(save_dir, ckpt_file)
 
     if not force and os.path.exists(ckpt_path):
-        print(f"  MLP checkpoint exists ({source}): {ckpt_path}  (skipping training)")
+        print(f"  {clf_type.upper()} checkpoint exists ({source}): {ckpt_path}  (skipping training)")
+        if clf_type == "rf":
+            return load_rf_classifier(save_dir), None
         input_dim = backend.prepare_features(
             backend.load_raw_features(backend.features_path(train_splits[0], source))[0]
         ).shape[1]
@@ -221,17 +228,21 @@ def train_mlp(backend, train_splits: list, val_splits: list,
     X_train, y_train = _load(train_splits)
     X_val,   y_val   = _load(val_splits)
 
-    print(f"\n  MLP ({source}): train={len(X_train)} samples (dim={X_train.shape[1]})  "
+    print(f"\n  {clf_type.upper()} ({source}): train={len(X_train)} samples "
+          f"(dim={X_train.shape[1]})  "
           f"members={y_train.sum()}  non-members={len(y_train)-y_train.sum()}")
-    print(f"  MLP ({source}): val  ={len(X_val)} samples  "
+    print(f"  {clf_type.upper()} ({source}): val  ={len(X_val)} samples  "
           f"members={y_val.sum()}  non-members={len(y_val)-y_val.sum()}")
 
-    model, history = train_classifier(
+    if clf_type == "rf":
+        return train_rf_classifier(X_train, y_train, X_val, y_val, save_dir=save_dir)
+
+    clf, history = train_classifier(
         X_train, y_train, X_val, y_val,
         device=device, save_dir=save_dir,
         **backend.mlp_kwargs,
     )
-    return model, history
+    return clf, history
 
 
 # ── Stage 6: Evaluation ───────────────────────────────────────────────────────
@@ -287,9 +298,7 @@ def predict_challenge(backend, X_real_df, X_real_np: np.ndarray,
     raw        = backend.extract_features(model, X_scaled, y_int_all, device)
     features   = backend.prepare_features(raw)
 
-    clf.eval()
-    with torch.no_grad():
-        scores = clf(torch.tensor(features, dtype=torch.float32)).squeeze(1).numpy()
+    scores = predict_scores(clf, features)
 
     sample_ids = list(X_real_df.index)
     ds         = config.DATASETS[backend.dataset_name]

@@ -175,6 +175,7 @@ python -m mia.attack --model cvae --no-submission
 --generate-synthetic       Generate K+Q datasets only, then exit
 --profile baseline|tuned   Named config profile
 --label-mode real|knn|none CVAE label source                (default: real)
+--classifier mlp|rf        Membership classifier type       (default: mlp)
 --force STAGES             Comma-separated: splits, real_shadows, synthetic,
                            synth_shadows, features, classifier, submission,
                            shadows (=real_shadows+synth_shadows), all

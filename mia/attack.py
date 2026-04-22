@@ -90,6 +90,8 @@ def main():
                         help="Named config profile (baseline | tuned)")
     parser.add_argument("--label-mode", choices=["real", "knn", "none"], default=None,
                         help="CVAE label source (overrides config; default: real)")
+    parser.add_argument("--classifier", choices=["mlp", "rf"], default="mlp",
+                        help="Classifier type: 'mlp' (default) or 'rf' (Random Forest)")
     parser.add_argument("--force", default="",
                         help="Comma-separated stages to force re-run: "
                              "splits, real_shadows, synthetic, synth_shadows, "
@@ -101,6 +103,7 @@ def main():
     _apply_profile(args.model, args.profile)
     if args.label_mode:
         config.CVAE_LABEL_MODE = args.label_mode
+    config.CLASSIFIER_TYPE = args.classifier
 
     force_stages = set()
     if args.force:
@@ -116,7 +119,8 @@ def main():
     backend = _build_backend(args.model, args.dataset)
 
     print(f"[mia.attack]  model={args.model}  dataset={args.dataset}  "
-          f"K={k}  Q={q}  label_mode={config.CVAE_LABEL_MODE}  device={args.device}")
+          f"K={k}  Q={q}  classifier={config.CLASSIFIER_TYPE}  "
+          f"label_mode={config.CVAE_LABEL_MODE}  device={args.device}")
     if args.model == "cvae":
         print(f"             profile={config.CVAE_ACTIVE_PROFILE}  "
               f"feature_mode={config.CVAE_FEATURE_MODE}  "
