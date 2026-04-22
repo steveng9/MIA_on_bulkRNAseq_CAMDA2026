@@ -93,7 +93,7 @@ N_NOISE = 300
 # ── MLP classifier ───────────────────────────────────────────────────────────
 MLP_INPUT_DIM = N_NOISE * len(T_LIST)   # 2100
 MLP_HIDDEN_DIM = 200
-MLP_EPOCHS = 750
+MLP_EPOCHS = 2000
 MLP_LR = 1e-4
 MLP_BATCH_SIZE = 64
 MLP_DROPOUT = 0.0
@@ -146,7 +146,7 @@ def apply_profile(name):
 
 # ── Split configuration ─────────────────────────────────────────────────────
 SPLIT_MODE = "custom"  # "custom" or "noisydiffusion"
-NUM_CUSTOM_SPLITS = 15
+NUM_CUSTOM_SPLITS = 30
 CUSTOM_SPLIT_RATIO = 0.8  # fraction of real data used as "members" per split
 CUSTOM_SPLITS_DIR = os.path.join(MIA_OUTPUT_DIR, "splits")
 
@@ -163,3 +163,107 @@ SYNTH_SHADOW_CLASSIFIER_DIR = os.path.join(SYNTH_SHADOW_OUTPUT_DIR, "classifiers
 NUM_SPLITS = 5  # NoisyDiffusion splits (always 5)
 DEVICE = "cuda:0"
 SEED = 42
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CVAE attack configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── CVAE model architecture ───────────────────────────────────────────────────
+CVAE_INPUT_DIM = 978         # same gene space as ND
+CVAE_Z_DIM = 128             # latent space dimensionality
+CVAE_BETA = 1.0              # KL weight in ELBO
+CVAE_TRANSFORM = "none"      # output activation: "none"|"exp"|"sigmoid"|"relu"
+CVAE_CONDITION_TYPE = "onehot"   # "onehot" | "embedding"
+CVAE_DISEASE_EMBED_DIM = 20      # only used when CVAE_CONDITION_TYPE == "embedding"
+
+# ── CVAE label / conditioning mode ───────────────────────────────────────────
+# "knn"  — predict class labels via KNN on ND synthetic data; use as condition
+# "none" — pass zero condition vector, disabling class conditioning entirely
+CVAE_LABEL_MODE = "knn"
+
+# ── CVAE shadow training ──────────────────────────────────────────────────────
+CVAE_EPOCHS = 200
+CVAE_BATCH_SIZE = 32
+CVAE_LR = 1e-3
+CVAE_LR_WEIGHT_DECAY = 1e-3
+CVAE_LR_PCT_START = 0.2
+CVAE_LR_DIV_FACTOR = 25
+CVAE_LR_FINAL_DIV_FACTOR = 25
+CVAE_LR_ANNEAL_STRATEGY = "cos"
+CVAE_EARLY_STOPPING = True
+CVAE_EARLY_STOPPING_PATIENCE = 30
+CVAE_EARLY_STOPPING_MIN_DELTA = 1e-4
+
+# ── CVAE loss-feature extraction ──────────────────────────────────────────────
+# TEMP_LIST: analogous to T_LIST in ND.  α=0 gives deterministic z=μ.
+CVAE_TEMP_LIST = [0.0, 0.5, 1.0, 1.5, 2.0]
+CVAE_N_SAMPLES = 300         # K stochastic z draws per temperature (≈ N_NOISE in ND)
+CVAE_FEATURE_MODE = "raw"    # "raw" | "summary"
+
+# Derived: total MLP input dim
+# raw:     CVAE_N_SAMPLES * len(CVAE_TEMP_LIST) + CVAE_Z_DIM = 300*5+128 = 1628
+# summary: 4 * len(CVAE_TEMP_LIST) + CVAE_Z_DIM              = 4*5+128  =  148
+CVAE_MLP_INPUT_DIM = CVAE_N_SAMPLES * len(CVAE_TEMP_LIST) + CVAE_Z_DIM  # recomputed by profile
+
+# ── CVAE MLP classifier ───────────────────────────────────────────────────────
+CVAE_MLP_HIDDEN_DIM = 200
+CVAE_MLP_EPOCHS = 750
+CVAE_MLP_LR = 1e-4
+CVAE_MLP_BATCH_SIZE = 64
+CVAE_MLP_DROPOUT = 0.0
+CVAE_MLP_WEIGHT_DECAY = 0.0
+
+# ── CVAE output directories ───────────────────────────────────────────────────
+CVAE_OUTPUT_DIR = os.path.join(MIA_OUTPUT_DIR, "cvae")
+CVAE_SHADOW_MODEL_DIR = os.path.join(CVAE_OUTPUT_DIR, "shadow_models")
+CVAE_FEATURES_DIR = os.path.join(CVAE_OUTPUT_DIR, "features")
+CVAE_CLASSIFIER_DIR = os.path.join(CVAE_OUTPUT_DIR, "classifiers")
+CVAE_SYNTH_DIR = os.path.join(CVAE_OUTPUT_DIR, "synthetic_data")
+
+CVAE_SYNTH_SHADOW_OUTPUT_DIR = os.path.join(CVAE_OUTPUT_DIR, "synth_shadow")
+CVAE_SYNTH_SHADOW_MODEL_DIR = os.path.join(CVAE_SYNTH_SHADOW_OUTPUT_DIR, "shadow_models")
+CVAE_SYNTH_SHADOW_FEATURES_DIR = os.path.join(CVAE_SYNTH_SHADOW_OUTPUT_DIR, "features")
+CVAE_SYNTH_SHADOW_CLASSIFIER_DIR = os.path.join(CVAE_SYNTH_SHADOW_OUTPUT_DIR, "classifiers")
+
+# ── CVAE named profiles ───────────────────────────────────────────────────────
+CVAE_ACTIVE_PROFILE = "baseline"
+
+CVAE_PROFILES = {
+    "baseline": {
+        "CVAE_TEMP_LIST": [0.0, 0.5, 1.0, 1.5, 2.0],
+        "CVAE_N_SAMPLES": 300,
+        "CVAE_FEATURE_MODE": "raw",
+        "CVAE_MLP_HIDDEN_DIM": 200,
+        "CVAE_MLP_DROPOUT": 0.0,
+        "CVAE_MLP_WEIGHT_DECAY": 0.0,
+        "CVAE_MLP_EPOCHS": 750,
+        "CVAE_MLP_LR": 1e-4,
+    },
+    "tuned": {
+        "CVAE_TEMP_LIST": [0.0, 0.5, 1.0, 1.5, 2.0, 3.0],
+        "CVAE_N_SAMPLES": 100,
+        "CVAE_FEATURE_MODE": "summary",
+        "CVAE_MLP_HIDDEN_DIM": 64,
+        "CVAE_MLP_DROPOUT": 0.3,
+        "CVAE_MLP_WEIGHT_DECAY": 1e-3,
+        "CVAE_MLP_EPOCHS": 2000,
+        "CVAE_MLP_LR": 1e-4,
+    },
+}
+
+
+def apply_cvae_profile(name):
+    """Apply a named CVAE profile, updating module-level variables."""
+    import sys
+    mod = sys.modules[__name__]
+    if name not in CVAE_PROFILES:
+        raise ValueError(f"Unknown CVAE profile '{name}'. Choose from: {list(CVAE_PROFILES.keys())}")
+    for key, val in CVAE_PROFILES[name].items():
+        setattr(mod, key, val)
+    mod.CVAE_ACTIVE_PROFILE = name
+    # Recompute derived MLP input dim
+    n_t = len(mod.CVAE_TEMP_LIST)
+    if mod.CVAE_FEATURE_MODE == "summary":
+        mod.CVAE_MLP_INPUT_DIM = 4 * n_t + mod.CVAE_Z_DIM
+    else:
+        mod.CVAE_MLP_INPUT_DIM = mod.CVAE_N_SAMPLES * n_t + mod.CVAE_Z_DIM

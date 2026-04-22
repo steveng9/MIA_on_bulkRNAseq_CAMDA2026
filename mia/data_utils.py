@@ -251,3 +251,41 @@ def fit_quantile_scaler(X):
     scaler = QuantileTransformer(output_distribution="normal")
     X_t = scaler.fit_transform(X.astype(np.float64)).astype(np.float32)
     return scaler, X_t
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CVAE synthetic data I/O
+# ─────────────────────────────────────────────────────────────────────────────
+
+def save_cvae_synthetic(X, y, dataset_name, split_no):
+    """Save CVAE-generated synthetic data for a given split.
+
+    Parameters
+    ----------
+    X : np.ndarray (n, input_dim) float32 — gene expression (in original space)
+    y : np.ndarray (n,) int64             — class label indices
+    """
+    out_dir = os.path.join(config.CVAE_SYNTH_DIR, dataset_name)
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, f"synthetic_data_split_{split_no}.npz")
+    np.savez(path, X=X.astype(np.float32), y=y.astype(np.int64))
+    print(f"  [CVAE synth] saved split {split_no} → {path}  shape={X.shape}")
+
+
+def load_cvae_synthetic(dataset_name, split_no):
+    """Load CVAE-generated synthetic data for a given split.
+
+    Returns
+    -------
+    X : np.ndarray (n, input_dim) float32
+    y : np.ndarray (n,) int64
+    """
+    path = os.path.join(config.CVAE_SYNTH_DIR, dataset_name,
+                        f"synthetic_data_split_{split_no}.npz")
+    if not os.path.exists(path):
+        raise FileNotFoundError(
+            f"CVAE synthetic data not found: {path}\n"
+            "Run: python -m mia.cvae.attack --generate-synthetic first."
+        )
+    d = np.load(path)
+    return d["X"].astype(np.float32), d["y"].astype(np.int64)

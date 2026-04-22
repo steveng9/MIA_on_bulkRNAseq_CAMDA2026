@@ -1,4 +1,8 @@
-"""Train shadow diffusion models (unconditional)."""
+"""Train shadow NoisyDiffusion models (unconditional).
+
+The EmbeddedDiffusion model lives in the external NoisyDiffusion repo
+(~/CAMDA25_NoisyDiffusion/TCGA-BRCA/model.py) and is imported at runtime.
+"""
 
 import os
 import sys
@@ -8,15 +12,15 @@ from torch.utils.data import DataLoader, TensorDataset
 
 # Add NoisyDiffusion source to path so we can import the model classes.
 _nd_brca = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "..", "CAMDA25_NoisyDiffusion", "TCGA-BRCA",
 )
 if _nd_brca not in sys.path:
     sys.path.insert(0, _nd_brca)
 from model import EmbeddedDiffusion, DiffusionTrainer
 
-from . import config
-from .data_utils import load_challenge_synthetic, fit_quantile_scaler
+from .. import config
+from ..data_utils import load_challenge_synthetic, fit_quantile_scaler
 
 
 def build_model(num_classes=None, device=None):
@@ -58,10 +62,10 @@ def train_shadow_model(X_train, save_path, split_no, device=None):
 
     Parameters
     ----------
-    X_train : np.ndarray, shape (n_samples, 978) – raw (unscaled) training data
+    X_train   : np.ndarray (n_samples, 978) – raw (unscaled) training data
     save_path : str – where to save the checkpoint (.pt)
-    split_no : int – used as seed offset for reproducibility
-    device : str
+    split_no  : int – used as seed offset for reproducibility
+    device    : str
 
     Returns
     -------
@@ -72,21 +76,17 @@ def train_shadow_model(X_train, save_path, split_no, device=None):
     y_int = np.full(len(X_train), config.DUMMY_LABEL, dtype=np.int64)
     print(f"[shadow split {split_no}] training samples: {len(X_train)}, dummy label={config.DUMMY_LABEL}")
 
-    # ── QuantileTransformer ──────────────────────────────────────────────
     scaler, X_scaled = fit_quantile_scaler(X_train)
 
-    # ── DataLoader ───────────────────────────────────────────────────────
     ds_torch = TensorDataset(
         torch.tensor(X_scaled, dtype=torch.float32),
         torch.tensor(y_int, dtype=torch.long),
     )
     loader = DataLoader(ds_torch, batch_size=config.SHADOW_BATCH_SIZE, shuffle=True)
 
-    # ── Seed for reproducibility (different per split) ─────────────────
     torch.manual_seed(config.SEED + split_no)
     np.random.seed(config.SEED + split_no)
 
-    # ── Model / optimizer / scheduler ────────────────────────────────────
     model = build_model(config.UNCONDITIONAL_NUM_CLASSES, device)
     diff_trainer = build_diffusion_trainer(device)
     optimizer = torch.optim.AdamW(
@@ -100,7 +100,6 @@ def train_shadow_model(X_train, save_path, split_no, device=None):
         final_div_factor=config.SHADOW_LR_FINAL_DIV_FACTOR,
     )
 
-    # ── Training loop with early stopping ────────────────────────────────
     best_loss, no_improve, best_state = float("inf"), 0, None
 
     for epoch in range(config.SHADOW_EPOCHS):
@@ -134,7 +133,6 @@ def train_shadow_model(X_train, save_path, split_no, device=None):
         model.load_state_dict(best_state)
         model.to(device)
 
-    # ── Save ─────────────────────────────────────────────────────────────
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     torch.save(model.state_dict(), save_path)
     print(f"  [shadow split {split_no}] saved → {save_path}")
@@ -143,10 +141,7 @@ def train_shadow_model(X_train, save_path, split_no, device=None):
 
 
 def train_target_proxy(dataset_name, device=None):
-    """Train a proxy model on challenge synthetic data for challenge inference.
-
-    Returns (model, diffusion_trainer, scaler).
-    """
+    """Train a proxy model on challenge synthetic data for challenge inference."""
     device = device or config.DEVICE
     X_syn = load_challenge_synthetic(dataset_name)
     save_dir = os.path.join(config.SHADOW_MODEL_DIR, dataset_name)

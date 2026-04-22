@@ -58,6 +58,7 @@ def _tpr_at_fpr(y_true, y_score, fpr_target=0.10):
 def train_classifier(
     X_train, y_train, X_val, y_val,
     epochs=None, lr=None, device=None, save_dir=None,
+    dropout=None, hidden_dim=None, weight_decay=None, batch_size=None,
 ):
     """Train a MembershipMLP on loss features.
 
@@ -65,28 +66,34 @@ def train_classifier(
     ----------
     X_train, y_train : np.ndarray – training loss features and membership labels
     X_val, y_val     : np.ndarray – validation set
-    epochs : int
-    lr : float
-    device : str
+    epochs, lr, device, save_dir : training knobs (default to config values)
+    dropout, hidden_dim, weight_decay, batch_size : model/optimizer overrides
+        (default to config.MLP_* values; pass explicitly for CVAE attack)
 
     Returns
     -------
     model : trained MembershipMLP (on CPU)
     history : dict with 'train_loss', 'val_loss', 'val_tpr_at_10fpr' per epoch
     """
-    epochs = epochs or config.MLP_EPOCHS
-    lr = lr or config.MLP_LR
-    device = device or config.DEVICE
+    epochs       = epochs       or config.MLP_EPOCHS
+    lr           = lr           or config.MLP_LR
+    device       = device       or config.DEVICE
+    dropout      = config.MLP_DROPOUT      if dropout      is None else dropout
+    hidden_dim   = config.MLP_HIDDEN_DIM   if hidden_dim   is None else hidden_dim
+    weight_decay = config.MLP_WEIGHT_DECAY if weight_decay is None else weight_decay
+    batch_size   = batch_size   or config.MLP_BATCH_SIZE
 
-    model = MembershipMLP(input_dim=X_train.shape[1], dropout=config.MLP_DROPOUT).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=config.MLP_WEIGHT_DECAY)
+    model = MembershipMLP(input_dim=X_train.shape[1],
+                          hidden_dim=hidden_dim,
+                          dropout=dropout).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.BCELoss()
 
     train_ds = TensorDataset(
         torch.tensor(X_train, dtype=torch.float32),
         torch.tensor(y_train, dtype=torch.float32),
     )
-    train_loader = DataLoader(train_ds, batch_size=config.MLP_BATCH_SIZE, shuffle=True)
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
 
     X_val_t = torch.tensor(X_val, dtype=torch.float32).to(device)
     y_val_np = y_val.astype(np.float32)
@@ -146,10 +153,32 @@ def train_classifier(
 
 
 def load_classifier(device=None):
-    """Load a trained MembershipMLP from disk."""
+    """Load the default ND MembershipMLP from CLASSIFIER_DIR."""
     device = device or "cpu"
     model = MembershipMLP(dropout=config.MLP_DROPOUT)
     ckpt_path = os.path.join(config.CLASSIFIER_DIR, "mlp_best.pt")
+    model.load_state_dict(torch.load(ckpt_path, map_location=device))
+    model.eval()
+    return model
+
+
+def load_classifier_from_dir(save_dir, input_dim, hidden_dim=None, dropout=None, device=None):
+    """Load a MembershipMLP checkpoint from an arbitrary directory.
+
+    Parameters
+    ----------
+    save_dir   : str  — directory containing mlp_best.pt
+    input_dim  : int  — must match the checkpoint's first layer width
+    hidden_dim : int  — defaults to config.MLP_HIDDEN_DIM
+    dropout    : float — defaults to config.MLP_DROPOUT
+    device     : str
+    """
+    device     = device     or "cpu"
+    hidden_dim = hidden_dim or config.MLP_HIDDEN_DIM
+    dropout    = config.MLP_DROPOUT if dropout is None else dropout
+
+    model = MembershipMLP(input_dim=input_dim, hidden_dim=hidden_dim, dropout=dropout)
+    ckpt_path = os.path.join(save_dir, "mlp_best.pt")
     model.load_state_dict(torch.load(ckpt_path, map_location=device))
     model.eval()
     return model
