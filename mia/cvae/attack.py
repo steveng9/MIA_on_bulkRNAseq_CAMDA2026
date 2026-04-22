@@ -29,6 +29,8 @@ from ..data_utils import (
     fit_quantile_scaler,
     save_cvae_synthetic,
     build_label_predictor,
+    get_real_labels_all,
+    get_real_labels_for_split,
 )
 from ..classifier import train_classifier, load_classifier_from_dir, _tpr_at_fpr
 from .shadow_model import (
@@ -79,11 +81,10 @@ def step_train_shadows(dataset_name, splits=None, device=None):
     device = device or config.DEVICE
     force = _force("shadows")
 
-    # Build KNN predictor once (only needed if label_mode != 'none')
-    if config.CVAE_LABEL_MODE != "none":
+    # Build KNN predictor once if needed (not used for "real" or "none" modes)
+    predict_label = None
+    if config.CVAE_LABEL_MODE == "knn":
         predict_label = build_label_predictor(dataset_name, split_no=1)
-    else:
-        predict_label = None
 
     for s in splits:
         save_dir = os.path.join(config.CVAE_SHADOW_MODEL_DIR, dataset_name)
@@ -95,7 +96,9 @@ def step_train_shadows(dataset_name, splits=None, device=None):
         print(f"\n{'='*60}\nTraining CVAE shadow: {dataset_name} split {s}\n{'='*60}")
         X_train = load_real_split(dataset_name, s)
 
-        if predict_label is not None:
+        if config.CVAE_LABEL_MODE == "real":
+            y_int = get_real_labels_for_split(dataset_name, s)
+        elif predict_label is not None:
             y_int = predict_label(X_train).astype(np.int64)
         else:
             y_int = np.zeros(len(X_train), dtype=np.int64)
@@ -116,8 +119,11 @@ def step_extract_features(dataset_name, splits=None, device=None):
     X_real_np = X_real_df.values.astype(np.float32)
     sample_ids = list(X_real_df.index)
 
-    # Predict labels for all real samples (same predictor for all splits)
-    y_int_all = _get_y_int(X_real_np, dataset_name)
+    # Resolve labels for all real samples (same for all splits)
+    if config.CVAE_LABEL_MODE == "real":
+        y_int_all = get_real_labels_all(dataset_name)
+    else:
+        y_int_all = _get_y_int(X_real_np, dataset_name)
 
     force = _force("features")
     for s in splits:
@@ -195,10 +201,9 @@ def step_generate_synthetic(dataset_name, splits=None, device=None):
     device = device or config.DEVICE
     force = _force("synth_gen")
 
-    if config.CVAE_LABEL_MODE != "none":
+    predict_label = None
+    if config.CVAE_LABEL_MODE == "knn":
         predict_label = build_label_predictor(dataset_name, split_no=1)
-    else:
-        predict_label = None
 
     for s in splits:
         synth_path = os.path.join(config.CVAE_SYNTH_DIR, dataset_name,
@@ -212,9 +217,12 @@ def step_generate_synthetic(dataset_name, splits=None, device=None):
         model = load_cvae_shadow(dataset_name, s, device=device)
         scaler, X_scaled = fit_quantile_scaler(X_train)
 
-        y_int = (predict_label(X_train).astype(np.int64)
-                 if predict_label is not None
-                 else np.zeros(len(X_train), dtype=np.int64))
+        if config.CVAE_LABEL_MODE == "real":
+            y_int = get_real_labels_for_split(dataset_name, s)
+        elif predict_label is not None:
+            y_int = predict_label(X_train).astype(np.int64)
+        else:
+            y_int = np.zeros(len(X_train), dtype=np.int64)
 
         X_syn, y_syn = generate_cvae_synthetic(
             model, dataset_name, X_scaled, y_int,
@@ -235,7 +243,12 @@ def step_predict_challenge(dataset_name, device=None):
     X_real_df, _ = load_real_data(dataset_name)
     X_real_np = X_real_df.values.astype(np.float32)
     sample_ids = list(X_real_df.index)
-    y_int_all = _get_y_int(X_real_np, dataset_name)
+
+    # Labels for real samples: use ground truth when available, else KNN/none
+    if config.CVAE_LABEL_MODE == "real":
+        y_int_all = get_real_labels_all(dataset_name)
+    else:
+        y_int_all = _get_y_int(X_real_np, dataset_name)
 
     proxy_ckpt = os.path.join(config.CVAE_SHADOW_MODEL_DIR, dataset_name, "target_proxy.pt")
     if not _force("challenge") and os.path.exists(proxy_ckpt):
@@ -246,6 +259,7 @@ def step_predict_challenge(dataset_name, device=None):
     else:
         print("  Training CVAE target proxy on challenge synthetic data...")
         X_syn = load_challenge_synthetic(dataset_name)
+        # Challenge synthetic data has no real labels — always use KNN (or none)
         if config.CVAE_LABEL_MODE != "none":
             predict_label = build_label_predictor(dataset_name, split_no=1)
             y_syn_int = predict_label(X_syn).astype(np.int64)
@@ -352,8 +366,9 @@ if __name__ == "__main__":
     parser.add_argument("--device", default=config.DEVICE)
     parser.add_argument("--profile", choices=list(config.CVAE_PROFILES.keys()), default=None,
                         help="Named CVAE config profile")
-    parser.add_argument("--label-mode", choices=["knn", "none"], default=None,
-                        help="Override CVAE_LABEL_MODE")
+    parser.add_argument("--label-mode", choices=["real", "knn", "none"], default=None,
+                        help="Label source for real data: 'real'=BLUE zip ground truth, "
+                             "'knn'=KNN on ND synthetic, 'none'=disable conditioning")
     parser.add_argument("--generate-synthetic", action="store_true",
                         help="Also generate and save CVAE synthetic data (needed for synth-shadow)")
     parser.add_argument("--force", default="",

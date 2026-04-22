@@ -212,6 +212,51 @@ def get_nd_membership_labels(dataset_name, split_no):
 # Label encoding / inference
 # ─────────────────────────────────────────────────────────────────────────────
 
+def load_real_labels(dataset_name):
+    """Load ground-truth subtype labels from the BLUE team zip.
+
+    Returns a dict mapping sample_id (str) → int label index.
+    Only valid for real data samples; synthetic data has no real labels.
+    """
+    import zipfile
+    ds = config.DATASETS[dataset_name]
+    with zipfile.ZipFile(ds["blue_zip"]) as z:
+        with z.open(ds["blue_zip_path"]) as f:
+            df = pd.read_csv(f, index_col=0)
+    label_list = ds["label_list"]
+    label_to_int = {l: i for i, l in enumerate(label_list)}
+    col = ds["blue_label_col"]
+    return {str(sid): label_to_int[str(lbl)] for sid, lbl in zip(df.index, df[col])}
+
+
+def get_real_labels_all(dataset_name):
+    """Return ground-truth int labels for all real samples, in real-data row order.
+
+    Row order matches load_real_data(dataset_name)[0].index.
+    """
+    labels = load_real_labels(dataset_name)
+    X_real, _ = load_real_data(dataset_name)
+    return np.array([labels[str(sid)] for sid in X_real.index], dtype=np.int64)
+
+
+def get_real_labels_for_split(dataset_name, split_no):
+    """Return ground-truth int labels for the training subset of a given split.
+
+    Row order matches load_real_split(dataset_name, split_no).
+    """
+    labels = load_real_labels(dataset_name)
+    X_real, _ = load_real_data(dataset_name)
+    if config.SPLIT_MODE == "custom":
+        splits = load_custom_splits(dataset_name)
+        train_ids_set = set(splits[f"split_{split_no}"]["train_ids"])
+        train_ids = [sid for sid in X_real.index if sid in train_ids_set]
+    else:
+        splits_yaml = load_splits_yaml(dataset_name)
+        test_ids = set(splits_yaml[f"split_{split_no}"]["test_index"])
+        train_ids = [sid for sid in X_real.index if sid not in test_ids]
+    return np.array([labels[str(sid)] for sid in train_ids], dtype=np.int64)
+
+
 def encode_labels(y_str, label_list):
     """Map string labels to integer indices."""
     mapping = {c: i for i, c in enumerate(label_list)}

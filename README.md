@@ -158,7 +158,10 @@ Options:
   --dataset            BRCA | COMBINED          (default: BRCA)
   --device             cuda:0 | cpu             (default: cuda:0)
   --profile            baseline | tuned         (default: current config values)
-  --label-mode         knn | none               (default: knn)
+  --label-mode         real | knn | none        (default: knn)
+                         real = ground-truth from BLUE zip (internal eval only)
+                         knn  = KNN on ND synthetic data
+                         none = disable class conditioning
   --generate-synthetic                          also save CVAE synthetic data
                                                (required before running synth-shadow)
   --force              STAGES                   comma-separated or 'all'
@@ -167,6 +170,7 @@ Options:
 
 Examples:
   python -m mia.cvae.attack --dataset BRCA
+  python -m mia.cvae.attack --dataset BRCA --label-mode real   # ground-truth labels
   python -m mia.cvae.attack --dataset BRCA --label-mode none
   python -m mia.cvae.attack --dataset BRCA --generate-synthetic
   python -m mia.cvae.attack --dataset BRCA --profile tuned --force all
@@ -184,10 +188,19 @@ STEP 6: Challenge predictions → synthetic_data_1_predictions_cvae.csv
 ```
 
 **Label mode options:**
-- `knn` (default): Predict cancer subtype labels via KNN on ND synthetic data; pass as
-  class condition to CVAE encoder and decoder. Exploits class structure.
-- `none`: Pass a true zero vector as condition, bypassing class conditioning entirely.
-  Trains and evaluates an unconditional-equivalent CVAE. Useful as an ablation.
+
+| Mode | Source | When to use |
+|---|---|---|
+| `real` | Ground-truth subtypes from BLUE team zip | Internal evaluation only — gives exact conditioning, no approximation error |
+| `knn` (default) | KNN prediction on ND labeled synthetic data | Works everywhere, including challenge submission |
+| `none` | True zero vector — disables conditioning entirely | Ablation: unconditional CVAE |
+
+> **`--label-mode real` details:** The BLUE team zips (`BLUE_TCGA-BRCA.zip`,
+> `BLUE_TCGA-COMBINED.zip`) each contain a subtypes CSV with ground-truth cancer subtypes
+> for every real sample. This gives exact CVAE conditioning (no KNN approximation error)
+> during shadow training and feature extraction on real data. However, the challenge
+> synthetic data has no real labels, so the challenge prediction step always falls back to
+> KNN for the proxy-model training — only internal evaluation benefits from `--label-mode real`.
 
 #### Synth-shadow pipeline (ablation: shadows trained on CVAE-generated synthetic data)
 
@@ -200,7 +213,7 @@ Options:
   --dataset     BRCA | COMBINED          (default: BRCA)
   --device      cuda:0 | cpu             (default: cuda:0)
   --profile     baseline | tuned
-  --label-mode  knn | none
+  --label-mode  knn | none               (note: 'real' not valid here — synth data has no real labels)
   --force       STAGES
 
 Examples:

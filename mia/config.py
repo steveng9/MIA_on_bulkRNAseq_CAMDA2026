@@ -29,6 +29,10 @@ DATASETS = {
         "nd_synthetic_dir": os.path.join(BRCA_ND_DIR, "synthetic_data"),
         "num_classes": 5,
         "label_list": ["BRCA.Basal", "BRCA.Normal", "BRCA.Her2", "BRCA.LumA", "BRCA.LumB"],
+        # Ground-truth subtype labels for real data (BLUE team zip)
+        "blue_zip": os.path.join(CHALLENGE_DIR, "BLUE_TCGA-BRCA.zip"),
+        "blue_zip_path": "BLUE_TCGA-BRCA/TCGA-BRCA_primary_tumor_subtypes.csv",
+        "blue_label_col": "Subtype",
     },
     "COMBINED": {
         "challenge_dir": COMBINED_CHALLENGE_DIR,
@@ -43,6 +47,10 @@ DATASETS = {
             "TCGA-KIRC", "TCGA-PRAD", "TCGA-LIHC", "TCGA-ESCA", "TCGA-BRCA", "TCGA-OV",
             "TCGA-LUSC", "TCGA-PAAD", "TCGA-KIRP", "TCGA-LUAD", "TCGA-COAD", "TCGA-SKCM",
         ],
+        # Ground-truth subtype labels for real data (BLUE team zip)
+        "blue_zip": os.path.join(CHALLENGE_DIR, "BLUE_TCGA-COMBINED.zip"),
+        "blue_zip_path": "BLUE_TCGA-COMBINED/TCGA-COMBINED_primary_tumor_subtypes.csv",
+        "blue_label_col": "project",
     },
 }
 
@@ -177,6 +185,8 @@ CVAE_CONDITION_TYPE = "onehot"   # "onehot" | "embedding"
 CVAE_DISEASE_EMBED_DIM = 20      # only used when CVAE_CONDITION_TYPE == "embedding"
 
 # ── CVAE label / conditioning mode ───────────────────────────────────────────
+# "real" — ground-truth subtypes from BLUE team zip (only valid for real data;
+#           challenge synthetic data falls back to "knn" automatically)
 # "knn"  — predict class labels via KNN on ND synthetic data; use as condition
 # "none" — pass zero condition vector, disabling class conditioning entirely
 CVAE_LABEL_MODE = "knn"
