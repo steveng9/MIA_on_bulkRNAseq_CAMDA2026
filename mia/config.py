@@ -189,7 +189,7 @@ CVAE_DISEASE_EMBED_DIM = 20      # only used when CVAE_CONDITION_TYPE == "embedd
 #           challenge synthetic data falls back to "knn" automatically)
 # "knn"  — predict class labels via KNN on ND synthetic data; use as condition
 # "none" — pass zero condition vector, disabling class conditioning entirely
-CVAE_LABEL_MODE = "knn"
+CVAE_LABEL_MODE = "real"
 
 # ── CVAE shadow training ──────────────────────────────────────────────────────
 CVAE_EPOCHS = 200
@@ -260,6 +260,27 @@ CVAE_PROFILES = {
         "CVAE_MLP_LR": 1e-4,
     },
 }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Unified pipeline configuration  (used by mia.attack + mia.pipeline)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Number of shadow models for MLP training (K) and internal holdout eval (Q).
+# Total models trained per run = K + Q.
+DEFAULT_K = 15
+DEFAULT_Q = 5
+
+# Unified output tree — completely separate from old per-attack paths above.
+# Layout: pipeline/{real_shadows,synth_shadows,synthetic,features,classifiers}/
+#                /{nd,cvae}/{dataset}/...
+PIPELINE_BASE         = os.path.join(MIA_OUTPUT_DIR, "pipeline")
+PIPELINE_REAL_SHADOW  = os.path.join(PIPELINE_BASE, "real_shadows")
+PIPELINE_SYNTH_SHADOW = os.path.join(PIPELINE_BASE, "synth_shadows")
+PIPELINE_SYNTHETIC    = os.path.join(PIPELINE_BASE, "synthetic")
+PIPELINE_FEATURES     = os.path.join(PIPELINE_BASE, "features")
+PIPELINE_CLASSIFIERS  = os.path.join(PIPELINE_BASE, "classifiers")
+PIPELINE_TARGET_PROXY = os.path.join(PIPELINE_BASE, "target_proxy")
 
 
 def apply_cvae_profile(name):

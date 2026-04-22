@@ -3,8 +3,22 @@
 Membership inference attack (MIA) against synthetic bulk RNA-seq data for the
 **CAMDA 2026 Health Privacy Challenge (Red Team track)**.
 
-Two attack families are implemented in parallel — NoisyDiffusion (ND) and CVAE —
-each with a real-data-shadow variant and a synth-shadow ablation.
+Two attack families are implemented — NoisyDiffusion (ND) and CVAE — both
+accessible through a single unified entry point.
+
+---
+
+## Quick Start
+
+```bash
+cd ~/MIA_on_bulkRNAseq_CAMDA2026
+
+# Run CVAE attack: K=15 shadow models, Q=5 holdout proxies for internal eval
+python -m mia.attack --model cvae --dataset BRCA
+
+# Same with explicit K/Q (these are the defaults):
+python -m mia.attack --model cvae --dataset BRCA --k 15 --q 5
+```
 
 ---
 
@@ -12,235 +26,210 @@ each with a real-data-shadow variant and a synth-shadow ablation.
 
 ```
 mia/
-├── config.py          # Shared config + ND profiles + CVAE profiles
-├── data_utils.py      # Data loading, custom splits, scalers, label inference
-├── classifier.py      # MembershipMLP; train_classifier; load_classifier_from_dir
+├── attack.py          # ← Unified entry point (use this)
+├── pipeline.py        # Shared pipeline orchestration
+├── config.py          # All configuration + named profiles
+├── data_utils.py      # Data loading, split generation, scalers
+├── classifier.py      # MembershipMLP + train/load utilities
 │
-├── nd/                # NoisyDiffusion attack
-│   ├── shadow_model.py    # Train/load EmbeddedDiffusion shadows (imports from ~/CAMDA25_NoisyDiffusion)
-│   ├── loss_features.py   # Extract N_NOISE × T_LIST MSE loss trajectories
-│   ├── attack.py          # Main pipeline (real-data shadows)
-│   └── attack_synth_shadow.py  # Synth-shadow pipeline (ND synthetic data as training set)
+├── backends/          # Model-specific implementations (extend here to add new attacks)
+│   ├── base.py            # MIABackend ABC — interface all backends must satisfy
+│   ├── nd.py              # NDBackend  (NoisyDiffusion)
+│   └── cvae.py            # CVAEBackend (CVAE)
 │
-└── cvae/              # CVAE attack (parallel structure)
-    ├── model.py           # CVAE nn.Module (adapted from Health-Privacy-Challenge repo)
-    ├── shadow_model.py    # Train/load CVAE shadows + generate synthetic data
-    ├── loss_features.py   # Extract stochastic rec-losses + per-dim KL features
-    ├── attack.py          # Main pipeline (real-data shadows)
-    └── attack_synth_shadow.py  # Synth-shadow pipeline (CVAE-generated synthetic data)
+├── nd/                # NoisyDiffusion internals (shadow training, feature extraction)
+│   ├── shadow_model.py
+│   ├── loss_features.py
+│   ├── attack.py              # Legacy entry point (still works)
+│   └── attack_synth_shadow.py # Legacy synth-shadow entry point
+│
+└── cvae/              # CVAE internals
+    ├── model.py
+    ├── shadow_model.py
+    ├── loss_features.py
+    ├── attack.py              # Legacy entry point (still works)
+    └── attack_synth_shadow.py # Legacy synth-shadow entry point
 
-mia_output/            # All artifacts (auto-created)
-├── splits/BRCA/splits.json          # Custom train/test splits (shared by ND and CVAE)
-├── shadow_models/BRCA/              # ND shadow checkpoints + target_proxy.pt
-├── features/BRCA/                   # ND feature files (.npz)
-├── classifiers/mlp_best.pt          # ND MLP
-├── synth_val_models/BRCA/           # ND domain-gap validation models
-├── synth_val_features/BRCA/         # ND domain-gap features
-├── synth_shadow/                    # ND synth-shadow outputs
-│   ├── shadow_models/BRCA/
-│   ├── features/BRCA/
-│   └── classifiers/mlp_best.pt
-└── cvae/
-    ├── shadow_models/BRCA/          # CVAE shadow checkpoints
-    ├── features/BRCA/               # CVAE feature files (rec_losses + per_dim_kl)
-    ├── classifiers/mlp_best.pt      # CVAE MLP
-    ├── synthetic_data/BRCA/         # CVAE-generated synthetic data (for synth-shadow)
-    └── synth_shadow/
-        ├── shadow_models/BRCA/
-        ├── features/BRCA/
-        └── classifiers/mlp_best.pt
+mia_output/
+├── splits/{dataset}/splits.json          # Custom splits (grows as K increases)
+└── pipeline/                             # All unified-pipeline artifacts
+    ├── real_shadows/{nd,cvae}/{dataset}/split_k.pt
+    ├── synth_shadows/{nd,cvae}/{dataset}/split_k.pt
+    ├── synthetic/{nd,cvae}/{dataset}/split_k.npz
+    ├── features/{real,synth}/{nd,cvae}/{dataset}/split_k.npz
+    ├── classifiers/{real,synth}/{nd,cvae}/{dataset}/mlp_best.pt
+    └── target_proxy/{nd,cvae}/{dataset}/proxy.pt
 ```
 
 ---
 
 ## Prerequisites
 
-### External repos (must be cloned as siblings)
+### External repos (cloned as siblings)
 
 ```
 ~/
 ├── MIA_on_bulkRNAseq_CAMDA2026/   ← this repo
-├── CAMDA25_NoisyDiffusion/         ← Blue Team repo (provides ND model + labeled synthetic data)
-└── Health-Privacy-Challenge/       ← Challenge repo (provides challenge data paths)
+└── CAMDA25_NoisyDiffusion/         ← Blue Team repo (ND model + labeled synthetic data)
 ```
 
-The ND shadow model code (`mia/nd/shadow_model.py`) imports `EmbeddedDiffusion` and
-`DiffusionTrainer` directly from `~/CAMDA25_NoisyDiffusion/TCGA-BRCA/model.py` at runtime.
+The ND backend imports `EmbeddedDiffusion` / `DiffusionTrainer` directly from
+`~/CAMDA25_NoisyDiffusion/TCGA-BRCA/model.py` at runtime.
 
 ### Challenge data
 
-Expected at `/home/golobs/data/CAMDA26/` (configured in `mia/config.py:CHALLENGE_DIR`):
+Expected at `/home/golobs/data/CAMDA26/` (configured in `mia/config.py`):
 
 ```
 /home/golobs/data/CAMDA26/
 ├── RED_TCGA-BRCA/
-│   ├── TCGA-BRCA_primary_tumor_star_deseq_VST_lmgenes.tsv   # real data (978 genes × samples)
-│   └── synthetic_data_1.csv                                  # challenge synthetic data
-└── RED_TCGA-COMBINED/
-    ├── TCGA-COMBINED_primary_tumor_star_deseq_VST_lmgenes.tsv
-    └── synthetic_data_1.csv
+│   ├── TCGA-BRCA_primary_tumor_star_deseq_VST_lmgenes.tsv
+│   └── synthetic_data_1.csv
+├── RED_TCGA-COMBINED/ ...
+├── BLUE_TCGA-BRCA.zip    ← ground-truth subtype labels (for --label-mode real)
+└── BLUE_TCGA-COMBINED.zip
 ```
-
-### Python environment
-
-```bash
-conda env create -f environment.yaml   # or use the existing conda env
-conda activate <env_name>
-```
-
-Required packages (non-exhaustive): `torch`, `numpy`, `pandas`, `scikit-learn`, `pyyaml`.
 
 ---
 
-## Running the Attacks
+## Unified Pipeline (`mia.attack`)
 
-All pipelines are run as Python modules from the **project root**:
+All pipelines run as Python modules from the **project root**:
 
 ```bash
 cd ~/MIA_on_bulkRNAseq_CAMDA2026
 ```
 
-### NoisyDiffusion attack
+### Default mode (synth-shadow, recommended)
 
-#### Main pipeline (real-data shadows)
-
-```bash
-python -m mia.nd.attack [OPTIONS]
-
-Options:
-  --dataset   BRCA | COMBINED          (default: BRCA)
-  --device    cuda:0 | cpu             (default: cuda:0)
-  --profile   baseline | tuned         (default: current config values)
-  --force     STAGES                   comma-separated or 'all'
-                                       valid: shadows, features, classifier,
-                                              synth_val, challenge
-
-Examples:
-  python -m mia.nd.attack --dataset BRCA
-  python -m mia.nd.attack --dataset BRCA --profile tuned
-  python -m mia.nd.attack --dataset BRCA --force shadows,features
-  python -m mia.nd.attack --dataset BRCA --force all
-```
-
-**Pipeline steps:**
-```
-STEP 0: Generate N custom 80/20 splits of real data (skipped if splits.json exists)
-STEP 1: Train N shadow EmbeddedDiffusion models on real data subsets
-STEP 2: Extract loss features for all real samples via each shadow
-STEP 3: Train MLP classifier (70% of splits for train, 30% for val)
-STEP 4: Per-split evaluation (ACC + TPR@10%FPR)
-STEP 5: Synthetic validation — domain gap measurement
-STEP 6: Challenge predictions → synthetic_data_1_predictions.csv
-```
-
-#### Synth-shadow pipeline (ablation: shadows trained on ND synthetic data)
+Shadow models are trained on **synthetic** data generated by real-data-trained
+generators.  This means both the MLP training distribution and the challenge
+inference (proxy on challenge synthetic) share the same inductive bias — no
+domain gap.
 
 ```bash
-python -m mia.nd.attack_synth_shadow [OPTIONS]
+# CVAE attack, K=15, Q=5
+python -m mia.attack --model cvae --dataset BRCA
 
-Options: same as above (--dataset, --device, --profile, --force)
+# ND attack (capped at K+Q ≤ 5 due to Blue Team repo limit)
+python -m mia.attack --model nd --dataset BRCA --k 3 --q 2
 
-Examples:
-  python -m mia.nd.attack_synth_shadow --dataset BRCA
-  python -m mia.nd.attack_synth_shadow --dataset BRCA --profile tuned --force all
+# Custom K and Q
+python -m mia.attack --model cvae --dataset BRCA --k 20 --q 5
+```
+
+**What runs:**
+```
+STEP 0: Ensure K+Q custom splits (incremental — adds splits without invalidating existing)
+STEP 1: Train K+Q real shadows on real data subsets (needed for generation)
+STEP 2: Generate K+Q synthetic datasets from those shadows
+STEP 3: Train K+Q synth-shadow models on synthetic datasets
+STEP 4: Extract features for all real samples via each synth-shadow
+STEP 5: Train MLP on synth features from K shadows (70/30 train/val within K)
+STEP 6: Internal evaluation on Q holdout synth-proxy models
+         → AUC + TPR@10%FPR per proxy + average
+FINAL:  Challenge predictions → mia_output/pipeline/target_proxy/.../proxy.pt
+         → RED_.../predictions_cvae.csv
+```
+
+### With real-shadow upper bound and domain-gap measurement (`--real`)
+
+```bash
+python -m mia.attack --model cvae --dataset BRCA --real
+```
+
+Adds steps 7–10 after the synth evaluation:
+```
+STEP 7:  Extract features via real shadows
+STEP 8:  Train MLP on real features (same K/Q split)
+STEP 9:  Upper-bound eval on Q real-shadow holdout models
+STEP 10: Domain-gap eval — same MLP on Q synth-proxy holdout models
+          → prints gap in both AUC and TPR@10%FPR
+```
+
+### Standalone synthetic generation only
+
+```bash
+# Generate K+Q synthetic datasets, no attack
+python -m mia.attack --model cvae --generate-synthetic --k 20 --q 5
+```
+
+Use this to pre-generate synthetic data in bulk.  Subsequent pipeline runs with
+`--k 20 --q 5` will skip generation and proceed directly to shadow training.
+
+### Skip challenge submission
+
+```bash
+python -m mia.attack --model cvae --no-submission
+```
+
+### Full option reference
+
+```
+--model {nd,cvae}          Attack target model              (default: cvae)
+--dataset {BRCA,COMBINED}                                   (default: BRCA)
+--k K                      MLP training shadows             (default: 15)
+--q Q                      Holdout evaluation proxies       (default: 5)
+--real                     Also run real-shadow + domain-gap eval
+--no-submission            Skip challenge prediction step
+--generate-synthetic       Generate K+Q datasets only, then exit
+--profile baseline|tuned   Named config profile
+--label-mode real|knn|none CVAE label source                (default: real)
+--force STAGES             Comma-separated: splits, real_shadows, synthetic,
+                           synth_shadows, features, classifier, submission,
+                           shadows (=real_shadows+synth_shadows), all
+--device DEVICE                                             (default: cuda:0)
 ```
 
 ---
 
-### CVAE attack
+## Caching and Incremental Runs
 
-#### Main pipeline (real-data shadows)
+All stages are **idempotent** — outputs are skipped if already on disk.
 
+Running with a larger `--k` only trains the new models and generates new
+features; all previous work is reused unchanged (splits use a fixed per-index
+seed, so split 7 is always the same partition whether generated in a batch of 5
+or 30).
+
+To force re-runs:
 ```bash
-python -m mia.cvae.attack [OPTIONS]
-
-Options:
-  --dataset            BRCA | COMBINED          (default: BRCA)
-  --device             cuda:0 | cpu             (default: cuda:0)
-  --profile            baseline | tuned         (default: current config values)
-  --label-mode         real | knn | none        (default: knn)
-                         real = ground-truth from BLUE zip (internal eval only)
-                         knn  = KNN on ND synthetic data
-                         none = disable class conditioning
-  --generate-synthetic                          also save CVAE synthetic data
-                                               (required before running synth-shadow)
-  --force              STAGES                   comma-separated or 'all'
-                                               valid: shadows, features, classifier,
-                                                      synth_gen, challenge
-
-Examples:
-  python -m mia.cvae.attack --dataset BRCA
-  python -m mia.cvae.attack --dataset BRCA --label-mode real   # ground-truth labels
-  python -m mia.cvae.attack --dataset BRCA --label-mode none
-  python -m mia.cvae.attack --dataset BRCA --generate-synthetic
-  python -m mia.cvae.attack --dataset BRCA --profile tuned --force all
+--force features,classifier    # re-extract features and retrain MLP only
+--force all                    # rebuild everything from scratch
 ```
 
-**Pipeline steps:**
-```
-STEP 0: (Re-use) custom splits from mia_output/splits/ — same as ND attack
-STEP 1: Train N shadow CVAE models on real data subsets
-STEP 2: Extract CVAE features for all real samples via each shadow
-STEP 3: Train MLP classifier (70/30 split)
-STEP 4: Per-split evaluation (ACC + TPR@10%FPR)
-STEP 5: (if --generate-synthetic) Generate and save CVAE synthetic data per split
-STEP 6: Challenge predictions → synthetic_data_1_predictions_cvae.csv
-```
+---
 
-**Label mode options:**
+## Label Mode (`--label-mode`)
+
+CVAE shadows are **class-conditional** (conditioned on cancer subtype).
 
 | Mode | Source | When to use |
 |---|---|---|
-| `real` | Ground-truth subtypes from BLUE team zip | Internal evaluation only — gives exact conditioning, no approximation error |
-| `knn` (default) | KNN prediction on ND labeled synthetic data | Works everywhere, including challenge submission |
-| `none` | True zero vector — disables conditioning entirely | Ablation: unconditional CVAE |
+| `real` *(default)* | Ground-truth subtypes from BLUE team zip | Best internal eval — no approximation error |
+| `knn` | KNN on ND labeled synthetic data | Works everywhere including challenge submission |
+| `none` | Zero vector — disables conditioning | Ablation: unconditional CVAE |
 
-> **`--label-mode real` details:** The BLUE team zips (`BLUE_TCGA-BRCA.zip`,
-> `BLUE_TCGA-COMBINED.zip`) each contain a subtypes CSV with ground-truth cancer subtypes
-> for every real sample. This gives exact CVAE conditioning (no KNN approximation error)
-> during shadow training and feature extraction on real data. However, the challenge
-> synthetic data has no real labels, so the challenge prediction step always falls back to
-> KNN for the proxy-model training — only internal evaluation benefits from `--label-mode real`.
-
-#### Synth-shadow pipeline (ablation: shadows trained on CVAE-generated synthetic data)
-
-Must run main pipeline with `--generate-synthetic` first.
-
-```bash
-python -m mia.cvae.attack_synth_shadow [OPTIONS]
-
-Options:
-  --dataset     BRCA | COMBINED          (default: BRCA)
-  --device      cuda:0 | cpu             (default: cuda:0)
-  --profile     baseline | tuned
-  --label-mode  knn | none               (note: 'real' not valid here — synth data has no real labels)
-  --force       STAGES
-
-Examples:
-  # Step 1: generate synthetic data (if not done yet)
-  python -m mia.cvae.attack --dataset BRCA --generate-synthetic --force synth_gen
-
-  # Step 2: run synth-shadow
-  python -m mia.cvae.attack_synth_shadow --dataset BRCA
-```
+The submission proxy always uses KNN even when `--label-mode real` is set,
+because challenge synthetic data has no real labels.
 
 ---
 
-## Configuration Reference
+## Config Profiles (`--profile`)
 
-All configuration lives in `mia/config.py`.
+### CVAE
 
-### Shared settings
-
-| Variable | Default | Description |
+| Parameter | `baseline` | `tuned` |
 |---|---|---|
-| `DEVICE` | `cuda:0` | PyTorch device |
-| `SEED` | `42` | Global random seed |
-| `SPLIT_MODE` | `custom` | `custom` (random 80/20) or `noisydiffusion` (YAML splits) |
-| `NUM_CUSTOM_SPLITS` | `30` | Number of random splits to generate |
-| `CUSTOM_SPLIT_RATIO` | `0.8` | Member fraction per split |
+| `CVAE_TEMP_LIST` | `[0,0.5,1,1.5,2]` | `[0,0.5,1,1.5,2,3]` |
+| `CVAE_N_SAMPLES` | `300` | `100` |
+| `CVAE_FEATURE_MODE` | `raw` (1628 dims) | `summary` (148 dims) |
+| `CVAE_MLP_HIDDEN_DIM` | `200` | `64` |
+| `CVAE_MLP_DROPOUT` | `0.0` | `0.3` |
+| `CVAE_MLP_WEIGHT_DECAY` | `0.0` | `1e-3` |
+| `CVAE_MLP_EPOCHS` | `750` | `2000` |
 
-### NoisyDiffusion profiles (`--profile`)
+### NoisyDiffusion
 
 | Parameter | `baseline` | `tuned` |
 |---|---|---|
@@ -249,111 +238,58 @@ All configuration lives in `mia/config.py`.
 | `FEATURE_MODE` | `raw` (2100 dims) | `summary` (32 dims) |
 | `MLP_HIDDEN_DIM` | `200` | `64` |
 | `MLP_DROPOUT` | `0.0` | `0.3` |
-| `MLP_WEIGHT_DECAY` | `0.0` | `1e-3` |
 | `MLP_EPOCHS` | `750` | `2000` |
 
-Raw features are always saved as-is (2100 dims). `prepare_features()` applies summarization
-at MLP time, so switching `--profile` **never requires re-running shadow training or feature
-extraction**.
-
-### CVAE profiles (`--profile`)
-
-| Parameter | `baseline` | `tuned` |
-|---|---|---|
-| `CVAE_TEMP_LIST` | `[0.0, 0.5, 1.0, 1.5, 2.0]` | `[0.0, 0.5, 1.0, 1.5, 2.0, 3.0]` |
-| `CVAE_N_SAMPLES` | `300` | `100` |
-| `CVAE_FEATURE_MODE` | `raw` (1628 dims) | `summary` (148 dims) |
-| `CVAE_MLP_HIDDEN_DIM` | `200` | `64` |
-| `CVAE_MLP_DROPOUT` | `0.0` | `0.3` |
-| `CVAE_MLP_WEIGHT_DECAY` | `0.0` | `1e-3` |
-| `CVAE_MLP_EPOCHS` | `750` | `2000` |
-
-### Skip / force logic
-
-Steps 0–2 (split generation, shadow training, feature extraction) are **skipped if outputs
-already exist**. To force re-execution:
-
-```bash
---force all                          # re-run everything
---force shadows                      # re-train shadow models only
---force shadows,features             # re-train shadows and re-extract features
---force features,classifier          # re-extract features and re-train MLP
-```
-
-Valid stage names:
-
-| Stage name | What it controls |
-|---|---|
-| `shadows` | Shadow model training (Step 1) |
-| `features` | Feature extraction (Step 2) |
-| `classifier` | MLP training (Step 3) |
-| `synth_val` | ND domain-gap validation (Step 5, ND only) |
-| `synth_gen` | CVAE synthetic data generation (Step 5, CVAE only) |
-| `challenge` | Challenge proxy + predictions (Step 6) |
-| `all` | All of the above |
+Raw features are saved as-is; summarization happens at MLP-input time, so
+changing `--profile` **never requires rerunning feature extraction**.
 
 ---
 
 ## Feature Design
 
-### NoisyDiffusion features
+### NoisyDiffusion
 
 For each real sample x₀:
 - Draw `N_NOISE` fixed noise vectors ε ~ N(0,I)
 - For each timestep t in `T_LIST`: compute x_t, predict ε̂, measure MSE(ε̂, ε)
-- Result: `(N_NOISE × len(T_LIST))` matrix → 2100 features (baseline raw)
+- Result: `N_NOISE × len(T_LIST)` = 2100 features (baseline raw)
 
-Members have lower MSE because the shadow model has "seen" them during training.
+Members have lower MSE because the shadow saw them during training.
 
-### CVAE features
+### CVAE
 
-For each real sample x (with class condition y):
+For each real sample x with condition y:
 
-1. **Encode** x → μ, logvar ∈ R^z_dim (deterministic, one encoder pass per sample)
-2. **Per-dimension KL**: -0.5 × (1 + logvar_d - μ_d² - exp(logvar_d)) → z_dim = 128 features
-   Captures how much each latent dimension is used for this sample.
+1. **Encode** x → μ, logvar ∈ ℝ^z_dim (one deterministic encoder pass)
+2. **Per-dim KL**: −0.5 × (1 + logvar_d − μ_d² − exp(logvar_d)) → 128 features
 3. **Temperature sweep**: for each α ∈ `CVAE_TEMP_LIST`:
-   - For each of `N_SAMPLES` fixed noise vectors ε ~ N(0,I):
-     - z = μ + α·σ·ε  (σ = exp(0.5·logvar))
-     - rec_loss = MSE(decode(z, y), x)
-   - α=0: deterministic z=μ (all N_SAMPLES give identical loss)
-   - Higher α: more stochastic z, reconstruction degrades
-   - Members degrade more gracefully (decoder has been trained on them)
+   - For each of `N_SAMPLES` fixed ε ~ N(0,I): z = μ + α·σ·ε → rec_loss = MSE(decode(z,y), x)
+   - α=0: deterministic (all N_SAMPLES identical), α>0: stochastic degradation
+   - Members degrade more gracefully (decoder was trained on them)
 
 **Raw mode**: `N_SAMPLES × len(TEMP_LIST) + z_dim` = 1628 features  
-**Summary mode**: `4 stats × len(TEMP_LIST) + z_dim` = 148 features  
-(4 stats = mean, std, min, max across noise samples per temperature)
+**Summary mode**: `4 stats × len(TEMP_LIST) + z_dim` = 148 features
 
 ---
 
 ## Results
 
-### NoisyDiffusion (BRCA, 30 custom splits)
+### NoisyDiffusion (BRCA, 30 real-shadow splits)
 
-| Variant | Val TPR@10%FPR | Per-split TPR@10%FPR |
+| Variant | Val TPR@10%FPR | Notes |
 |---|---|---|
-| Real-data shadows (baseline) | 0.58 | 0.67 / 0.71 / 0.50 / 0.54 / 0.56 |
-| Synth validation (domain gap) | ~0.14 | — |
+| Real-data shadows | 0.58 | per-split: 0.67/0.71/0.50/0.54/0.56 |
+| Synth-proxy (domain gap) | ~0.14 | baseline=0.10 |
 
 ### CVAE (BRCA)
 
-Not yet evaluated — run `python -m mia.cvae.attack --dataset BRCA`.
+Not yet run with new unified pipeline.
+Run: `python -m mia.attack --model cvae --dataset BRCA`
 
 ---
 
-## Key Design Decisions
+## Extending with a New Attack
 
-- **Shared custom splits**: ND and CVAE use the **same** `splits.json`, enabling
-  direct side-by-side comparison on identical membership partitions.
-- **Scaler per split**: Each shadow's `QuantileTransformer` is fitted on the same
-  real (or synthetic) data used for that shadow's training, then applied to all real
-  samples. This prevents information leakage across splits.
-- **Fixed noise bank**: The same seed-fixed noise vectors are used across all samples
-  and splits, making feature extraction fully reproducible.
-- **TPR@10%FPR as primary metric**: Matches the CAMDA challenge evaluation criterion.
-- **Domain gap measurement**: ND synth validation step quantifies how much performance
-  degrades when the proxy is trained on synthetic (vs real) data — a key diagnostic
-  for predicting challenge-time performance.
-- **CVAE `condition_mode="none"`**: Passes a true zero tensor (not a dummy label),
-  completely bypassing all embedding/linear conditioning layers. This is a genuine
-  unconditional ablation, not just fixing the condition to class 0.
+Subclass `MIABackend` (`mia/backends/base.py`), implement the abstract methods,
+register in `mia/backends/__init__.py`, and add a `--model` choice in `mia/attack.py`.
+The pipeline (`mia/pipeline.py`) requires no changes.

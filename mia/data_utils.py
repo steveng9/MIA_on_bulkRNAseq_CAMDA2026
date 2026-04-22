@@ -90,48 +90,55 @@ def load_nd_synthetic(dataset_name, split_no):
 
 
 def generate_custom_splits(dataset_name, n_splits=None, ratio=None, seed=None, force=False):
-    """Generate random train/test splits of the real data and save to JSON.
+    """Ensure at least n_splits custom train/test splits exist, generating any missing ones.
 
-    Each split randomly assigns `ratio` fraction of samples as members (train)
-    and the remainder as non-members (test).
-
-    Idempotent: skips if the splits file already exists (unless force=True).
+    Existing splits are always preserved — only new indices are appended.
+    Split i is always seeded with (seed + i), so a given split index produces the
+    same partition regardless of when or in what batch it was generated.
+    This means cached shadow models / features stay valid when K grows.
     """
     n_splits = n_splits or config.NUM_CUSTOM_SPLITS
-    ratio = ratio or config.CUSTOM_SPLIT_RATIO
-    seed = seed or config.SEED
+    ratio    = ratio    or config.CUSTOM_SPLIT_RATIO
+    seed     = seed     or config.SEED
 
-    out_dir = os.path.join(config.CUSTOM_SPLITS_DIR, dataset_name)
+    out_dir  = os.path.join(config.CUSTOM_SPLITS_DIR, dataset_name)
     out_path = os.path.join(out_dir, "splits.json")
 
-    if not force and os.path.exists(out_path):
+    # Load whatever already exists
+    existing = {}
+    if os.path.exists(out_path) and not force:
         with open(out_path) as f:
             existing = json.load(f)
         if len(existing) >= n_splits:
-            print(f"  Custom splits already exist ({len(existing)} splits): {out_path} (skipping)")
+            print(f"  Custom splits: {len(existing)} exist ≥ {n_splits} needed ({out_path})")
             return out_path
-        print(f"  Existing splits.json has {len(existing)} splits but need {n_splits} — regenerating")
 
     X_real, _ = load_real_data(dataset_name)
-    all_ids = list(X_real.index)
+    all_ids   = list(X_real.index)
     n_samples = len(all_ids)
-    n_train = int(n_samples * ratio)
+    n_train   = int(n_samples * ratio)
 
-    splits = {}
+    new_count = 0
     for i in range(1, n_splits + 1):
-        rng = np.random.RandomState(seed + i)
-        perm = rng.permutation(n_samples)
+        key = f"split_{i}"
+        if key in existing and not force:
+            continue
+        rng       = np.random.RandomState(seed + i)
+        perm      = rng.permutation(n_samples)
         train_idx = sorted(perm[:n_train].tolist())
-        test_idx = sorted(perm[n_train:].tolist())
-        splits[f"split_{i}"] = {
+        test_idx  = sorted(perm[n_train:].tolist())
+        existing[key] = {
             "train_ids": [all_ids[j] for j in train_idx],
-            "test_ids": [all_ids[j] for j in test_idx],
+            "test_ids":  [all_ids[j] for j in test_idx],
         }
+        new_count += 1
 
     os.makedirs(out_dir, exist_ok=True)
     with open(out_path, "w") as f:
-        json.dump(splits, f, indent=2)
-    print(f"  Generated {n_splits} custom splits → {out_path}")
+        json.dump(existing, f, indent=2)
+
+    if new_count:
+        print(f"  Generated {new_count} new custom splits → {out_path}  (total: {n_splits})")
     return out_path
 
 
