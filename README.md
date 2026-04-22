@@ -30,7 +30,7 @@ mia/
 ├── pipeline.py        # Shared pipeline orchestration
 ├── config.py          # All configuration + named profiles
 ├── data_utils.py      # Data loading, split generation, scalers
-├── classifier.py      # MembershipMLP + train/load utilities
+├── classifier.py      # MembershipMLP, RandomForest + train/load/predict_scores utilities
 │
 ├── backends/          # Model-specific implementations (extend here to add new attacks)
 │   ├── base.py            # MIABackend ABC — interface all backends must satisfy
@@ -57,7 +57,7 @@ mia_output/
     ├── synth_shadows/{nd,cvae}/{dataset}/split_k.pt
     ├── synthetic/{nd,cvae}/{dataset}/split_k.npz
     ├── features/{real,synth}/{nd,cvae}/{dataset}/split_k.npz
-    ├── classifiers/{real,synth}/{nd,cvae}/{dataset}/mlp_best.pt
+    ├── classifiers/{real,synth}/{nd,cvae}/{dataset}/{mlp,rf}/  # one subdir per classifier type
     └── target_proxy/{nd,cvae}/{dataset}/proxy.pt
 ```
 
@@ -197,6 +197,47 @@ To force re-runs:
 --force features,classifier    # re-extract features and retrain MLP only
 --force all                    # rebuild everything from scratch
 ```
+
+---
+
+## Classifier Models (`--classifier`)
+
+All four legacy entry points (`mia.nd.attack`, `mia.nd.attack_synth_shadow`,
+`mia.cvae.attack`, `mia.cvae.attack_synth_shadow`) support:
+
+```bash
+--classifier mlp   # 3-layer MLP with tanh activations (default)
+--classifier rf    # Random Forest (sklearn)
+```
+
+Each classifier type saves to its own subdirectory, so MLP and RF results
+never clobber each other and feature extraction is never unnecessarily
+repeated:
+
+```bash
+# Train RF on already-extracted CVAE features (shadows + features skipped)
+python -m mia.cvae.attack --dataset BRCA --classifier rf
+
+# Switch to summary features with RF (shadows skipped, features re-extracted)
+python -m mia.cvae.attack --dataset BRCA --classifier rf --profile tuned --force features
+
+# MLP result still intact in its own dir
+python -m mia.cvae.attack --dataset BRCA --classifier mlp --profile tuned
+```
+
+### Random Forest parameters
+
+Fixed in `mia/classifier.py:RF_PARAMS`:
+
+| Parameter | Value |
+|---|---|
+| `n_estimators` | 500 |
+| `max_depth` | 8 |
+| `max_features` | `"sqrt"` |
+| `min_samples_leaf` | 20 |
+| `max_samples` | 0.7 |
+
+Saved as `rf_best.pkl` (joblib) alongside the MLP's `mlp_best.pt`.
 
 ---
 

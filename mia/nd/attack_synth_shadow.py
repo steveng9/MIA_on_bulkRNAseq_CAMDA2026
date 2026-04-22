@@ -25,7 +25,11 @@ from .shadow_model import (
     load_target_proxy,
 )
 from .loss_features import extract_loss_features, prepare_features
-from ..classifier import train_classifier, load_classifier, MembershipMLP, _tpr_at_fpr
+from ..classifier import (
+    train_classifier, train_rf_classifier,
+    load_classifier_from_dir, load_rf_classifier,
+    predict_scores, _tpr_at_fpr,
+)
 
 
 def _force(stage):
@@ -94,6 +98,20 @@ def step_extract_features(dataset_name, splits=None, device=None):
         print(f"  Saved {out_path}  shape={features.shape}")
 
 
+def _nd_synth_clf_dir():
+    return os.path.join(config.SYNTH_SHADOW_CLASSIFIER_DIR, config.CLASSIFIER_TYPE)
+
+
+def _load_nd_synth_clf(clf_dir, input_dim):
+    if config.CLASSIFIER_TYPE == "rf":
+        return load_rf_classifier(clf_dir)
+    return load_classifier_from_dir(
+        clf_dir, input_dim,
+        hidden_dim=config.MLP_HIDDEN_DIM,
+        dropout=config.MLP_DROPOUT,
+    )
+
+
 def step_train_classifier(dataset_name, train_splits=None, val_splits=None, device=None):
     train_splits = train_splits or [1, 2, 3]
     val_splits = val_splits or [4, 5]
@@ -111,14 +129,20 @@ def step_train_classifier(dataset_name, train_splits=None, val_splits=None, devi
     X_train, y_train = _load(train_splits)
     X_val, y_val = _load(val_splits)
 
-    print(f"\nMLP train: {len(X_train)} samples (dim={X_train.shape[1]}) "
+    clf_type = config.CLASSIFIER_TYPE
+    print(f"\nND synth-shadow {clf_type.upper()} train: {len(X_train)} samples "
+          f"(dim={X_train.shape[1]}) "
           f"(members={y_train.sum()}, non-members={len(y_train)-y_train.sum()})")
-    print(f"MLP val:   {len(X_val)} samples "
+    print(f"ND synth-shadow {clf_type.upper()} val:   {len(X_val)} samples "
           f"(members={y_val.sum()}, non-members={len(y_val)-y_val.sum()})")
 
-    model, history = train_classifier(X_train, y_train, X_val, y_val, device=device,
-                                      save_dir=config.SYNTH_SHADOW_CLASSIFIER_DIR)
-    return model, history
+    clf_dir = _nd_synth_clf_dir()
+    if clf_type == "rf":
+        clf, history = train_rf_classifier(X_train, y_train, X_val, y_val, save_dir=clf_dir)
+    else:
+        clf, history = train_classifier(X_train, y_train, X_val, y_val, device=device,
+                                        save_dir=clf_dir)
+    return clf, history
 
 
 def step_predict_challenge(dataset_name, device=None):
@@ -142,25 +166,14 @@ def step_predict_challenge(dataset_name, device=None):
     features = extract_loss_features(model, diff_trainer, X_scaled, y_int, device=device)
     features = prepare_features(features)
 
-    clf = _load_classifier()
-    clf.eval()
-    with torch.no_grad():
-        scores = clf(torch.tensor(features, dtype=torch.float32)).squeeze(1).numpy()
+    clf = _load_nd_synth_clf(_nd_synth_clf_dir(), features.shape[1])
+    scores = predict_scores(clf, features)
 
     ds = config.DATASETS[dataset_name]
     out_path = os.path.join(ds["challenge_dir"], "synthetic_data_1_predictions_synth_shadow.csv")
     pd.DataFrame({"sample_id": sample_ids, "score": scores}).to_csv(out_path, index=False)
     print(f"  Predictions saved → {out_path}")
     return sample_ids, scores
-
-
-def _load_classifier(device=None):
-    device = device or "cpu"
-    model = MembershipMLP(dropout=config.MLP_DROPOUT)
-    ckpt_path = os.path.join(config.SYNTH_SHADOW_CLASSIFIER_DIR, "mlp_best.pt")
-    model.load_state_dict(torch.load(ckpt_path, map_location=device))
-    model.eval()
-    return model
 
 
 def run_full_pipeline(dataset_name, device=None):
@@ -181,9 +194,9 @@ def run_full_pipeline(dataset_name, device=None):
     step_extract_features(dataset_name, device=device)
 
     print("\n" + "=" * 70)
-    print(f"STEP 3: Training MLP classifier ({dataset_name})")
+    print(f"STEP 3: Training {config.CLASSIFIER_TYPE.upper()} classifier ({dataset_name})")
     print("=" * 70)
-    model, history = step_train_classifier(dataset_name, device=device)
+    clf, history = step_train_classifier(dataset_name, device=device)
 
     print("\n" + "=" * 70)
     print(f"STEP 4: Per-split evaluation ({dataset_name})")
@@ -192,9 +205,7 @@ def run_full_pipeline(dataset_name, device=None):
     for s in range(1, config.NUM_SPLITS + 1):
         d = np.load(os.path.join(feat_dir, f"features_split_{s}.npz"))
         features, y_member = prepare_features(d["features"]), d["y_member"]
-        model.eval()
-        with torch.no_grad():
-            scores = model(torch.tensor(features, dtype=torch.float32)).squeeze(1).numpy()
+        scores = predict_scores(clf, features)
         tpr = _tpr_at_fpr(y_member, scores, fpr_target=0.10)
         acc = ((scores > 0.5).astype(int) == y_member).mean()
         print(f"  Split {s}: ACC={acc:.4f}  TPR@10%FPR={tpr:.4f}  "
@@ -205,7 +216,7 @@ def run_full_pipeline(dataset_name, device=None):
     print("=" * 70)
     step_predict_challenge(dataset_name, device=device)
 
-    return model, history
+    return clf, history
 
 
 if __name__ == "__main__":
@@ -216,6 +227,8 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", choices=["BRCA", "COMBINED"], default="BRCA")
     parser.add_argument("--device", default=config.DEVICE)
     parser.add_argument("--profile", choices=list(config.PROFILES.keys()), default=None)
+    parser.add_argument("--classifier", choices=["mlp", "rf"], default="mlp",
+                        help="Classifier type: 'mlp' (default) or 'rf' (Random Forest)")
     parser.add_argument("--force", default="",
                         help="Comma-separated stages: shadows,features,classifier,challenge or 'all'")
     args = parser.parse_args()
@@ -223,6 +236,9 @@ if __name__ == "__main__":
         config.FORCE_STAGES = set(s.strip() for s in args.force.split(","))
     if args.profile:
         config.apply_profile(args.profile)
+    config.CLASSIFIER_TYPE = args.classifier
     print(f"[ND synth-shadow] profile={config.ACTIVE_PROFILE}  "
-          f"FEATURE_MODE={config.FEATURE_MODE}  MLP_INPUT_DIM={config.MLP_INPUT_DIM}")
+          f"FEATURE_MODE={config.FEATURE_MODE}  "
+          f"classifier={config.CLASSIFIER_TYPE}  "
+          f"MLP_INPUT_DIM={config.MLP_INPUT_DIM}")
     run_full_pipeline(args.dataset, device=args.device)

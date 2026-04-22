@@ -32,7 +32,11 @@ from ..data_utils import (
     get_real_labels_all,
     get_real_labels_for_split,
 )
-from ..classifier import train_classifier, load_classifier_from_dir, _tpr_at_fpr
+from ..classifier import (
+    train_classifier, train_rf_classifier,
+    load_classifier_from_dir, load_rf_classifier,
+    predict_scores, _tpr_at_fpr,
+)
 from .shadow_model import (
     train_cvae_shadow,
     load_cvae_shadow,
@@ -154,6 +158,20 @@ def step_extract_features(dataset_name, splits=None, device=None):
 
 # ── Step 3 ────────────────────────────────────────────────────────────────────
 
+def _cvae_clf_dir():
+    return os.path.join(config.CVAE_CLASSIFIER_DIR, config.CLASSIFIER_TYPE)
+
+
+def _load_cvae_clf(clf_dir, input_dim):
+    if config.CLASSIFIER_TYPE == "rf":
+        return load_rf_classifier(clf_dir)
+    return load_classifier_from_dir(
+        clf_dir, input_dim,
+        hidden_dim=config.CVAE_MLP_HIDDEN_DIM,
+        dropout=config.CVAE_MLP_DROPOUT,
+    )
+
+
 def step_train_classifier(dataset_name, train_splits=None, val_splits=None, device=None):
     if train_splits is None or val_splits is None:
         train_splits, val_splits = _default_train_val_splits()
@@ -171,22 +189,27 @@ def step_train_classifier(dataset_name, train_splits=None, val_splits=None, devi
     X_train, y_train = _load(train_splits)
     X_val, y_val = _load(val_splits)
 
-    print(f"\nCVAE MLP train: {len(X_train)} samples (dim={X_train.shape[1]})  "
+    clf_type = config.CLASSIFIER_TYPE
+    print(f"\nCVAE {clf_type.upper()} train: {len(X_train)} samples (dim={X_train.shape[1]})  "
           f"members={y_train.sum()}  non-members={len(y_train)-y_train.sum()}")
-    print(f"CVAE MLP val:   {len(X_val)} samples  "
+    print(f"CVAE {clf_type.upper()} val:   {len(X_val)} samples  "
           f"members={y_val.sum()}  non-members={len(y_val)-y_val.sum()}")
 
-    model, history = train_classifier(
-        X_train, y_train, X_val, y_val, device=device,
-        save_dir=config.CVAE_CLASSIFIER_DIR,
-        dropout=config.CVAE_MLP_DROPOUT,
-        hidden_dim=config.CVAE_MLP_HIDDEN_DIM,
-        weight_decay=config.CVAE_MLP_WEIGHT_DECAY,
-        epochs=config.CVAE_MLP_EPOCHS,
-        lr=config.CVAE_MLP_LR,
-        batch_size=config.CVAE_MLP_BATCH_SIZE,
-    )
-    return model, history
+    clf_dir = _cvae_clf_dir()
+    if clf_type == "rf":
+        clf, history = train_rf_classifier(X_train, y_train, X_val, y_val, save_dir=clf_dir)
+    else:
+        clf, history = train_classifier(
+            X_train, y_train, X_val, y_val, device=device,
+            save_dir=clf_dir,
+            dropout=config.CVAE_MLP_DROPOUT,
+            hidden_dim=config.CVAE_MLP_HIDDEN_DIM,
+            weight_decay=config.CVAE_MLP_WEIGHT_DECAY,
+            epochs=config.CVAE_MLP_EPOCHS,
+            lr=config.CVAE_MLP_LR,
+            batch_size=config.CVAE_MLP_BATCH_SIZE,
+        )
+    return clf, history
 
 
 # ── Step 5 (optional): Generate and save CVAE synthetic data ─────────────────
@@ -275,16 +298,8 @@ def step_predict_challenge(dataset_name, device=None):
     )
     features = prepare_cvae_features(rec_losses, per_dim_kl)
 
-    clf = load_classifier_from_dir(
-        save_dir=config.CVAE_CLASSIFIER_DIR,
-        input_dim=features.shape[1],
-        hidden_dim=config.CVAE_MLP_HIDDEN_DIM,
-        dropout=config.CVAE_MLP_DROPOUT,
-        device=device,
-    )
-    clf.eval()
-    with torch.no_grad():
-        scores = clf(torch.tensor(features, dtype=torch.float32)).squeeze(1).numpy()
+    clf = _load_cvae_clf(_cvae_clf_dir(), features.shape[1])
+    scores = predict_scores(clf, features)
 
     ds = config.DATASETS[dataset_name]
     out_path = os.path.join(ds["challenge_dir"], "synthetic_data_1_predictions_cvae.csv")
@@ -319,11 +334,11 @@ def run_full_pipeline(dataset_name, device=None, generate_synthetic=False):
     step_extract_features(dataset_name, device=device)
 
     print("\n" + "=" * 70)
-    print(f"STEP 3: Training MLP classifier ({dataset_name})")
+    print(f"STEP 3: Training {config.CLASSIFIER_TYPE.upper()} classifier ({dataset_name})")
     print("=" * 70)
     train_splits, val_splits = _default_train_val_splits()
     print(f"  Train splits: {train_splits}, Val splits: {val_splits}")
-    model, history = step_train_classifier(
+    clf, history = step_train_classifier(
         dataset_name, train_splits=train_splits, val_splits=val_splits, device=device
     )
 
@@ -335,9 +350,7 @@ def run_full_pipeline(dataset_name, device=None, generate_synthetic=False):
         d = np.load(os.path.join(feat_dir, f"features_split_{s}.npz"))
         features = prepare_cvae_features(d["rec_losses"], d["per_dim_kl"])
         y_member = d["y_member"]
-        model.eval()
-        with torch.no_grad():
-            scores = model(torch.tensor(features, dtype=torch.float32)).squeeze(1).numpy()
+        scores = predict_scores(clf, features)
         tpr = _tpr_at_fpr(y_member, scores, fpr_target=0.10)
         acc = ((scores > 0.5).astype(int) == y_member).mean()
         print(f"  Split {s}: ACC={acc:.4f}  TPR@10%FPR={tpr:.4f}  "
@@ -354,7 +367,7 @@ def run_full_pipeline(dataset_name, device=None, generate_synthetic=False):
     print("=" * 70)
     step_predict_challenge(dataset_name, device=device)
 
-    return model, history
+    return clf, history
 
 
 if __name__ == "__main__":
@@ -369,6 +382,8 @@ if __name__ == "__main__":
     parser.add_argument("--label-mode", choices=["real", "knn", "none"], default=None,
                         help="Label source for real data: 'real'=BLUE zip ground truth, "
                              "'knn'=KNN on ND synthetic, 'none'=disable conditioning")
+    parser.add_argument("--classifier", choices=["mlp", "rf"], default="mlp",
+                        help="Classifier type: 'mlp' (default) or 'rf' (Random Forest)")
     parser.add_argument("--generate-synthetic", action="store_true",
                         help="Also generate and save CVAE synthetic data (needed for synth-shadow)")
     parser.add_argument("--force", default="",
@@ -381,10 +396,12 @@ if __name__ == "__main__":
         config.apply_cvae_profile(args.profile)
     if args.label_mode:
         config.CVAE_LABEL_MODE = args.label_mode
+    config.CLASSIFIER_TYPE = args.classifier
 
     print(f"[CVAE attack] profile={config.CVAE_ACTIVE_PROFILE}  "
           f"feature_mode={config.CVAE_FEATURE_MODE}  "
           f"label_mode={config.CVAE_LABEL_MODE}  "
+          f"classifier={config.CLASSIFIER_TYPE}  "
           f"temp_list={config.CVAE_TEMP_LIST}  "
           f"n_samples={config.CVAE_N_SAMPLES}  "
           f"z_dim={config.CVAE_Z_DIM}")

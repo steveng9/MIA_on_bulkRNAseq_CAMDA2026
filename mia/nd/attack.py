@@ -27,7 +27,11 @@ from .shadow_model import (
     load_target_proxy,
 )
 from .loss_features import extract_loss_features, prepare_features
-from ..classifier import train_classifier, load_classifier, _tpr_at_fpr
+from ..classifier import (
+    train_classifier, train_rf_classifier,
+    load_classifier_from_dir, load_rf_classifier,
+    predict_scores, _tpr_at_fpr,
+)
 
 
 def _force(stage):
@@ -97,6 +101,20 @@ def step_extract_features(dataset_name, splits=None, device=None):
         print(f"  Saved {out_path}  shape={features.shape}")
 
 
+def _nd_clf_dir():
+    return os.path.join(config.CLASSIFIER_DIR, config.CLASSIFIER_TYPE)
+
+
+def _load_nd_clf(clf_dir, input_dim):
+    if config.CLASSIFIER_TYPE == "rf":
+        return load_rf_classifier(clf_dir)
+    return load_classifier_from_dir(
+        clf_dir, input_dim,
+        hidden_dim=config.MLP_HIDDEN_DIM,
+        dropout=config.MLP_DROPOUT,
+    )
+
+
 def step_train_classifier(dataset_name, train_splits=None, val_splits=None, device=None):
     if train_splits is None or val_splits is None:
         default_train, default_val = _default_train_val_splits()
@@ -116,13 +134,19 @@ def step_train_classifier(dataset_name, train_splits=None, val_splits=None, devi
     X_train, y_train = _load(train_splits)
     X_val, y_val = _load(val_splits)
 
-    print(f"\nMLP train: {len(X_train)} samples (dim={X_train.shape[1]}) "
+    clf_type = config.CLASSIFIER_TYPE
+    print(f"\nND {clf_type.upper()} train: {len(X_train)} samples (dim={X_train.shape[1]}) "
           f"(members={y_train.sum()}, non-members={len(y_train)-y_train.sum()})")
-    print(f"MLP val:   {len(X_val)} samples "
+    print(f"ND {clf_type.upper()} val:   {len(X_val)} samples "
           f"(members={y_val.sum()}, non-members={len(y_val)-y_val.sum()})")
 
-    model, history = train_classifier(X_train, y_train, X_val, y_val, device=device)
-    return model, history
+    clf_dir = _nd_clf_dir()
+    if clf_type == "rf":
+        clf, history = train_rf_classifier(X_train, y_train, X_val, y_val, save_dir=clf_dir)
+    else:
+        clf, history = train_classifier(X_train, y_train, X_val, y_val, device=device,
+                                        save_dir=clf_dir)
+    return clf, history
 
 
 def step_validate_synthetic(dataset_name, device=None):
@@ -130,9 +154,6 @@ def step_validate_synthetic(dataset_name, device=None):
     X_real_df, _ = load_real_data(dataset_name)
     X_real_np = X_real_df.values.astype(np.float32)
     y_int = np.full(len(X_real_np), config.DUMMY_LABEL, dtype=np.int64)
-
-    clf = load_classifier()
-    clf.eval()
 
     os.makedirs(os.path.join(config.SYNTH_VAL_MODEL_DIR, dataset_name), exist_ok=True)
     os.makedirs(os.path.join(config.SYNTH_VAL_FEATURES_DIR, dataset_name), exist_ok=True)
@@ -161,8 +182,8 @@ def step_validate_synthetic(dataset_name, device=None):
             np.savez(feat_path, features=features, y_member=y_member_nd)
 
         features_prep = prepare_features(features)
-        with torch.no_grad():
-            scores = clf(torch.tensor(features_prep, dtype=torch.float32)).squeeze(1).numpy()
+        clf = _load_nd_clf(_nd_clf_dir(), features_prep.shape[1])
+        scores = predict_scores(clf, features_prep)
 
         tpr = _tpr_at_fpr(y_member_nd, scores, fpr_target=0.10)
         acc = ((scores > 0.5).astype(int) == y_member_nd).mean()
@@ -191,10 +212,8 @@ def step_predict_challenge(dataset_name, device=None):
     features = extract_loss_features(model, diff_trainer, X_scaled, y_int, device=device)
     features = prepare_features(features)
 
-    clf = load_classifier()
-    clf.eval()
-    with torch.no_grad():
-        scores = clf(torch.tensor(features, dtype=torch.float32)).squeeze(1).numpy()
+    clf = _load_nd_clf(_nd_clf_dir(), features.shape[1])
+    scores = predict_scores(clf, features)
 
     ds = config.DATASETS[dataset_name]
     out_path = os.path.join(ds["challenge_dir"], "synthetic_data_1_predictions.csv")
@@ -226,11 +245,11 @@ def run_full_pipeline(dataset_name, device=None):
     step_extract_features(dataset_name, device=device)
 
     print("\n" + "=" * 70)
-    print(f"STEP 3: Training MLP classifier ({dataset_name})")
+    print(f"STEP 3: Training {config.CLASSIFIER_TYPE.upper()} classifier ({dataset_name})")
     print("=" * 70)
     train_splits, val_splits = _default_train_val_splits()
     print(f"  Train splits: {train_splits}, Val splits: {val_splits}")
-    model, history = step_train_classifier(
+    clf, history = step_train_classifier(
         dataset_name, train_splits=train_splits, val_splits=val_splits, device=device
     )
 
@@ -241,9 +260,7 @@ def run_full_pipeline(dataset_name, device=None):
     for s in range(1, N + 1):
         d = np.load(os.path.join(feat_dir, f"features_split_{s}.npz"))
         features, y_member = prepare_features(d["features"]), d["y_member"]
-        model.eval()
-        with torch.no_grad():
-            scores = model(torch.tensor(features, dtype=torch.float32)).squeeze(1).numpy()
+        scores = predict_scores(clf, features)
         tpr = _tpr_at_fpr(y_member, scores, fpr_target=0.10)
         acc = ((scores > 0.5).astype(int) == y_member).mean()
         print(f"  Split {s}: ACC={acc:.4f}  TPR@10%FPR={tpr:.4f}  "
@@ -259,7 +276,7 @@ def run_full_pipeline(dataset_name, device=None):
     print("=" * 70)
     step_predict_challenge(dataset_name, device=device)
 
-    return model, history
+    return clf, history
 
 
 if __name__ == "__main__":
@@ -270,6 +287,8 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", choices=["BRCA", "COMBINED"], default="BRCA")
     parser.add_argument("--device", default=config.DEVICE)
     parser.add_argument("--profile", choices=list(config.PROFILES.keys()), default=None)
+    parser.add_argument("--classifier", choices=["mlp", "rf"], default="mlp",
+                        help="Classifier type: 'mlp' (default) or 'rf' (Random Forest)")
     parser.add_argument("--force", default="",
                         help="Comma-separated stages to force: shadows,features,classifier,"
                              "synth_val,challenge  or 'all'")
@@ -278,6 +297,9 @@ if __name__ == "__main__":
         config.FORCE_STAGES = set(s.strip() for s in args.force.split(","))
     if args.profile:
         config.apply_profile(args.profile)
+    config.CLASSIFIER_TYPE = args.classifier
     print(f"[ND attack] profile={config.ACTIVE_PROFILE}  "
-          f"FEATURE_MODE={config.FEATURE_MODE}  MLP_INPUT_DIM={config.MLP_INPUT_DIM}")
+          f"FEATURE_MODE={config.FEATURE_MODE}  "
+          f"classifier={config.CLASSIFIER_TYPE}  "
+          f"MLP_INPUT_DIM={config.MLP_INPUT_DIM}")
     run_full_pipeline(args.dataset, device=args.device)

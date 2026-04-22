@@ -87,6 +87,10 @@ SHADOW_MAX_GRAD_NORM = 1.0
 DUMMY_LABEL = 0
 UNCONDITIONAL_NUM_CLASSES = 1
 
+# ── Classifier type ─────────────────────────────────────────────────────────
+# "mlp" — 3-layer MLP (default)  |  "rf" — RandomForest (see classifier.RF_PARAMS)
+CLASSIFIER_TYPE = "mlp"
+
 # ── Skip / force logic ──────────────────────────────────────────────────────
 # Stages that should be forced to re-run even if outputs exist.
 # Populated by --force CLI arg.  Valid stage names:

@@ -1,12 +1,21 @@
-"""3-layer MLP for membership inference classification."""
+"""MLP and Random Forest classifiers for membership inference."""
 
 import os
+import joblib
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
 from . import config
+
+RF_PARAMS = {
+    "n_estimators":     500,
+    "max_depth":        8,
+    "max_features":     "sqrt",
+    "min_samples_leaf": 20,
+    "max_samples":      0.7,
+}
 
 
 class MembershipMLP(nn.Module):
@@ -182,3 +191,49 @@ def load_classifier_from_dir(save_dir, input_dim, hidden_dim=None, dropout=None,
     model.load_state_dict(torch.load(ckpt_path, map_location=device))
     model.eval()
     return model
+
+
+# ── Random Forest ─────────────────────────────────────────────────────────────
+
+def train_rf_classifier(X_train, y_train, X_val, y_val, save_dir=None, params=None):
+    """Train a RandomForestClassifier and save it with joblib.
+
+    Returns (rf_model, metrics_dict) where metrics_dict has 'val_tpr_at_10fpr'.
+    """
+    from sklearn.ensemble import RandomForestClassifier
+
+    params   = params   or RF_PARAMS
+    save_dir = save_dir or config.CLASSIFIER_DIR
+    os.makedirs(save_dir, exist_ok=True)
+
+    print(f"  [RF] fitting RandomForestClassifier  params={params}  "
+          f"train={len(X_train)}  val={len(X_val)}  dim={X_train.shape[1]}")
+    rf = RandomForestClassifier(**params, random_state=config.SEED, n_jobs=-1)
+    rf.fit(X_train, y_train.astype(int))
+
+    val_scores = rf.predict_proba(X_val)[:, 1]
+    tpr = _tpr_at_fpr(y_val.astype(int), val_scores, fpr_target=0.10)
+    acc = ((val_scores > 0.5).astype(int) == y_val.astype(int)).mean()
+    print(f"  [RF] val TPR@10%FPR={tpr:.4f}  ACC={acc:.4f}")
+
+    ckpt_path = os.path.join(save_dir, "rf_best.pkl")
+    joblib.dump(rf, ckpt_path)
+    print(f"  [RF] saved → {ckpt_path}")
+
+    return rf, {"val_tpr_at_10fpr": tpr, "val_acc": acc}
+
+
+def load_rf_classifier(save_dir):
+    ckpt_path = os.path.join(save_dir, "rf_best.pkl")
+    return joblib.load(ckpt_path)
+
+
+# ── Unified scorer ────────────────────────────────────────────────────────────
+
+def predict_scores(clf, X):
+    """Return a 1-D score array for X, dispatching on config.CLASSIFIER_TYPE."""
+    if config.CLASSIFIER_TYPE == "rf":
+        return clf.predict_proba(X)[:, 1]
+    clf.eval()
+    with torch.no_grad():
+        return clf(torch.tensor(X, dtype=torch.float32)).squeeze(1).numpy()
