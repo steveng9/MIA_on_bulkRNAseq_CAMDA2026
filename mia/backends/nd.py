@@ -84,6 +84,14 @@ class NDBackend(MIABackend):
         d = np.load(path, allow_pickle=True)
         return d["features"], d["y_member"]
 
+    def features_valid(self, path: str) -> bool:
+        try:
+            d = np.load(path, allow_pickle=True)
+            expected = len(config.T_LIST) * config.N_NOISE
+            return int(d["features"].shape[1]) == expected
+        except Exception:
+            return False
+
     def prepare_features(self, raw_features) -> np.ndarray:
         return prepare_features(raw_features)
 

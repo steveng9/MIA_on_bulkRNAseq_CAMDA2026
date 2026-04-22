@@ -103,6 +103,14 @@ class CVAEBackend(MIABackend):
         d = np.load(path, allow_pickle=True)
         return (d["rec_losses"], d["per_dim_kl"]), d["y_member"]
 
+    def features_valid(self, path: str) -> bool:
+        try:
+            d = np.load(path, allow_pickle=True)
+            expected = len(config.CVAE_TEMP_LIST) * config.CVAE_N_SAMPLES
+            return int(d["rec_losses"].shape[1]) == expected
+        except Exception:
+            return False
+
     def prepare_features(self, raw_features) -> np.ndarray:
         rec_losses, per_dim_kl = raw_features
         return prepare_cvae_features(rec_losses, per_dim_kl)

@@ -126,6 +126,15 @@ class MIABackend(ABC):
     def prepare_features(self, raw_features) -> np.ndarray:
         """Convert backend-specific raw features to a 2-D MLP input array."""
 
+    def features_valid(self, path: str) -> bool:
+        """Return True if the saved feature file matches the current config.
+
+        Override in backends where the raw feature shape depends on config params
+        that can change across runs (e.g. N_SAMPLES, TEMP_LIST for CVAE).
+        The default returns True (assume compatible).
+        """
+        return True
+
     @property
     @abstractmethod
     def mlp_kwargs(self) -> dict:

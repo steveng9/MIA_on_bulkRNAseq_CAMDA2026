@@ -139,17 +139,24 @@ def ensure_synth_shadows(backend, split_nos: list, device: str, force: bool = Fa
 
 def ensure_features(backend, split_nos: list, source: str,
                     X_real_np: np.ndarray, y_int_all: np.ndarray,
-                    sample_ids: list, device: str, force: bool = False):
+                    sample_ids: list, device: str, force: bool = False) -> bool:
     """Extract and cache MIA features for all real samples via each shadow.
 
     source: 'real' → uses real shadows; 'synth' → uses synth shadows.
     The scaler is re-fitted on the shadow's training data to match the scale
     the model was trained on.
+
+    Returns True if any feature files were (re-)generated, so callers can
+    force MLP re-training when cached features become stale.
     """
+    any_changed = False
     for k in split_nos:
         feat_path = backend.features_path(k, source)
         if not force and os.path.exists(feat_path):
-            continue
+            if backend.features_valid(feat_path):
+                continue
+            print(f"  [features] Stale features for split {k} "
+                  f"(profile mismatch) — re-extracting.")
         _hdr(f"Feature extraction ({source}) — "
              f"{backend.name.upper()} / {backend.dataset_name} / split {k}")
 
@@ -173,6 +180,9 @@ def ensure_features(backend, split_nos: list, source: str,
 
         backend.save_raw_features(raw_features, feat_path, y_member, sample_ids)
         print(f"  Saved → {feat_path}")
+        any_changed = True
+
+    return any_changed
 
 
 # ── Stage 5: MLP training ─────────────────────────────────────────────────────
@@ -356,13 +366,14 @@ def run_pipeline(backend, k: int, q: int, real_mode: bool,
                          force=_force("synth_shadows", force) or _force("shadows", force))
 
     _hdr(f"STEP 4 — Extracting synth-shadow features ({n_total} splits)")
-    ensure_features(backend, all_splits, "synth", X_real_np, y_int_all,
-                    sample_ids, device, force=_force("features", force))
+    synth_feats_changed = ensure_features(backend, all_splits, "synth", X_real_np, y_int_all,
+                                          sample_ids, device, force=_force("features", force))
 
     _hdr(f"STEP 5 — Training MLP on synth features  "
          f"(train={len(mlp_train_splits)} val={len(mlp_val_splits)})")
     clf_synth, _ = train_mlp(backend, mlp_train_splits, mlp_val_splits,
-                              "synth", device, force=_force("classifier", force))
+                              "synth", device,
+                              force=_force("classifier", force) or synth_feats_changed)
 
     _hdr(f"STEP 6 — Internal evaluation on {q} synth-proxy holdout models")
     synth_eval = evaluate_mlp(clf_synth, backend, eval_splits, "synth")
@@ -371,13 +382,14 @@ def run_pipeline(backend, k: int, q: int, real_mode: bool,
     # ── Real-shadow branch (--real mode adds optimistic upper bound + gap) ────
     if real_mode:
         _hdr(f"STEP 7 — Extracting real-shadow features ({n_total} splits)")
-        ensure_features(backend, all_splits, "real", X_real_np, y_int_all,
-                        sample_ids, device, force=_force("features", force))
+        real_feats_changed = ensure_features(backend, all_splits, "real", X_real_np, y_int_all,
+                                             sample_ids, device, force=_force("features", force))
 
         _hdr(f"STEP 8 — Training MLP on real features  "
              f"(train={len(mlp_train_splits)} val={len(mlp_val_splits)})")
         clf_real, _ = train_mlp(backend, mlp_train_splits, mlp_val_splits,
-                                 "real", device, force=_force("classifier", force))
+                                 "real", device,
+                                 force=_force("classifier", force) or real_feats_changed)
 
         _hdr(f"STEP 9 — Upper-bound eval on {q} real-shadow holdout models")
         real_eval = evaluate_mlp(clf_real, backend, eval_splits, "real")
