@@ -1,0 +1,66 @@
+# The COMBINED grid with tuned statistical attacks.
+#
+# Companion to grid_brca.yaml, which keeps the parameters the CAMDA submission
+# used so the abstract's numbers reproduce.  This file is what the same attacks
+# do once their few free parameters are set properly.
+#
+# Tuning rule, to avoid dressing up cherry-picking as a result: each attack gets
+# ONE configuration, chosen by its performance on the generator it was designed
+# for, and that configuration is then reported against all four.  Per-cell
+# tuning would make the off-diagonal numbers meaningless.
+#
+#   MahalaMIA  designated target MVN.  A small ridge on the synthetic covariance
+#              instead of the pseudo-inverse: AUC 0.928 -> 1.000.  Performance
+#              is flat below alpha = 1e-4, so the exact value is not delicate;
+#              what matters is not discarding the near-null directions, which is
+#              where the generator's fit to its training set is tightest.
+#   MAMA-MIA   designated target DP-PGM.  Coarse bins are best there (0.511 at
+#              2 bins vs 0.499 at 4), consistent with the generator itself
+#              modelling only a handful of levels per gene.  Note that the same
+#              attack behaves completely differently against NoisyDiffusion,
+#              where AUC rises with bin count all the way to 0.87 at 256 --
+#              see TODO.md; that belongs in its own table, not here.
+#
+# MeLoMIA is already tuned per-run by Optuna, so its entries are unchanged.
+name: grid_combined_tuned
+dataset: COMBINED
+notes: "tuned statistical attacks; MeLoMIA unchanged (Optuna tunes it per run)"
+device: cuda
+
+generators: [mvn, cvae, nd, pgm]
+splits: [1, 2, 3, 4, 5]
+
+target_params:
+  mvn:
+    noise_level: 0.7
+  pgm:
+    epsilon: 10.0
+    n_bins: 4
+    pgm_iters: 1000
+    joint_mode: true
+
+attacks:
+  mahalamia:
+    class: mahalamia
+    params:
+      use_reference: true
+      covariance: ridge
+      ridge_alpha: 0.0001
+  mamamia:
+    class: mamamia
+    params:
+      n_bins: 2
+  melomia_nd:
+    class: melomia_nd
+    params:
+      n_shadows: 20
+      n_noise: 600
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+  melomia_cvae:
+    class: melomia_cvae
+    params:
+      n_shadows: 20
+      n_noise: 50
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]

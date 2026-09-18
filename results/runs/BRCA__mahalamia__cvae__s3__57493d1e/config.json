@@ -5,7 +5,7 @@
   "attack": "mahalamia",
   "generator": "cvae",
   "split": 3,
-  "tag": "aux_ridge",
+  "tag": "aux_ridge0.001",
   "notes": "tune_statistical:mahala_ridge",
   "params": {
     "seed": 42,

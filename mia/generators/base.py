@@ -30,6 +30,7 @@ class Generator(ABC):
 
     seed: int = 42
     device: str = "cuda"
+    verbose: bool = True
 
     #: registry key, e.g. "mvn"
     name: str = field(init=False, default="base")
@@ -52,6 +53,7 @@ class Generator(ABC):
         """Hyperparameters as a plain dict, for the run record."""
         from dataclasses import asdict
         d = asdict(self)
+        d.pop("verbose", None)
         d["generator"] = self.name
         return d
 

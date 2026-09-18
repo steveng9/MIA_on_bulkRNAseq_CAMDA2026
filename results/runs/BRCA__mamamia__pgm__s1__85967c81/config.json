@@ -1,0 +1,23 @@
+{
+  "run_id": "BRCA__mamamia__pgm__s1__85967c81",
+  "timestamp": "2026-09-18T21:31:28+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia",
+  "generator": "pgm",
+  "split": 1,
+  "tag": "k2048_1w_2w",
+  "experiment": "tune_statistical",
+  "variant": "m2048",
+  "notes": "how far the bin-count trend goes, and the smallest usable ridge",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mamamia",
+    "n_bins": 2048,
+    "use_oneway": true,
+    "use_twoway": true,
+    "use_subtype_marginal": true,
+    "calibrate": true,
+    "attack": "mamamia"
+  }
+}

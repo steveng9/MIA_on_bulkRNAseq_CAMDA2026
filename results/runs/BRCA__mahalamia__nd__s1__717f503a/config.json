@@ -5,7 +5,7 @@
   "attack": "mahalamia",
   "generator": "nd",
   "split": 1,
-  "tag": "aux_ridge",
+  "tag": "aux_ridge0.0001",
   "experiment": "tune_statistical",
   "variant": "mahala_ridge_1e4",
   "notes": "finer sweep around the ridge and bin-count optima",

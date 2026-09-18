@@ -54,7 +54,6 @@ class CVAEGenerator(Generator):
     # conditioning: None/"real" uses the labels given, "none" disables conditioning
     condition_mode: str | None = None
 
-    verbose: bool = True
 
     name = "cvae"
 

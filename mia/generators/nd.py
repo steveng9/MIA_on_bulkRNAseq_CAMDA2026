@@ -79,7 +79,6 @@ class NDGenerator(Generator):
     smote_upsample_to: int | None = 3000
     unconditional: bool = False
 
-    verbose: bool = True
 
     name = "nd"
 

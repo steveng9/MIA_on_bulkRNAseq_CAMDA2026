@@ -60,27 +60,29 @@ def digitize(X: np.ndarray, edges: np.ndarray, n_bins: int) -> np.ndarray:
 
 
 def _oneway_probs(bins: np.ndarray, n_bins: int) -> np.ndarray:
-    """p(g_i = b) for every gene.  Shape (n_genes, n_bins)."""
-    n_genes = bins.shape[1]
-    counts = np.zeros((n_genes, n_bins), dtype=np.float64)
-    for b in range(n_bins):
-        counts[:, b] = (bins == b).sum(axis=0)
-    return counts / np.maximum(counts.sum(axis=1, keepdims=True), 1)
+    """p(g_i = b) for every gene.  Shape (n_genes, n_bins).
+
+    Counted with a single `bincount` over flattened (gene, bin) codes rather
+    than a loop over bins, so cost is independent of the bin count -- which
+    matters, because the interesting regime for deep generators turns out to be
+    hundreds of bins.
+    """
+    n_rows, n_genes = bins.shape
+    codes = (np.arange(n_genes, dtype=np.int64) * n_bins)[None, :] + bins
+    counts = np.bincount(codes.ravel(), minlength=n_genes * n_bins).astype(np.float64)
+    counts = counts.reshape(n_genes, n_bins)
+    return counts / max(n_rows, 1)
 
 
 def _twoway_probs(bins: np.ndarray, labels: np.ndarray, n_bins: int,
                   n_classes: int) -> np.ndarray:
     """p(g_i = b, s = c) for every gene.  Shape (n_genes, n_bins, n_classes)."""
-    n_genes = bins.shape[1]
-    counts = np.zeros((n_genes, n_bins, n_classes), dtype=np.float64)
-    for c in range(n_classes):
-        rows = labels == c
-        if not rows.any():
-            continue
-        sub = bins[rows]
-        for b in range(n_bins):
-            counts[:, b, c] = (sub == b).sum(axis=0)
-    return counts / max(len(bins), 1)
+    n_rows, n_genes = bins.shape
+    gene = (np.arange(n_genes, dtype=np.int64) * n_bins * n_classes)[None, :]
+    codes = gene + bins * n_classes + labels.astype(np.int64)[:, None]
+    counts = np.bincount(codes.ravel(),
+                         minlength=n_genes * n_bins * n_classes).astype(np.float64)
+    return counts.reshape(n_genes, n_bins, n_classes) / max(n_rows, 1)
 
 
 @dataclass

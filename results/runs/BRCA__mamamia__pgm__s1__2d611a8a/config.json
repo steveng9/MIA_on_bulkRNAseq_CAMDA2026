@@ -1,0 +1,23 @@
+{
+  "run_id": "BRCA__mamamia__pgm__s1__2d611a8a",
+  "timestamp": "2026-09-18T21:25:55+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia",
+  "generator": "pgm",
+  "split": 1,
+  "tag": "k256_1w_2w",
+  "experiment": "tune_statistical",
+  "variant": "m256",
+  "notes": "smallest stable ridge",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mamamia",
+    "n_bins": 256,
+    "use_oneway": true,
+    "use_twoway": true,
+    "use_subtype_marginal": true,
+    "calibrate": true,
+    "attack": "mamamia"
+  }
+}

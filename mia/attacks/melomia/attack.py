@@ -48,6 +48,7 @@ from pathlib import Path
 import numpy as np
 
 from ... import datasets as D
+from ... import generators as G
 from ... import paths
 from ... import targets as TG
 from ...metrics import tpr_at_fpr
@@ -89,6 +90,13 @@ class MeLoMIA(Attack):
     backend: str = "nd"                 # "nd" | "cvae"
 
     # shadow stack
+    base_generator: str | None = None   # generator family for the base shadows;
+                                        # None means "the same family as the
+                                        # probe", which is what the CAMDA
+                                        # submission did.  Set it to the target's
+                                        # family when attacking off-diagonal, so
+                                        # the internal synthetic data resembles
+                                        # what the target actually released.
     n_shadows: int = 30                 # K -- see TODO.md, the abstract used 5
     shadow_ratio: float = 0.8           # members per shadow split, matching the
                                         # challenge's own 80/20 target split
@@ -142,6 +150,8 @@ class MeLoMIA(Attack):
         between hours and days.
         """
         t = f"n{self.n_noise}" if self.n_noise else "default"
+        if self.base_generator:
+            t += f"_base{self.base_generator}"
         if self.sweep_points is not None:
             t += f"_s{len(self.sweep_points)}"
         if not self.synth_shadow:
@@ -237,6 +247,24 @@ class MeLoMIA(Attack):
 
     # ── Stage 1-2: base shadows -> internal synthetic data ──────────────────
 
+    def _base_shadow(self, backend):
+        """The generator used to turn a real split into internal synthetic data.
+
+        By default it is the probe's own family, which is what the shadow models
+        the meta-classifier learns from will later be asked to imitate.  When
+        attacking a *different* generator's output, pointing this at the target's
+        family makes the internal synthetic data resemble what the target
+        actually released -- otherwise the meta-classifier is trained on one
+        synthetic domain and applied to another, which is the same mismatch
+        synth-shadow modelling exists to remove.
+        """
+        if self.base_generator is None:
+            return backend.base_shadow()
+        from ... import targets as _targets
+        return G.build(self.base_generator, seed=self.seed, device=self.device,
+                       verbose=False,
+                       **_targets.default_params(self.base_generator, backend.dataset))
+
     def _internal_synth_path(self, dataset: str, k: int) -> Path:
         return self.cache(dataset) / "internal_synth" / f"shadow_{k}.npz"
 
@@ -253,9 +281,9 @@ class MeLoMIA(Attack):
                 if claimed is None:
                     continue
                 X, y = self._shadow_training_set(dataset, k)
+                gen = self._base_shadow(be)
                 self._say(f"  [melomia] base shadow {k}/{self.n_shadows} "
-                          f"({self.backend}, n={len(X)})")
-                gen = be.base_shadow()
+                          f"({self.base_generator or self.backend}, n={len(X)})")
                 gen.seed = self.seed + k
                 gen.fit(X, y, n_classes)
                 X_syn, y_syn = gen.sample(len(X))

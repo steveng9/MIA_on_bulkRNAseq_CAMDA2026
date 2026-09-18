@@ -106,7 +106,9 @@ class MahalaMIA(Attack):
 
     def tag(self) -> str:
         t = "aux" if self.use_reference else "noaux"
-        if self.covariance != "pinv":
+        if self.covariance == "ridge":
+            t += f"_ridge{self.ridge_alpha:g}"
+        elif self.covariance != "pinv":
             t += f"_{self.covariance}"
         if self.n_components:
             t += f"_pca{self.n_components}"

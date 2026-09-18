@@ -52,20 +52,30 @@ Which part of the loss trajectory actually carries membership?
 
 Deliverable: an AUC-versus-sweep-point figure for the paper.
 
-### 4. PCA on genes before the attack
+### 4. PCA on genes before the attack — *first pass done for MahalaMIA, and it failed*
 
 Project the 978 landmark genes onto a lower-dimensional PCA basis first, and
 measure the effect on each attack.
 
-Strongest motivation is MahalaMIA: it inverts a 978x978 covariance estimated
-from ~870 synthetic samples, which is rank-deficient and currently handled with
-a pseudo-inverse.  A k << n basis gives a better-conditioned, better-estimated
-covariance.  For MeLoMIA it shrinks the shadow generators and may denoise the
-loss features.
+For MahalaMIA the result is already in, and it is the opposite of what motivated
+it.  Projecting onto the leading PCA directions of the synthetic data does not
+merely fail to help — it drives the attack *below* chance on BRCA (AUC 0.41 at
+k=50, 0.44 at k=200, 0.65 at k=500, versus 0.93 at full rank).  Meanwhile simply
+ridge-regularising the full-rank covariance takes MVN from 0.93 to **1.00**
+(`configs/experiments/tune_statistical.yaml`).
 
-Sweep k over {10, 25, 50, 100, 250, 500, 978}.  Fit the basis only on data the
-adversary legitimately holds — the released synthetic set, or the auxiliary
-reference where one exists — never on `D_real`, or the comparison is meaningless.
+Read together, those two say the membership signal lives in the *low-variance*
+directions — exactly the ones PCA discards and the pseudo-inverse down-weights.
+That makes sense: the high-variance directions are dominated by biological
+structure shared by members and non-members alike, while a generator's
+over-fitting to its training set shows up in the directions where the synthetic
+covariance is nearly singular.  Worth writing up, and worth testing directly by
+scoring on the *trailing* components instead of the leading ones.
+
+Still open: PCA for MeLoMIA, where it would shrink the shadow generators and may
+denoise the loss features rather than discard the signal.  Fit the basis only on
+data the adversary legitimately holds — the released synthetic set, or the
+auxiliary reference — never on `D_real`.
 
 ### 5. More cohorts and more cohort sizes
 
@@ -124,6 +134,26 @@ Reproduce that cleanly for both backends on both cohorts.
 
 ---
 
+### 9. Matched base shadows for the off-diagonal grid cells
+
+A wrinkle in how the 4x4 grid is currently run.  MeLoMIA's base shadows are
+generators of the *probe's* family — ND base shadows for MeLoMIA-ND — which is
+what the CAMDA submission did and is right on the diagonal.  Off the diagonal it
+is not: attacking MVN-generated data with MeLoMIA-ND trains the meta-classifier
+on features from ND-synthetic data and then applies it to a proxy fitted to
+MVN-synthetic data.  That is precisely the train/inference domain mismatch
+synth-shadow modelling was introduced to remove, so a weak off-diagonal cell may
+be an artifact of the setup rather than a fact about the generator.
+
+`MeLoMIA(base_generator=...)` already implements the fix: point the base shadows
+at the target's family so the internal synthetic data resembles what the target
+actually released, while the probe stays whichever family can measure a loss.
+Re-run the off-diagonal MeLoMIA cells that way and compare.  MVN and CVAE base
+shadows are cheap (seconds and under a minute); DP-PGM base shadows are not
+(~12 min each), so that column may need a smaller K.
+
+Until this is run, read the off-diagonal MeLoMIA numbers as a lower bound.
+
 ## Smaller follow-ups
 
 * **DP-PGM attack is weak and we know it.**  MAMA-MIA reaches roughly
@@ -131,6 +161,24 @@ Reproduce that cleanly for both backends on both cohorts.
   working as intended or the attack being mis-targeted is unresolved — worth
   trying marginals matched to the generator's *selected* set rather than all
   978 one-way and gene x subtype marginals.
+* **MAMA-MIA is accidentally a good attack on NoisyDiffusion.**  Bin count was
+  assumed to want matching to DP-PGM's own discretisation, and for DP-PGM it
+  roughly does.  Against ND it does not: AUC climbs monotonically with
+  resolution — 0.54 at 4 bins, 0.61 at 16, 0.68 at 32, 0.76 at 64 — because a
+  diffusion model reproduces fine-grained per-gene marginal structure that
+  coarse bins wash out.  The one-way per-gene marginals carry it on their own
+  (0.79 at 64 bins on split 1, versus 0.73 for the two-way gene x subtype
+  marginals and 0.76 combined), which says the attack has become a per-gene
+  nearest-value detector rather than a test on marginal *shape*.  Negative
+  controls pass.  Find where it tops out, check whether it holds on COMBINED,
+  and decide whether to present it as MAMA-MIA at all or as a separate
+  quantised-nearest-value baseline.  Either way, a marginal-ratio attack beating
+  a tailored loss-trajectory attack on a diffusion model needs explaining.
+* **Sanity-check every grid before reporting it.**  `scripts/sanity_check.py`
+  runs the negative controls (permuted labels must fall to chance; scores from
+  one split's target must not predict another split's labels).  The ridge result
+  above passes both, which is the reason to believe AUC 1.00 rather than hunt
+  for the leak.
 * **Cross-cohort shadows.**  Can a shadow stack trained on BRCA attack COMBINED
   targets?  Cheap to test and speaks to how transferable the attack is.
 * **Calibration.**  Scores are currently rank-calibrated only.  If the

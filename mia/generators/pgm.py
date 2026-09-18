@@ -52,7 +52,6 @@ class PGMGenerator(Generator):
     budget_weights: tuple = (0.33, 0.67, 0.0, 0.0)
     pgm_iters: int = 1000
     joint_mode: bool = True
-    verbose: bool = True
 
     name = "pgm"
 
