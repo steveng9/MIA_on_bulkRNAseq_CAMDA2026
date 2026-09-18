@@ -381,6 +381,12 @@ class MeLoMIA(Attack):
         """
         L, E, Y, Gp = [], [], [], []
         for k in range(1, self.n_shadows + 1):
+            path = self._features_path(dataset, k)
+            if not path.exists():
+                raise FileNotFoundError(
+                    f"{path} missing -- the shadow stack is incomplete. "
+                    "Run prepare() (or scripts/shadow_worker.sh) first."
+                )
             losses, extra, y, ids = self._load_features(dataset, k)
             L.append(losses)
             E.append(extra if extra is not None else np.zeros((len(losses), 0), np.float32))
@@ -490,6 +496,34 @@ class MeLoMIA(Attack):
             return range(1, self.n_shadows + 1)
         return [k for k in shadows if 1 <= k <= self.n_shadows]
 
+    def _await_features(self, dataset: str, timeout_s: float = 7200.0) -> None:
+        """Block until every shadow's features exist.
+
+        A worker skips shadows another process has claimed, so finishing its own
+        loop does not mean the stack is complete.  The meta-classifier needs all
+        K, so whichever process is training it waits for the stragglers rather
+        than failing on a missing file.
+        """
+        import time
+        deadline = time.time() + timeout_s
+        announced = False
+        while True:
+            missing = [k for k in range(1, self.n_shadows + 1)
+                       if not self._features_path(dataset, k).exists()]
+            if not missing:
+                return
+            if time.time() > deadline:
+                raise TimeoutError(
+                    f"shadows {missing} still missing after {timeout_s / 60:.0f} min. "
+                    "If no worker is running, clear stale *.lock files under "
+                    f"{self.cache(dataset)} and re-run."
+                )
+            if not announced:
+                self._say(f"  [melomia] waiting for {len(missing)} shadow(s) "
+                          "claimed by another worker")
+                announced = True
+            time.sleep(30)
+
     def prepare(self, dataset: str, shadows=None, meta: bool = True):
         """Build (or resume) the shadow stack; `shadows` limits this process's share."""
         self._say(f"[melomia/{self.backend}] preparing shadow stack for {dataset} "
@@ -500,6 +534,7 @@ class MeLoMIA(Attack):
         self._ensure_features(dataset, shadows)
         if not meta:
             return None
+        self._await_features(dataset)
         return self._ensure_meta(dataset)
 
     def _proxy_features_path(self, dataset: str, generator: str, split: int) -> Path:
