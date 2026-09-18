@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 """Aggregate results/index.csv into the attack x generator grid.
 
-    python scripts/make_tables.py --dataset BRCA
+    python scripts/make_tables.py --config configs/experiments/grid_brca.yaml
     python scripts/make_tables.py --dataset BRCA --format latex
-    python scripts/make_tables.py --dataset BRCA --metric auc --out results/tables/
+    python scripts/make_tables.py --dataset BRCA --out results/tables/
 
 Each cell is one attack scored against one generator, averaged over splits, in
 the abstract's four metrics: AUC, AUPR, TPR at 1% FPR, TPR at 10% FPR.
+
+Rows are keyed by (attack, tag), so hyperparameter variants of the same attack
+stay separate instead of being silently averaged together.  Passing --config
+narrows the table to exactly the variants that experiment defines, which is what
+you want for the headline grid; without it every recorded variant is shown.
 """
 
 import argparse
@@ -39,15 +44,45 @@ def load(dataset=None, tag=None) -> pd.DataFrame:
         df = df[df.tag == tag]
     for c in METRICS:
         df[c] = pd.to_numeric(df[c], errors="coerce")
+    df["tag"] = df["tag"].fillna("")
     return df
 
 
-def summarise(df: pd.DataFrame) -> pd.DataFrame:
-    """Mean, std and split count per (attack, generator) cell."""
-    g = df.groupby(["attack", "generator"])
+def summarise(df: pd.DataFrame, labels=None) -> pd.DataFrame:
+    """Mean, std and split count per (attack variant, generator) cell."""
+    g = df.groupby(["attack", "tag", "generator"])
     out = g[METRICS].agg(["mean", "std", "count"])
     out.columns = [f"{m}_{s}" for m, s in out.columns]
-    return out.reset_index()
+    out = out.reset_index()
+    labels = labels or {}
+    out["row"] = [labels.get((a, t), a if not t or t in ("default", "aux") else f"{a} [{t}]")
+                  for a, t in zip(out.attack, out.tag)]
+    return out
+
+def selection_from_config(config_path) -> tuple:
+    """Resolve an experiment YAML into the (attack, tag) pairs it produces.
+
+    Run identity is a hash of the attack's parameters, so a run belongs to
+    whichever configurations share those parameters -- the experiment that
+    happened to trigger it is not a reliable filter.  The attack tag is, since
+    it encodes exactly the hyperparameters that distinguish one variant of an
+    attack from another.
+    """
+    from mia.experiment import Experiment
+    exp = Experiment.load(config_path)
+    pairs, labels = [], {}
+    for label in exp.attacks:
+        attack = exp.build_attack(label)
+        key = (attack.params().get("attack", attack.name), attack.tag())
+        pairs.append(key)
+        labels[key] = label
+    return exp.dataset, pairs, labels
+
+
+def apply_selection(df, pairs):
+    keys = set(pairs)
+    return df[[(a, t) in keys for a, t in zip(df.attack, df.tag)]]
+
 
 
 def _order(values, preferred):
@@ -56,21 +91,21 @@ def _order(values, preferred):
 
 
 def grid_text(summary: pd.DataFrame, dataset: str) -> str:
-    attacks = _order(summary.attack.unique(), ATTACK_ORDER)
+    attacks = _order(summary.row.unique(), ATTACK_ORDER)
     gens = _order(summary.generator.unique(), GENERATOR_ORDER)
     lines = [f"\n{'=' * 100}",
              f"  ATTACK x GENERATOR GRID -- {dataset}",
              f"  cells are mean over splits; +- is the standard deviation across splits",
              f"{'=' * 100}"]
 
-    header = f"{'attack':<14}" + "".join(f"{GENERATOR_LABELS.get(g, g):>21}" for g in gens)
+    header = f"{'attack':<22}" + "".join(f"{GENERATOR_LABELS.get(g, g):>21}" for g in gens)
     for metric in METRICS:
         lines.append(f"\n-- {METRIC_LABELS[metric]} " + "-" * 60)
         lines.append(header)
         for a in attacks:
-            row = f"{a:<14}"
+            row = f"{a:<22}"
             for g in gens:
-                cell = summary[(summary.attack == a) & (summary.generator == g)]
+                cell = summary[(summary.row == a) & (summary.generator == g)]
                 if cell.empty or np.isnan(cell.iloc[0][f"{metric}_mean"]):
                     row += f"{'--':>21}"
                 else:
@@ -83,7 +118,7 @@ def grid_text(summary: pd.DataFrame, dataset: str) -> str:
 
 
 def grid_latex(summary: pd.DataFrame, dataset: str) -> str:
-    attacks = _order(summary.attack.unique(), ATTACK_ORDER)
+    attacks = _order(summary.row.unique(), ATTACK_ORDER)
     gens = _order(summary.generator.unique(), GENERATOR_ORDER)
     out = [r"% " + f"attack x generator grid, {dataset}",
            r"\begin{tabular}{l" + "cccc" * len(gens) + "}", r"\toprule"]
@@ -97,7 +132,7 @@ def grid_latex(summary: pd.DataFrame, dataset: str) -> str:
     for a in attacks:
         cells = []
         for g in gens:
-            row = summary[(summary.attack == a) & (summary.generator == g)]
+            row = summary[(summary.row == a) & (summary.generator == g)]
             for m in METRICS:
                 v = row.iloc[0][f"{m}_mean"] if not row.empty else np.nan
                 cells.append("--" if np.isnan(v) else f"{v:.3f}")
@@ -109,16 +144,28 @@ def grid_latex(summary: pd.DataFrame, dataset: str) -> str:
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--config", default=None,
+                   help="experiment YAML whose attack variants define the rows")
     p.add_argument("--dataset", default=None)
     p.add_argument("--tag", default=None, help="restrict to one attack-config tag")
     p.add_argument("--format", default="text", choices=["text", "latex", "csv"])
     p.add_argument("--out", default=None, help="directory to write the table into")
     args = p.parse_args()
 
+    pairs = labels = None
+    if args.config:
+        cfg_dataset, pairs, labels = selection_from_config(args.config)
+        args.dataset = args.dataset or cfg_dataset
+
     datasets = [args.dataset] if args.dataset else sorted(load().dataset.unique())
     for ds in datasets:
         df = load(ds, args.tag)
-        summary = summarise(df)
+        if pairs:
+            df = apply_selection(df, pairs)
+            if df.empty:
+                print(f"No runs yet for the variants in {args.config} on {ds}.")
+                continue
+        summary = summarise(df, labels)
         if args.format == "csv":
             rendered = summary.to_csv(index=False)
         elif args.format == "latex":

@@ -17,10 +17,20 @@ d_syn(x) also reflects how unusual x is in general: dividing by the distance to
 a member-free reference distribution cancels the part of the distance that is
 about the sample rather than about membership.
 
-Sigma_syn is 978x978 estimated from ~870 samples, so it is rank-deficient; the
-pseudo-inverse restricts the quadratic form to the span the synthetic data
-actually covers.  Using a better-conditioned estimate is open work (see the PCA
-and vine-copula experiments in TODO.md).
+Sigma_syn is 978x978 estimated from ~870 samples, so it is rank-deficient and
+badly conditioned.  Three ways of handling that are available:
+
+  pinv          the pseudo-inverse, which restricts the quadratic form to the
+                span the synthetic data actually covers (default, and what the
+                CAMDA submission used)
+  ledoit_wolf   Ledoit-Wolf shrinkage toward a scaled identity, which trades a
+                little bias for a well-conditioned, invertible estimate
+  ridge         a fixed ridge on the diagonal
+
+`n_components` additionally projects onto the leading PCA directions of the
+*synthetic* data first.  Fitting the basis on the synthetic set keeps the threat
+model honest -- the adversary holds it -- and it also puts the covariance
+estimate back in a regime where the sample count exceeds the dimension.
 
 Reported in the abstract as AUC 0.922 (BRCA) / 0.899 (COMBINED) against MVN.
 """
@@ -32,6 +42,8 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.linalg import pinv
 from scipy import stats
+from sklearn.covariance import LedoitWolf
+from sklearn.decomposition import PCA
 
 from .. import datasets as D
 from .. import targets as T
@@ -69,32 +81,59 @@ def mahalanobis(X: np.ndarray, mean: np.ndarray, inv_cov: np.ndarray) -> np.ndar
     return np.sqrt(np.maximum(q, 0.0))
 
 
+def precision(X: np.ndarray, method: str, ridge_alpha: float) -> np.ndarray:
+    """Inverse covariance of `X` under the chosen conditioning strategy."""
+    if method == "ledoit_wolf":
+        return LedoitWolf(assume_centered=False).fit(X).get_precision()
+    cov = nearest_psd(np.cov(X, rowvar=False))
+    if method == "ridge":
+        cov = cov + ridge_alpha * np.trace(cov) / cov.shape[0] * np.eye(cov.shape[0])
+        return np.linalg.inv(cov)
+    if method == "pinv":
+        return pinv(cov)
+    raise ValueError(f"Unknown covariance method {method!r}")
+
+
 @dataclass
 class MahalaMIA(Attack):
     use_reference: bool = True     # ignored for cohorts without an auxiliary set
+    covariance: str = "pinv"       # "pinv" | "ledoit_wolf" | "ridge"
+    ridge_alpha: float = 1e-3
+    n_components: int | None = None    # PCA dimension, fitted on the synthetic set
     calibrate: bool = True
 
     name = "mahalamia"
 
     def tag(self) -> str:
-        return "aux" if self.use_reference else "noaux"
+        t = "aux" if self.use_reference else "noaux"
+        if self.covariance != "pinv":
+            t += f"_{self.covariance}"
+        if self.n_components:
+            t += f"_pca{self.n_components}"
+        return t
 
     def score(self, dataset: str, generator: str, split: int) -> np.ndarray:
         X_real = D.load_expression(dataset).values.astype(np.float64)
         X_syn = T.load_target(dataset, generator, split)["X"].astype(np.float64)
-
-        mu_syn = X_syn.mean(axis=0)
-        inv_syn = pinv(nearest_psd(np.cov(X_syn, rowvar=False)))
-        d_syn = mahalanobis(X_real, mu_syn, inv_syn)
-
         ref = D.load_reference(dataset) if self.use_reference else None
-        if ref is None:
+        X_aux = ref.values.astype(np.float64) if ref is not None else None
+
+        if self.n_components:
+            # Basis fitted on the synthetic data only: that is what the
+            # adversary holds, and it keeps the projection from seeing D_real.
+            pca = PCA(n_components=min(self.n_components, *X_syn.shape)).fit(X_syn)
+            X_real, X_syn = pca.transform(X_real), pca.transform(X_syn)
+            if X_aux is not None:
+                X_aux = pca.transform(X_aux)
+
+        d_syn = mahalanobis(X_real, X_syn.mean(axis=0),
+                            precision(X_syn, self.covariance, self.ridge_alpha))
+
+        if X_aux is None:
             raw = 1.0 / (d_syn + 1e-10)
         else:
-            X_aux = ref.values.astype(np.float64)
-            mu_aux = X_aux.mean(axis=0)
-            inv_aux = pinv(nearest_psd(np.cov(X_aux, rowvar=False)))
-            d_aux = mahalanobis(X_real, mu_aux, inv_aux)
+            d_aux = mahalanobis(X_real, X_aux.mean(axis=0),
+                                precision(X_aux, self.covariance, self.ridge_alpha))
             raw = d_aux / (d_syn + d_aux + 1e-10)
 
         raw = np.nan_to_num(raw, nan=float(np.nanmedian(raw)))

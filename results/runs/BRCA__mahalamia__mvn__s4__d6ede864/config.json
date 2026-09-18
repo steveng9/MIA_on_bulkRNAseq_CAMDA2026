@@ -1,0 +1,21 @@
+{
+  "run_id": "BRCA__mahalamia__mvn__s4__d6ede864",
+  "timestamp": "2026-09-18T21:11:08+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "mvn",
+  "split": 4,
+  "tag": "aux_pca200",
+  "notes": "tune_statistical:mahala_pca200",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "pinv",
+    "ridge_alpha": 0.001,
+    "n_components": 200,
+    "calibrate": true,
+    "attack": "mahalamia"
+  }
+}

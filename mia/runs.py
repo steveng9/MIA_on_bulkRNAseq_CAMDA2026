@@ -31,10 +31,19 @@ import pandas as pd
 from . import paths
 
 INDEX_COLUMNS = [
-    "run_id", "timestamp", "dataset", "attack", "generator", "split",
+    "run_id", "timestamp", "dataset", "experiment", "attack", "variant",
+    "generator", "split",
     "auc", "aupr", "tpr_at_fpr_0.01", "tpr_at_fpr_0.1",
     "precision_at_5pct", "n", "n_members", "tag", "notes",
 ]
+
+#: Fields copied verbatim from a run's config.json into the index.
+_META_FIELDS = ("run_id", "timestamp", "dataset", "experiment", "attack",
+                "variant", "generator", "split", "tag", "notes")
+
+#: Metric fields promoted into the index; the rest stay in metrics.json.
+_METRIC_FIELDS = ("auc", "aupr", "tpr_at_fpr_0.01", "tpr_at_fpr_0.1",
+                  "precision_at_5pct", "n", "n_members")
 
 
 def _hash(params: dict) -> str:
@@ -59,6 +68,8 @@ def save_run(
     y_member,
     metrics: dict,
     tag: str = "",
+    experiment: str = "",
+    variant: str = "",
     notes: str = "",
 ) -> Path:
     """Persist one attack evaluation and index it.  Returns the run directory."""
@@ -74,6 +85,8 @@ def save_run(
         "generator": generator,
         "split": split,
         "tag": tag,
+        "experiment": experiment,
+        "variant": variant or attack,
         "notes": notes,
         "params": params,
     }
@@ -95,10 +108,8 @@ def save_run(
 def _append_index(record: dict, metrics: dict) -> None:
     paths.RESULTS.mkdir(parents=True, exist_ok=True)
     row = {c: "" for c in INDEX_COLUMNS}
-    row.update({k: record.get(k, "") for k in
-                ("run_id", "timestamp", "dataset", "attack", "generator", "split", "tag", "notes")})
-    for k in ("auc", "aupr", "tpr_at_fpr_0.01", "tpr_at_fpr_0.1",
-              "precision_at_5pct", "n", "n_members"):
+    row.update({k: record.get(k, "") for k in _META_FIELDS})
+    for k in _METRIC_FIELDS:
         if k in metrics:
             row[k] = metrics[k]
 
@@ -128,3 +139,54 @@ def load_run(run_id: str) -> dict:
         "metrics": json.loads((out / "metrics.json").read_text()),
         "scores": pd.read_csv(out / "scores.csv"),
     }
+
+
+def rebuild_index() -> pd.DataFrame:
+    """Regenerate results/index.csv from the run directories on disk.
+
+    The index is a convenience view, not the source of truth.  Deleting runs by
+    hand, or changing an attack's parameters so old runs get different ids,
+    leaves rows in it that point nowhere -- this drops them.
+    """
+    rows = []
+    for d in sorted(paths.RUNS_DIR.glob("*")):
+        cfg_path, met_path = d / "config.json", d / "metrics.json"
+        if not (cfg_path.exists() and met_path.exists()):
+            continue
+        record = json.loads(cfg_path.read_text())
+        metrics = json.loads(met_path.read_text())
+        row = {c: "" for c in INDEX_COLUMNS}
+        row.update({k: record.get(k, "") for k in _META_FIELDS})
+        row.setdefault("variant", record.get("attack", ""))
+        for k in _METRIC_FIELDS:
+            if k in metrics:
+                row[k] = metrics[k]
+        rows.append(row)
+
+    paths.RESULTS.mkdir(parents=True, exist_ok=True)
+    with open(paths.INDEX_CSV, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=INDEX_COLUMNS)
+        w.writeheader()
+        w.writerows(rows)
+    return pd.DataFrame(rows)
+
+
+def prune(dataset=None, attack=None, dry_run: bool = True) -> list:
+    """Delete run directories matching a filter, then reindex."""
+    import shutil
+    removed = []
+    for d in sorted(paths.RUNS_DIR.glob("*")):
+        cfg_path = d / "config.json"
+        if not cfg_path.exists():
+            continue
+        rec = json.loads(cfg_path.read_text())
+        if dataset and rec.get("dataset") != dataset:
+            continue
+        if attack and rec.get("attack") != attack:
+            continue
+        removed.append(d.name)
+        if not dry_run:
+            shutil.rmtree(d)
+    if not dry_run:
+        rebuild_index()
+    return removed

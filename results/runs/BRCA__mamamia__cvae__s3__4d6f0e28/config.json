@@ -1,0 +1,21 @@
+{
+  "run_id": "BRCA__mamamia__cvae__s3__4d6f0e28",
+  "timestamp": "2026-09-18T21:11:53+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia",
+  "generator": "cvae",
+  "split": 3,
+  "tag": "k4_2w",
+  "notes": "tune_statistical:mama_k4_2w",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mamamia",
+    "n_bins": 4,
+    "use_oneway": false,
+    "use_twoway": true,
+    "use_subtype_marginal": true,
+    "calibrate": true,
+    "attack": "mamamia"
+  }
+}

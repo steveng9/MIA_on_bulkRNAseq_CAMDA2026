@@ -1,0 +1,38 @@
+# Hyperparameter sweep for the two closed-form attacks.
+#
+# Both are cheap (seconds per target, CPU only), so the whole sweep is a few
+# minutes and there is no reason not to tune them properly.
+#
+# MahalaMIA: the 978x978 synthetic covariance is estimated from ~870 samples and
+# is rank-deficient.  Compare the pseudo-inverse against Ledoit-Wolf shrinkage
+# and a ridge, and against projecting onto a PCA basis small enough that samples
+# outnumber dimensions.  The PCA basis is fitted on the synthetic data only.
+#
+# MAMA-MIA: bin count should in principle match DP-PGM's own discretisation
+# (n_bins=4 in our targets) -- attacking at a finer resolution than the
+# generator modelled can only add noise.  Also check whether the two-way
+# gene x subtype marginals are pulling their weight relative to the one-way
+# gene marginals.
+name: tune_statistical
+dataset: BRCA
+notes: "parameter sweep for MahalaMIA and MAMA-MIA"
+device: cpu
+
+generators: [mvn, cvae, nd, pgm]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  mahala_pinv:        {class: mahalamia, params: {covariance: pinv}}
+  mahala_ledoit:      {class: mahalamia, params: {covariance: ledoit_wolf}}
+  mahala_ridge:       {class: mahalamia, params: {covariance: ridge, ridge_alpha: 0.001}}
+  mahala_ridge_heavy: {class: mahalamia, params: {covariance: ridge, ridge_alpha: 0.1}}
+  mahala_pca50:       {class: mahalamia, params: {covariance: pinv, n_components: 50}}
+  mahala_pca200:      {class: mahalamia, params: {covariance: pinv, n_components: 200}}
+  mahala_pca500:      {class: mahalamia, params: {covariance: pinv, n_components: 500}}
+
+  mama_k2:     {class: mamamia, params: {n_bins: 2}}
+  mama_k4:     {class: mamamia, params: {n_bins: 4}}
+  mama_k8:     {class: mamamia, params: {n_bins: 8}}
+  mama_k16:    {class: mamamia, params: {n_bins: 16}}
+  mama_k4_1w:  {class: mamamia, params: {n_bins: 4, use_twoway: false}}
+  mama_k4_2w:  {class: mamamia, params: {n_bins: 4, use_oneway: false}}

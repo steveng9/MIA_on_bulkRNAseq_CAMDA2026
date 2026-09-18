@@ -1,0 +1,21 @@
+{
+  "run_id": "BRCA__mahalamia__nd__s2__7fbace2a",
+  "timestamp": "2026-09-18T21:07:32+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "nd",
+  "split": 2,
+  "tag": "aux",
+  "notes": "grid_brca:mahalamia",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "pinv",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "calibrate": true,
+    "attack": "mahalamia"
+  }
+}

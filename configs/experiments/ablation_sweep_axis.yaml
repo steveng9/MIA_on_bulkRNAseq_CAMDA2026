@@ -1,0 +1,42 @@
+# TODO item 3: which part of the loss trajectory carries the signal?
+#
+# The feature grid is extracted once at the widest setting, so these variants
+# mostly re-slice a cache rather than recompute it -- as long as every
+# sweep_points list below is a subset of the default superset and n_noise does
+# not exceed what was already extracted.  Run after the main grid.
+#
+# ND hypothesis: low timesteps dominate, because only a memorised sample can be
+# denoised exactly from a nearly-clean input.  CVAE hypothesis: alpha=0 carries
+# most of it, with larger alpha adding information about posterior width.
+name: ablation_sweep_axis
+dataset: BRCA
+notes: "timestep / temperature subsets and draw budget"
+device: cuda
+
+generators: [nd, cvae]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  nd_low_t:
+    class: melomia_nd
+    params: {n_shadows: 30, n_noise: 600, sweep_points: [1, 2, 5, 10, 20],
+             optuna_enabled: false, label: lowt}
+  nd_mid_t:
+    class: melomia_nd
+    params: {n_shadows: 30, n_noise: 600, sweep_points: [30, 40, 50, 75, 100],
+             optuna_enabled: false, label: midt}
+  nd_high_t:
+    class: melomia_nd
+    params: {n_shadows: 30, n_noise: 600, sweep_points: [150, 200, 300, 500, 750],
+             optuna_enabled: false, label: hight}
+  nd_few_draws:
+    class: melomia_nd
+    params: {n_shadows: 30, n_noise: 50, optuna_enabled: false, label: n50}
+  cvae_alpha0:
+    class: melomia_cvae
+    params: {n_shadows: 30, n_noise: 50, sweep_points: [0.0],
+             optuna_enabled: false, label: a0}
+  cvae_no_kl:
+    class: melomia_cvae
+    params: {n_shadows: 30, n_noise: 50, optuna_enabled: false, label: nokl,
+             backend_params: {include_kl: false, include_latent_norms: false}}

@@ -63,7 +63,8 @@ class Attack(ABC):
         return "default"
 
     def evaluate(self, dataset: str, generator: str, split: int,
-                 save: bool = True, notes: str = "") -> dict:
+                 save: bool = True, experiment: str = "", variant: str = "",
+                 notes: str = "") -> dict:
         """Score one target, compute metrics, and (by default) record the run."""
         scores = self.score(dataset, generator, split)
         y = D.membership_labels(dataset, split)
@@ -75,7 +76,8 @@ class Attack(ABC):
                 dataset=dataset, attack=self.params().get("attack", self.name),
                 generator=generator, split=split,
                 params=self.params(), sample_ids=ids, scores=scores, y_member=y,
-                metrics=metrics, tag=self.tag(), notes=notes,
+                metrics=metrics, tag=self.tag(), experiment=experiment,
+                variant=variant, notes=notes,
             )
         return metrics
 

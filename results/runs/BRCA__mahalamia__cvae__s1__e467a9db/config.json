@@ -1,0 +1,21 @@
+{
+  "run_id": "BRCA__mahalamia__cvae__s1__e467a9db",
+  "timestamp": "2026-09-18T21:11:03+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "cvae",
+  "split": 1,
+  "tag": "aux_pca50",
+  "notes": "tune_statistical:mahala_pca50",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "pinv",
+    "ridge_alpha": 0.001,
+    "n_components": 50,
+    "calibrate": true,
+    "attack": "mahalamia"
+  }
+}

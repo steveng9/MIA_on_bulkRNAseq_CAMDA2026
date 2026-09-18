@@ -1,0 +1,44 @@
+# TODO item 2: how much does the shadow count K buy?
+#
+# The abstract's ND numbers came from K=5, inherited from the blue team's five
+# published splits rather than chosen.  Each shadow contributes one more
+# membership draw per sample to the meta-classifier's training pool, so more
+# should be better -- the question is where it saturates and what it costs.
+#
+# Shadow k is built from a fixed seeded split regardless of K, and the shadow
+# cache is keyed on everything *except* K, so all four variants below share one
+# set of trained shadows -- only the meta-classifier is refitted per K.  Train
+# the K=50 stack once and the rest is nearly free.
+name: ablation_shadow_count
+dataset: BRCA
+notes: "K sweep for both MeLoMIA backends"
+device: cuda
+
+generators: [nd, cvae]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  melomia_nd_k5:
+    class: melomia_nd
+    params: {n_shadows: 5, n_noise: 600, optuna_trials: 40}
+  melomia_nd_k10:
+    class: melomia_nd
+    params: {n_shadows: 10, n_noise: 600, optuna_trials: 40}
+  melomia_nd_k30:
+    class: melomia_nd
+    params: {n_shadows: 30, n_noise: 600, optuna_trials: 60}
+  melomia_nd_k50:
+    class: melomia_nd
+    params: {n_shadows: 50, n_noise: 600, optuna_trials: 60}
+  melomia_cvae_k5:
+    class: melomia_cvae
+    params: {n_shadows: 5, n_noise: 50, optuna_trials: 40}
+  melomia_cvae_k10:
+    class: melomia_cvae
+    params: {n_shadows: 10, n_noise: 50, optuna_trials: 40}
+  melomia_cvae_k30:
+    class: melomia_cvae
+    params: {n_shadows: 30, n_noise: 50, optuna_trials: 60}
+  melomia_cvae_k50:
+    class: melomia_cvae
+    params: {n_shadows: 50, n_noise: 50, optuna_trials: 60}

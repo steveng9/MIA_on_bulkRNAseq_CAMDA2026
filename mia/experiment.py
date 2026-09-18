@@ -83,7 +83,8 @@ class Experiment:
                     print(f"  [skip] target {gen}/split_{split} not built", flush=True)
                     continue
                 m = attack.evaluate(self.dataset, gen, split, save=save,
-                                    notes=f"{self.name}:{label}")
+                                    experiment=self.name, variant=label,
+                                    notes=self.notes)
                 per_split.append(m)
                 print(f"  {gen} split {split}: AUC={m['auc']:.4f} "
                       f"AUPR={m['aupr']:.4f} T@1={m['tpr_at_fpr_0.01']:.4f} "

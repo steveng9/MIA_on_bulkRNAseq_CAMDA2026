@@ -111,6 +111,10 @@ class MeLoMIA(Attack):
     ensemble_min_auc: float = 0.55
 
     # behaviour
+    synth_shadow: bool = True           # False trains the feature-extraction
+                                        # shadows directly on real splits, which
+                                        # is the ablation that motivates the
+                                        # whole design (see TODO item 8)
     reference_calibration: bool = True
     keep_base_shadows: bool = False     # ~100 MB each for ND; not needed once
                                         # the internal synthetic data exists
@@ -128,10 +132,27 @@ class MeLoMIA(Attack):
     def attack_key(self) -> str:
         return f"melomia_{self.backend}"
 
+    def stack_tag(self) -> str:
+        """Identifies the *shadow stack* -- everything shared across K.
+
+        Shadow k is built from split `shadow_seed + k` regardless of how many
+        shadows the run asks for, so a K=50 stack is a superset of a K=5 one.
+        Keeping K out of this key means the shadow-count sweep in TODO item 2
+        trains each shadow once instead of once per K, which is the difference
+        between hours and days.
+        """
+        t = f"n{self.n_noise}" if self.n_noise else "default"
+        if self.sweep_points is not None:
+            t += f"_s{len(self.sweep_points)}"
+        if not self.synth_shadow:
+            t += "_realshadow"
+        if self.backend_params:
+            t += "_" + "_".join(f"{k}{v}" for k, v in sorted(self.backend_params.items()))
+        return t
+
     def tag(self) -> str:
-        t = f"k{self.n_shadows}"
-        if self.n_noise:
-            t += f"_n{self.n_noise}"
+        """Identifies the *run* -- the stack plus everything downstream of it."""
+        t = f"k{self.n_shadows}_{self.stack_tag()}"
         if not self.optuna_enabled:
             t += "_nooptuna"
         if self.label:
@@ -144,7 +165,12 @@ class MeLoMIA(Attack):
         return p
 
     def cache(self, dataset: str) -> Path:
-        return paths.attack_cache(self.attack_key, dataset, self.tag())
+        """Shadow stack, features and proxy features -- shared across K."""
+        return paths.attack_cache(self.attack_key, dataset, self.stack_tag())
+
+    def meta_cache(self, dataset: str) -> Path:
+        """Meta-classifier and its Optuna choices -- these do depend on K."""
+        return self.cache(dataset) / "meta" / self.tag()
 
     def _backend(self, dataset: str):
         if dataset not in self._backend_cache:
@@ -177,7 +203,7 @@ class MeLoMIA(Attack):
 
         ids = list(D.load_expression(dataset).index)
         n_member = int(len(ids) * self.shadow_ratio)
-        for k in range(1, self.n_shadows + 1):
+        for k in range(1, max(self.n_shadows, len(splits)) + 1):
             key = f"shadow_{k}"
             if key in splits:
                 continue
@@ -215,6 +241,8 @@ class MeLoMIA(Attack):
         return self.cache(dataset) / "internal_synth" / f"shadow_{k}.npz"
 
     def _ensure_internal_synth(self, dataset: str, shadows=None) -> None:
+        if not self.synth_shadow:
+            return                      # real-data-shadow ablation: no inner layer
         be = self._backend(dataset)
         n_classes = D.n_classes(dataset)
         for k in self._shadow_range(shadows):
@@ -252,16 +280,21 @@ class MeLoMIA(Attack):
         for k in self._shadow_range(shadows):
             out = self._synth_shadow_path(dataset, k)
             src = self._internal_synth_path(dataset, k)
-            if out.exists() or not src.exists():
+            if out.exists() or (self.synth_shadow and not src.exists()):
                 continue
             with _claim(out) as claimed:
                 if claimed is None:
                     continue
-                d = np.load(src)
-                self._say(f"  [melomia] synth-shadow {k}/{self.n_shadows}")
+                if self.synth_shadow:
+                    d = np.load(src)
+                    X_fit, y_fit = d["X"].astype(np.float32), d["y"].astype(np.int64)
+                    self._say(f"  [melomia] synth-shadow {k}/{self.n_shadows}")
+                else:
+                    X_fit, y_fit = self._shadow_training_set(dataset, k)
+                    self._say(f"  [melomia] real-data shadow {k}/{self.n_shadows}")
                 gen = be.probe()
                 gen.seed = self.seed + 5000 + k
-                gen.fit(d["X"].astype(np.float32), d["y"].astype(np.int64), n_classes)
+                gen.fit(X_fit, y_fit, n_classes)
                 gen.save(out)
                 del gen
                 self._free_gpu()
@@ -331,10 +364,10 @@ class MeLoMIA(Attack):
     # ── Stage 4: meta-classifier ────────────────────────────────────────────
 
     def _meta_path(self, dataset: str) -> Path:
-        return self.cache(dataset) / "meta.json"
+        return self.meta_cache(dataset) / "meta.json"
 
     def _clf_dir(self, dataset: str, clf: str) -> Path:
-        return self.cache(dataset) / "classifiers" / clf
+        return self.meta_cache(dataset) / "classifiers" / clf
 
     def _ensure_meta(self, dataset: str) -> dict:
         meta_path = self._meta_path(dataset)
@@ -514,11 +547,9 @@ class MeLoMIA(Attack):
 
     def clear_meta(self, dataset: str) -> None:
         """Drop the trained meta-classifier while keeping shadows and features."""
-        for p in (self._meta_path(dataset), self.cache(dataset) / "classifiers"):
-            if p.is_dir():
-                shutil.rmtree(p)
-            elif p.exists():
-                p.unlink()
+        p = self.meta_cache(dataset)
+        if p.is_dir():
+            shutil.rmtree(p)
 
 
 @dataclass

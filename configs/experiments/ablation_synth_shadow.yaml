@@ -1,0 +1,34 @@
+# TODO item 8: does synth-shadow modelling actually pay for itself?
+#
+# Identical splits, identical features, identical meta-classifier.  The only
+# difference is where the feature-extraction shadows were trained:
+#
+#   melomia_*_synth  shadows trained on internal synthetic data produced by
+#                    base shadows (the method)
+#   melomia_*_real   shadows trained directly on real splits (the ablation)
+#
+# Both are then scored through a proxy trained on the released synthetic data,
+# which is the only model a real adversary can build.  If the argument holds,
+# the real-data variant should look strong in cross-validation and collapse
+# here, because its training and inference distributions disagree.
+name: ablation_synth_shadow
+dataset: BRCA
+notes: "synth-shadow vs real-data shadows, matched in every other respect"
+device: cuda
+
+generators: [nd, cvae]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  melomia_nd_synth:
+    class: melomia_nd
+    params: {n_shadows: 15, n_noise: 600, optuna_trials: 40, synth_shadow: true}
+  melomia_nd_real:
+    class: melomia_nd
+    params: {n_shadows: 15, n_noise: 600, optuna_trials: 40, synth_shadow: false}
+  melomia_cvae_synth:
+    class: melomia_cvae
+    params: {n_shadows: 15, n_noise: 50, optuna_trials: 40, synth_shadow: true}
+  melomia_cvae_real:
+    class: melomia_cvae
+    params: {n_shadows: 15, n_noise: 50, optuna_trials: 40, synth_shadow: false}
