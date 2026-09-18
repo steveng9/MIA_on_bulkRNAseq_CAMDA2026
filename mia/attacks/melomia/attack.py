@@ -223,8 +223,14 @@ class MeLoMIA(Attack):
                 "member_ids": [ids[i] for i in sorted(perm[:n_member])],
                 "nonmember_ids": [ids[i] for i in sorted(perm[n_member:])],
             }
+        # Written atomically: parallel workers may reach this at the same time,
+        # and a half-written file would be read as a corrupt split definition.
+        # The content is seeded per shadow index, so whoever wins writes the
+        # same thing.
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(splits, indent=2))
+        tmp = path.with_suffix(f".{os.getpid()}.tmp")
+        tmp.write_text(json.dumps(splits, indent=2))
+        os.replace(tmp, path)
         self._say(f"  [melomia] {len(splits)} shadow splits -> {path}")
         return splits
 
