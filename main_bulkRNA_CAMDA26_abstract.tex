@@ -1,0 +1,621 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{helvet}
+\usepackage{subcaption}
+\usepackage{graphicx,subfig}
+\usepackage{url}
+\usepackage{array,enumitem,soul}
+\usepackage[export]{adjustbox} % The 'export' key allows valign in \includegraphics
+\usepackage[square,numbers]{natbib}
+\bibliographystyle{abbrvnat}
+%\bibliographystyle{unsrtnat}
+\setlength{\bibsep}{0.0pt}
+\def\bibfont{\small}
+
+\usepackage[compact]{titlesec}
+%\titlespacing{\section}{0pt}{1.0ex}{0.9ex}
+%\titlespacing{\subsection}{0pt}{1.0ex}{0.5ex}
+%\titlespacing{\paragraph}{0pt}{0.8ex}{0.5ex}
+
+\usepackage[font=footnotesize]{caption}
+\usepackage{bm}
+%\def\baselinestretch{0.97} 
+
+\usepackage{color}
+\usepackage{booktabs,multicol,multirow}
+\usepackage{tabularx}
+\definecolor{ourrow}{gray}{0.88}
+\definecolor{headergray}{gray}{0.94}
+\usepackage{colortbl}   % for \rowcolor
+% \usepackage{xcolor}     % color definitions
+\usepackage[dvipsnames]{xcolor} % Required for Dandelion color
+
+\usepackage{makecell}   % for \thead
+\usepackage{siunitx}    % optional: align decimal points
+
+\usepackage{soul}
+
+
+\newcommand{\na}{{\textemdash}}        % not applicable
+\newcommand{\nr}{{\textit{n/r}}}       % not reported in baseline
+\newcommand{\best}[1]{\textbf{#1}}     % best score per column
+\newcommand{\ours}{\textbf{Ours}}
+
+\newcommand{\martine}[1]{\textcolor{magenta}{Martine: #1}}
+\newcommand{\sikha}[1]{\textcolor{blue}{Sikha: #1}}
+\newcommand{\emma}[1]{\textcolor{orange}{Emma: #1}}
+\newcommand{\charlene}[1]{\textcolor{ForestGreen}{Charlene: #1}}
+\newcommand{\steven}[1]{\textcolor{Periwinkle}{Steven: #1}}
+
+\begin{document}
+
+\begin{center}
+\textbf{\Large Does Synthetic Bulk RNA-seq Data Protect Donors?\\
+%\textbf{\Large Privacy Auditing Synthetic Bulk RNA-seq via \\ Membership Inference Attacks
+\vskip 5pt
+%How Private Is Synthetic Bulk RNA-seq? \\
+Privacy Auditing through Membership Inference Attacks}
+\vskip 5pt
+Charlene Jarrell,
+Daniil Filienko,
+Jonathan D H Kim,
+Emma Szebenyi,\\ 
+ 
+Sikha Pentyala, 
+Steven Golob, 
+%Jineta Banerjee\textsuperscript{\textdaggerdbl}, 
+%Luca Foschini\textsuperscript{\textdaggerdbl}, 
+Martine De Cock\\
+\vskip 5pt
+%{\textsuperscript{\rm \textdagger} 
+University of Washington Tacoma
+%\textsuperscript{\rm \textdaggerdbl} Sage Bionetworks, Seattle }
+\end{center}
+\vskip 5pt
+
+
+
+%python {src_dir}/evaluation/evaluate.py plot-pca {split}
+\section{Introduction}\label{sec:intro}
+Synthetic data generation (SDG) \cite{hu2023sok,ponomareva2025dp} has emerged as a promising approach for enabling data sharing in sensitive domains such as biomedical research \cite{menziessynthetic__camda, ozturk2026towards}. By generating artificial data that preserve the statistical and biological characteristics of real datasets, SDG can support downstream analyses, data augmentation, and the development of more robust and fair models while reducing direct exposure of individual-level data \cite{juwara2024evaluation}. However, synthetic data are not inherently privacy-preserving, especially when generative models are optimized for high fidelity, which may inadvertently encode information about training samples \cite{stadler2022synthetic}. Synthetic datasets must therefore be evaluated for privacy risks
+%resilience to adversarial privacy attacks 
+alongside fidelity and utility before release.
+
+Membership Inference Attacks (MIAs) have emerged as a standard approach for empirically auditing the privacy of AI models \cite{shokri2017membership}. In a MIA, an adversary attempts to determine whether a specific individual’s data was included in the training set of a model. This is critical because, if a donor’s data can be linked to the training of a synthetic cancer dataset, for example, then this would reveal that the person has cancer \cite{zhang_membership_2022}.
+While MIAs may not directly reveal sensitive attributes, they serve as a tractable lower bound on overall privacy risk and a proxy for more severe attacks such as attribute inference and data reconstruction. 
+Despite extensive study of MIAs in image models \cite{shokri2017membership}, language models \cite{carlini2022membership}, and synthetic tabular data \cite{golob2024privacy, stadler2022synthetic, wu2025winning}, comparatively little work has explored MIAs in transcriptomics such as synthetic bulk RNA-seq data. The Critical Assessment of Massive Data Analysis (CAMDA) Health Privacy Challenge at ISMB2025 highlighted this gap explicitly, calling for privacy audits of synthetic bulk RNA-seq data, and none of its participants succeeded in mounting an effective adversarial attack. In a subsequent overview paper on the CAMDA 2025 challenge \cite{ozturk2026towards}, a SDG-method-agnostic GAN-Leaks attack \cite{chen2020gan} achieved elevated attack performance against CVAE-generated data (AUC $\approx 0.7$), moderate performance on multivariate-based-generated data (AUC $\approx 0.53$), and near-random performance on differentially private (DP) and lower-utility models.
+%\martine{+ mention what kind of attack had better than baseline results and say that it was a SDG-method-agnostic attack + mention the AUC (which I assume is not very high)} 
+%\sikha{CVAE and MVN had better than random guessing. And PGM was not better than random guessing. They had one  "Membership inference risk is model- and attack-dependent". None of the attacks in the overview paper were tailored to the models.}
+
+In this paper, we demonstrate that it is possible to achieve substantially higher attack success rates when leveraging knowledge about the SDG method that produced the synthetic data.
+%\martine{``Model aware'' makes it sound as if it is a white box attack, in which the adversary has the trained model parameters. I know that that is not what you mean. We can say ``SDG-method-aware''.}
+%
+%\hl{The Critical Assessment of Massive Data Analysis (CAMDA) 2025 Health Privacy Challenge extended privacy auditing to synthetic bulk RNA-seq datasets and highlighted the privacy–utility trade-offs associated with high-fidelity generative models} \cite{ozturk2026towards}. \martine{This sentence doesn't say very much. Can we make it more informative by rephrasing or adding a sentence with what the main take-away from CAMDA2025 was? Can we say something like: ``The CAMDA2025 Health Privacy Challenge ''}
+%\sikha{to check... this was wrt DP need to reframe what paper exactly said}. 
+%However, model-aware attacks tailored to different generative mechanisms for bulk RNA-seq under realistic threat models remain underexplored.
+%
+We propose strong MIAs for synthetic bulk RNA-seq data produced by generators from the red teaming track of the CAMDA 2026 challenge\footnote{\url{https://benchmarks.elsa-ai.eu/?ch=8}}:
+%spanning deep learning, probabilistic and statistical paradigms.
+\textsc{MeLoMIA} (\ul{Me}asuring \ul{Lo}sses MIA) for deep learning generators, and \textsc{MahalaMIA} (\ul{Mahala}nobis distance MIA) and \textsc{MAMA-MIA}~\cite{golob2024privacy} for statistical and probabilistic generators respectively.
+%
+%In this work, we address this gap through the red teaming track of the CAMDA 2026 challenge\footnote{\url{https://benchmarks.elsa-ai.eu/?ch=8}}. We develop model-aware MIAs for synthetic bulk RNA-seq data by building on existing MIAs \cite{wu2025winning, golob2024privacy}, tailoring them to the four generators from the CAMDA 2025 benchmark spanning both deep learning, probabilistic and statistical paradigms. 
+Using the CAMDA evaluation pipeline, we systematically assess privacy leakage across %heterogeneous 
+generative models and find that high-fidelity non-DP generators are substantially more susceptible to tailored MIAs (AUC up to $0.922$), while DP provides meaningful resistance underscoring that formal privacy guarantees remain essential alongside fidelity for safe synthetic data release.
+%\sikha{should we introduce the names of MIAs here. \textsc{MeLoMIA}, \textsc{MahalaMIA}, \textsc{MAMA-MIA}}
+
+\vspace{0.5em}
+\noindent
+%\textbf{CAMDA Health Privacy Challenge 2026 -- Track I Red Team.} 
+\textbf{CAMDA 2026 Track I Red Team -- Threat Model.}
+The goal of this challenge was to ``launch membership inference attacks (MIA) against selected blue teams’ solutions from the Health Privacy Challenge 2025''. The challenge dataset consists of synthetic data derived for two pre-processed TCGA bulk RNA-seq cohorts: TCGA-BRCA (1{,}089 samples, 978 genes, 5 cancer subtypes) and TCGA-COMBINED (4{,}323 samples, 978 genes, 10 tissue origins). Each real TCGA dataset $D_{real}$ was split 80\%-20\% into $D_{train}$ and $D_{test}$. Each $D_{train}$ was subsequently used to generate 
+a synthetic dataset $D_{synth}$ using four blue-team generators from the 2025 challenge: a CVAE baseline \cite{sohn2015learning}, a Multivariate generator (MVN) baseline \cite{ozturk2026towards}, an embedded noisy diffusion (ND) model based on \cite{dockhorndifferentially}
+%\footnote{https://github.com/not-a-feature/CAMDA25_NoisyDiffusion/}
+, and a differentially private probabilistic graphical model (DP-PGM, $\varepsilon=10$) \cite{chen2024biologicallyplausibleprivategene, mckenna2019graphical}, amounting to eight  synthetic datasets in total (four for each of TCGA-BRCA and TCGA-COMBINED). 
+
+The platform evaluates under a black-box model where an adversary has the released synthetic data $D_{synth}$ and has access to public implementations of each generator's architecture and training procedure, but cannot access the trained model parameters or the original training data $D_{train}$. An additional auxiliary reference set $D_{aux}$ of known non-members is provided only for TCGA-COMBINED. 
+%Given the full real dataset as target dataset, 
+The adversary must infer for each real sample $x$ in $D_{real}$ whether $x$ was included in $D_{train}$.
+%the training data used to generate the given synthetic data. 
+In the following sections, we describe our attack methodology and summarize the resulting privacy findings. %$\mathcal{A}(D_{syn},D_{real},G )$
+
+
+
+%MIA has been extensively studies for 
+%- talk about all modalities
+%- CAMDA 2025 brought attention to RNA
+%- what was their final insight
+%- I believe there is no literature on MIA on RNASeq
+
+%wirte contributions and then one key takeaway from our analysis here
+
+%This tension between utility and privacy necessitates rigorous privacy auditing prior to data release. In particular, synthetic datasets should not only preserve relevant biological signals but also demonstrate resilience to adversarial attacks. As a result, evaluating privacy risks alongside fidelity and utility has become a critical requirement for the responsible deployment of SDG methods.
+
+
+\section{Methodology}\label{sec:methods}
+%We design SDG method-aware attacks for each of the four generators, organized by generator family. For the deep learning models (CVAE and ND), we adapt the loss-trajectory framework of Tartan\_Federer \cite{wu2025winning} from the MIDST challenge, and for the statistical/probabilistic models (MVN and DP-PGM), we build on MAMA-MIA \cite{golob2024privacy}.
+
+\subsection{Attacks against deep learning generators} %(synth-shadow approach)
+We introduce \textsc{MeLoMIA} (\ul{Me}asurement of \ul{Lo}sses based \ul{MIA}) that adapts the loss-trajectory framework of \cite{wu2025winning} to synthetic bulk RNA-seq data. The key idea is to extract per-sample loss features from shadow models across different noise levels and timesteps, and train a meta-classifier $\mathcal{M}$ to predict membership from these loss patterns.
+%
+A central requirement is that the shadow models used to train $\mathcal{M}$ must themselves be trained on \emph{synthetic} data. At inference time, the adversary only has access to the released synthetic dataset $D_{\text{synth}}$, from which a proxy model can be trained; consequently, the loss distributions observed during training and inference must be aligned. To achieve this, we introduce \textbf{synth-shadow modeling}. We first train \emph{base shadow} generators on $K$ random 80$-$20 splits of $D_{\text{real}}$ and use them to generate $K$ internal synthetic datasets. We then train a second layer of shadow models, the \emph{synth-shadows}, exclusively on these synthetic datasets for feature extraction. Thus, real data enters the pipeline only through the base shadows, while both the synth-shadows and the inference-time proxy operate entirely in the synthetic domain. \footnote{Base shadows use the same hyperparameters as the target; synth-shadows and the proxy can use enhanced settings to fit as tightly as possible to the synthetic data.}
+%\footnote{Base shadow generators are trained with the same hyperparameters as the target model to preserve distributional alignment, however,  the synth-shadows and inference-time proxy benefit from enhanced settings such as increased training epochs to fit as tightly as possible to the synthetic data.}
+%
+Concretely, the attack proceeds in five steps:
+\begin{enumerate}[leftmargin=*, noitemsep, topsep=0pt]
+\item \textbf{Generate internal synthetic datasets.} We sample $K$ random 80--20 splits of $D_{\text{real}}$. For each $k = \{1, \ldots, K\}$, we train a base shadow generator on $D_{tr}^k$ and use it to produce an internal synthetic dataset $D_{syn}^k$.
+\item \textbf{Train synth-shadow models.} We train $K$ synth-shadow models, one on each $D_{syn}^k$. The membership label of a real sample $x \in D_{\text{real}}$ with respect to synth-shadow $k$ is inherited from the corresponding base shadow: $x$ is a member iff $x \in D_{tr}^k$.
+\item \textbf{Extract loss features.} For each candidate sample $x \in D_{\text{real}}$ and each synth-shadow $k$, we compute a per-sample loss feature $\phi_k(x)$ (the form of $\phi$ is generator-specific; see below) and pair it with $x$'s inherited membership label. Note that since each sample is passed through all $K$ synth-shadow models, it is associated with $K$ potentially different membership labels.
+\item \textbf{Train the meta-classifier.} Pooling all $K \cdot |D_{\text{real}}|$ feature--label pairs, we train a meta-classifier $\mathcal{M}$ that maps loss features to a membership prediction.
+\item \textbf{Inference.} Given $D_{\text{synth}}$ and a target sample $x \in D_{\text{real}}$, we train a final proxy generator on $D_{\text{synth}}$ --- substituting for the unobserved target model --- compute $\phi(x)$ using this proxy, and apply $\mathcal{M}$ to predict whether $x \in D_{\text{train}}$.
+\end{enumerate}
+The two generators differ only in the form of $\phi(x)$ computed in steps~3 and~5.
+
+
+
+%\steven{we're use `k' both as a constant (the number of shadow models) and an indexer (''shadow model no. k''). Is there a way to distinguish these two usages?}
+%\emma{In the CVAE paragraph, we only ever describe this "loss feature" as KL-divergence. If it is not well-known that this refers to the "loss feature," maybe it should be mentioned? (I just didn't know, but I also am not as well-versed in this as we can assume our audience to be)} 
+%\steven{Good concern. I think KL-divergence is standard enough that we don't need to define it. What do you think, Sikha?} and pair it with $x$'s inherited membership label. 
+%\sikha{Can I assume $d = N$? N is noise vectors in below paras?} \steven{I don't think so. From our noise vector of size N, we sometimes reduce the feature set to summary statistics of the N losses, which then becomes a much smaller number of features.} 
+
+
+%The key idea for this category of attacks is training shadow models on synthetic datasets to extracts per-sample loss-trajectory features across different noises and time steps , a ML model that models the relationship between loss values and membership status. Use this ML model as metaclassifier to predict the membership for x \cite{wu2025winning}. We call these attacks MeLoMIA (\ul{Me}asuring \ul{Lo}sses MIA). We breifly explain the workflow of our attack below. This is also key ide: For the loss distributions used to train the meta-classifier to match those produced at inference, the shadows from which we extract features must also be synthetic-trained. We call this \textbf{synth-shadow modelling}: we train \emph{base shadows} on splits of the D with controlled membership, use them to generate internal synthetic datasets, and then train the feature-extraction shadows --- the \emph{synth-shadows} --- on those internal synthetic datasets. Real data thus enters our pipeline only as input to the base shadows; the synth-shadows we extract features from, like the inference-time proxy, see only synthetic data. This synth-shdows help generalize the domain/distribution of the data better. 
+%Concretely, the attack proceeds in five steps:
+%\begin{enumerate}[leftmargin=*, itemsep=0pt]
+%\item \textbf{Generate internal synthetic datasets.} Using the public generator implementation, we split $D$ in to $k$ train and test splits using 80-20.  For each split, we train a base shadow generative model on $D_{t}^k$. These $k$ shadow models are then used to generate $k$ internal synthetic datasets $D_{s}^k$
+%
+%\item \textbf{Train synth-shadow models.} We train $k$ synth-shadow models, each on one of the internal synthetic datasets $D_{s}^k$. The membership label of a real sample $x$ with respect to a given synth-shadow is inherited from the corresponding base shadow i.e. $x$ is a member iff it lay in that base shadow's training $D_{t}^k$. These synth shdaow models ....
+%
+%\item \textbf{Extract loss features.} For each candidate real sample $x \in D$, we get losses by passing thru $k$ synth-shadow, we compute a fixed-shape per-sample loss feature resulting in $k \times N$ N is number of features  and pair it with $x$'s membership label for that synth-shadow.
+%
+%\item \textbf{Train the meta-classifier.} Pooling (feature, label) pairs across all $k$ synth-shadows, we train a meta classifier $\mathcal{M}$ that predicts membership label of $x$. At this point $\mathcal{M}$ has captured...
+%
+%\item \textbf{Inference.} During inference, we have $D_{synth}$ and $x \in D$ whose membership we need to infer, we train a final proxy generator on the released challenge synthetic data --- substituting for the unobserved target --- extract loss features for the candidate samples using this proxy, and apply the trained meta-classifier to obtain membership scores.
+%\end{enumerate}
+%The two deep learning generators differ only in the form of the per-sample loss feature used in steps~3 and~5.
+%\sikha{what is N?}
+\vspace{0.3em}
+\noindent
+\textbf{NoisyDiffusion (ND).} The loss feature is a $T \times N$ matrix of mean-squared errors (MSEs) between the synth-shadow's predicted noise and the injected noise, with $T = 15$ timesteps and $N = 600$ noise vectors $\varepsilon$ drawn once with a fixed seed and reused across all samples and models. For each $(t, \varepsilon)$ pair, we form $x_t = \sqrt{\bar\alpha_t}\, x_0 + \sqrt{1-\bar\alpha_t}\, \varepsilon$, query the noise-prediction head for $\hat\varepsilon$, and record $\|\hat\varepsilon - \varepsilon\|^2$ averaged over $978$ gene dimensions. $\mathcal{M}$ is an ensemble (XGBoost, RF, LightGBM, CatBoost, MLP) blended by softmax-weighted AUC. We use Bayesian optimisation (Optuna) to tune each classifier's hyperparameters and timestep subset $\mathcal{T} \subseteq \{1,\ldots,T\}$, collapsing the $|\mathcal{T}| \times N$ slice into per-timestep statistics and gradients to yield an optimised summary feature per classifier. The final membership score is a gated weighted ensemble of these specialised classifiers.
+%
+%
+%
+%The per-sample loss feature is a $T \times N$ matrix of mean-squared errors between the synth-shadow's predicted noise and the noise injected by the diffusion forward process. With $T=15$ timesteps and $N=600$ noise vectors $\varepsilon$ drawn once with a fixed seed and reused across all samples and models, we form $x_t = \sqrt{\bar\alpha_t}, x_0 + \sqrt{1-\bar\alpha_t}, \varepsilon$ and query the noise-prediction head for $|\hat\varepsilon - \varepsilon|^2$. To build a robust attack, we employ Bayesian optimization (Optuna) to independently tune each classifier in our ensemble (XGB, RF, LGBM, CAT, and MLP).
+%
+%For each model, Optuna optimizes both standard hyperparameters and a specific timestep subset ($T_{subset}$). The $T \times N$ matrix is sliced to the model's chosen timesteps and collapsed into per-timestep statistics (mean, std, min, max, median, skew) and first-order gradients. This results in an optimized summary feature for each model. The final membership probability is a weighted ensemble of these specialized classifiers, gated by their cross-validated performance.
+
+
+
+
+\vspace{0.3em}
+\noindent
+\textbf{Conditional VAE (CVAE).} The CVAE has no diffusion timestep axis, so we replace the timestep sweep with a temperature sweep over the encoded posterior. For each candidate sample $x$, we obtain encoder parameters $(\mu, \sigma)$ and, for each temperature $\alpha \in \{0, 0.5, 1.0, 1.5, 2.0, 3.0\}$ and each of $N = 50$ frozen noise vectors $\varepsilon$, draw $z = \mu + \alpha\sigma\varepsilon$, decode to $\hat{x}$, and record the per-sample reconstruction MSE. We additionally concatenate the 128-dimensional per-latent KL-divergence contribution between the encoded posterior and the standard-normal prior, since training members typically exhibit sharper posteriors and therefore more distinctive per-dimension KL patterns. This combined vector constitutes $\phi_k(x)$ for CVAE and is summarised analogously to ND before being passed to $\mathcal{M}$. 
+%\emma{Should we mention the fact that increasing the number of epochs (from 200 to 500) used in training and the early stopping patience (from 30 to 50) had a significant impact on the performance of the attack?} \steven{I don't think it's necessary. But we could mention somewhere (in the overview above) that, for MeLoMIA, the shadow model (from step 1) parameters should be identical those used by the target model. However, the \textit{synth}-shadow models and the \textit{proxy} model can benefit by enhancing model parameters (like epochs, patience, LR, etc.) by fitting as tightly as possible to the synthetic data -- and thus the associated training data.}
+
+%\emma{I used summary mode for our attack, so some of the values here are not representative of the ones used for our predictions. I'll note what the values should be if we choose to mention that.}
+
+
+%The CVAE has no diffusion timestep axis, so we replace the timestep sweep with a \emph{temperature sweep} over the encoded posterior. For each candidate sample $x_0$, we obtain encoder parameters $(\mu, \sigma)$ and, for each temperature $\alpha \in \{0, 0.5, 1.0, 1.5, 2.0\}$ and each of $N=300$ frozen noise vectors $\varepsilon$, draw $z = \mu + \alpha\sigma\varepsilon$, decode to $\hat{x}$, and record the per-sample reconstruction MSE. We additionally concatenate the 128-dimensional per-latent KL-divergence contribution between the encoded posterior and the standard-normal prior, since training members typically exhibit sharper posteriors and therefore more distinctive per-dimension KL patterns. The combined vector is summarized analogously to the ND case before being passed to the meta-classifier.
+
+\subsection{Attacks against statistical and probabilistic generators}
+Statistical generators encode their learned distributional structure in explicit parameters such as covariances for MVN, marginals for DP-PGM. Both attacks in this category follow  MAMA-MIA~\cite{golob2024privacy} and exploit this structure by computing a domain-ratio membership score that measures how well a candidate sample's features are explained by the synthetic model relative to a reference distribution.
+
+\vspace{0.3em}
+\noindent
+\textbf{Multivariate Generator (MVN).} The MVN generator models $D_{\text{synth}}$ as a multivariate Gaussian over the 978 gene dimensions, making the covariance structure of $D_{\text{synth}}$ the natural membership signal. We introduce \textsc{MahalaMIA} (\ul{Mahala}nobis distance based \ul{MIA}), which scores each candidate sample $x \in D_{\text{real}}$ by its Mahalanobis distance to the synthetic distribution,
+%\begin{equation}
+$d_{\text{syn}}(x) = \sqrt{(x - \mu_{\text{syn}})^\top \Sigma_{\text{syn}}^{-1} (x - \mu_{\text{syn}})}$
+%\end{equation}
+where $\mu_{\text{syn}}$ and $\Sigma_{\text{syn}}$ are the empirical mean and covariance of $D_{\text{synth}}$. Samples with lower $d_{\text{syn}}(x)$ receive higher membership scores. When the auxiliary reference set $D_{\text{aux}}$ is available (TCGA-COMBINED), we additionally compute $d_{\text{aux}}(x)$ against the distribution of $D_{\text{aux}}$ and use the normalised ratio $d_{\text{aux}}(x)/d_{\text{syn}}(x)$ as the final membership score, which is high when $x$ lies close to the synthetic distribution relative to the auxiliary distribution.
+%\charlene{1. Does G need to be defined in "G = 978 gene dimensions"? I don't see a reference to G anywhere else. 2. Should "mean vector" or "covariance matrix" be used or is the vector and matrix implied? 3. For "compute daux(x) against the covariance of Daux", is it implied that the mean vector of Daux is also used?} \steven{Answering your 3rd question: yes, I'd say it's implied as is.}
+
+%Start with what is the main focal point point, it is cov matrix. add notations and eqaution if needed. MahalaMIA (\ul{Mahala}nobis distance based \ul{MIA})
+
+%For each target sample, we compute its Mahalanobis distance to the covariance matrix of the synthetic data's gene distributions. Samples closer to the synthetic distribution receive higher membership scores. If auxiliary reference data is provided (as in TCGA-COMBINED), we enhance the final membership prediction by 1) additionally computing the same distances to the covariance of the auxiliary distribution. Then we normalize the distance to the synthetic distribution by the distance to the auxiliary distribution, which pronounces where similarity to the synthetic data is most significant, in the context of the reference data.
+
+\vspace{0.3em}
+\noindent
+\textbf{Private PGM (DP-PGM).} DP-PGM explicitly learns low-order marginals of $D_{{train}}$ under DP, making these marginals the natural attack surface. We therefore apply MAMA-MIA~\cite{golob2024privacy}, which scores a candidate sample $x$ using domain ratios computed from synthetic marginals relative to a population baseline. We target both one-way marginals (a) per-gene distributions $\hat{p}(g_i)$ for $i=\{1,\ldots,978\}$ and subtype marginal $\hat{p}(s)$; (b) two-way gene--subtype marginals $\hat{p}(g_i, s)$. For a sample $x$ with subtype label $s_x$, MAMA-MIA aggregates these domain ratios across all targeted marginals to produce a final membership score, assigning higher scores to samples whose gene--subtype patterns are over-represented in the synthetic distribution. Since subtype labels are unavailable in the provided reference set, we use the full labeled data pool as auxiliary data for estimating the required marginals.
+
+
+
+
+%DP-PGM explicitly learns low-order marginals of $D_{train}$ under differential privacy (DP), making those marginals the natural attack surface. We apply MAMA-MIA~\cite{golob2024privacy}, which scores candidate samples by how well their features are explained by the synthetic marginals relative to a population baseline, aggregating domain ratios across all targeted marginals. We target 979 one-way marginals (per-gene distributions $\hat{p}(g_i)$ for $i=1,\ldots,978$ and subtype $\hat{p}(s)$) and 978 two-way gene-subtype marginals $\hat{p}(g_i, s)$. For a candidate sample $x$ with subtype label $s_x$, MAMA-MIA aggregates these domain ratios to obtain a final membership score, assigning higher scores to samples whose gene-subtype patterns are over-represented in the synthetic model. Since the reference data does not have the labels, which are required for computing the two-way marginals used for running the attack, we use the whole data pool (members and non-members with the label) as the auxiliary data. 
+
+
+
+%We target two sets of marginals. The 979 one-way marginals cover the per-gene distributions $\hat{p}(g_i)$ for $i = 1, \ldots, 978$ and the subtype marginal $\hat{p}(s)$. The 978 two-way marginals capture the joint gene-subtype distributions $\hat{p}(g_i, s)$ for each gene-subtype pair. For a candidate sample $x$ with subtype label $s_x$, MAMA-MIA aggregates these domain ratios to obtain a final membership score, assigning higher scores to samples whose gene-subtype patterns are over-represented in the synthetic model. Since the reference data does not have the labels, which are required for computing the two-way marginals used for running the attack, we use the whole data pool (members and non-members with the label) as the auxiliary data. 
+
+
+
+\section{Results}\label{sec:results}
+%$^*$MC is sensitive to high-dimensional inputs; TPR results should be interpreted with caution.
+%\noindent
+%\textbf{Experimental setup.} 
+We evaluate by splitting $D_{\text{real}}$ into 5 random 80--20 partitions and training all four generators independently on each training split, yielding 5 synthetic datasets per generator; this ensures availability of ground-truth labels for internal evaluation. Each  synthetic data is attacked using the methods in Section~\ref{sec:methods} and metrics are averaged across partitions.
+%To simulate the competition setting, we split $D_{{real}}$ into 5 random 80--20 train/test partitions. For each training split, all 4 blue-team generators are trained independently, producing 5 synthetic datasets per generator. Each synthetic dataset is then attacked using the methods described in Sec. \ref{sec:methods}, and the reported metrics are averaged across the 5 partitions. Since this is an internal evaluation setting, ground-truth membership labels are available.
+
+Table~\ref{tab:internal} reports results for our SDG-aware attacks alongside SDG-method-agnostic baselines from the CAMDA 2026 challenge. Our attacks substantially outperform all baselines on every generator, confirming that knowledge of the generative mechanism is critical for effective privacy auditing. Vulnerability closely tracks the fidelity--privacy trade-off visible in Figure~\ref{fig:pca}. Non-DP generators (MVN, CVAE, ND), which produce synthetic data with broad distributional overlap with $D_{{real}}$, are all susceptible, whereas DP-PGM, whose tighter synthetic clusters reflect the fidelity cost of DP, provides substantially stronger protection. Nevertheless, \textsc{MAMA-MIA} still achieves a consistent improvement above all baselines on both cohorts, suggesting that formal DP at $\varepsilon = 10$ leaves residual vulnerability. Results are overall consistent across both datasets  but varies by generator across datasets:  MVN and CVAE attacks are modestly weaker on the larger TCGA-COMBINED, while ND and DP-PGM attacks perform comparably or better on COMBINED.
+
+
+\begin{table*}[!t]
+\centering
+\caption{MIA evaluation on TCGA-BRCA and TCGA-COMBINED. AUC-ROC (\textbf{AUC}), precision-recall AUC (\textbf{AUPR}), TPR at FPR\,$=$\,1\% (\textbf{T@1}) and 10\% (\textbf{T@10}). Higher is better; $\approx$0.5 AUC indicates near-random. Scores averaged over 5 splits. \textbf{Ours}: \textsc{MahalaMIA} (MVN), \textsc{MeLoMIA} (CVAE, ND), \tetxtsc{MAMA-MIA} (DP-PGM).
+  %Internal MIA 
+  %\small{MIA Evaluation on TCGA-BRCA and TCGA-COMBINED. Metrics: AUC-ROC (\textbf{AUC}), Area Under Precision-Recall Curve (\textbf{AUPR}),TPR at FPR\,$=$\,1\% (\textbf{T@1}), TPR at FPR\,$=$\,10\% (\textbf{T@10}).Higher is better; values near 0.5 (AUC) or at the FPR level indicatenear-random attack performance. Scores averaged over 5 splits. \textbf{Ours}: \textsc{MahalaMIA} for MVN, \textsc{MeLoMIA} for CVAE and ND, \textsc{MAMA-MIA} for DP-PGM. }
+  %\steven{would it be okay to bold the eight AUCs in the table, of our attacks? Might make it easier to look at and give it eight nice, symmetrical structural points.} yes. please feel free to make changes.
+}
+\label{tab:internal}
+\resizebox{\textwidth}{!}{%
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.0}
+\begin{tabular}{ll *{4}{cccc}}
+\toprule
+ & & \multicolumn{4}{c}{\textbf{MVN (noise = 0.7)}}
+    & \multicolumn{4}{c}{\textbf{CVAE}}
+    & \multicolumn{4}{c}{\textbf{NoisyDiffusion}}
+    & \multicolumn{4}{c}{\textbf{DP-PGM ($\varepsilon$\,=\,10)}} \\
+\cmidrule(lr){3-6}\cmidrule(lr){7-10}\cmidrule(lr){11-14}\cmidrule(lr){15-18}
+\textbf{Dataset} & \textbf{Method}
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10 \\
+ 
+\midrule
+\multirow{8}{*}{\rotatebox[origin=c]{90}{\textbf{BRCA}}}
+& MC                        & 0.508 & 0.816 & 0.027 & 0.818 & 0.562 & 0.912 & {1.000} & {1.000} & 0.515 & 0.806 & 0.020 & {1.000} & 0.500 & 0.801 & 0.016 & {0.449} \\
+%& LOGAN$^\dagger$ & & & & & & & & & & & & & & & & \\
+& GAN-leaks                 & 0.533 & 0.818 & 0.019 & 0.121 & 0.706 & 0.916 & 0.277 & 0.427 & 0.534 & 0.824 & 0.032 & 0.137 & 0.505 & 0.803 & 0.012 & 0.098 \\
+%& GAN-leaks-cal$^\dagger$ & & & & & & & & & & & & & & & & \\
+%& DOMIAS-KDE$^\dagger$ & & & & & & & & & & & & & & & & \\
+& Conf-LR                   & 0.568 & 0.818 & 0.005 & 0.093 & 0.549 & 0.816 & 0.013 & 0.111 & 0.539 & 0.809 & 0.008 & 0.097 & 0.508 & 0.805 & 0.013 & 0.106 \\
+& Conf-RF                   & 0.512 & 0.807 & 0.017 & 0.112 & 0.538 & 0.820 & 0.019 & 0.123 & 0.512 & 0.808 & 0.012 & 0.101 & 0.511 & 0.808 & 0.023 & 0.116 \\
+\cmidrule(l){2-18}
+%& \textbf{Ours}   & 0.922 & 0.981 & 0.698 & 0.825 & & & & & 0.844 & 0.850 & 0.273 & 0.589 & & & & \\
+& \textbf{Ours}   & \textbf{0.922} & {0.981} & {0.698} & {0.825} & \textbf{0.753} & {0.928} & 0.274 & 0.489 & \textbf{0.620} & {0.858} & {0.045} & 0.193 & \textbf{0.528} & {0.824} & {0.036} & 0.142 \\
+% & \textbf{Leaderboard}   & & & & & & & & & & & & & & & & \\
+\midrule
+
+\multirow{8}{*}{\rotatebox[origin=c]{90}{\textbf{COMBINED}}}
+& MC                        & 0.505 & 0.809 & 0.012 & 0.820 & 0.525 & 0.843 & 0.016 & 1.000 & 0.508 & 0.803 & 0.013 & 1.000 & 0.502 & 0.803 & 0.011 & 0.639 \\
+& LOGAN$^\dagger$           & 0.502 & 0.802 & 0.0107 & 0.103 & 0.502 & 0.801 & 0.011 & 0.105 & 0.502 & 0.801 & 0.009 & 0.101 & 0.500 & 0.800 & 0.012 & 0.102 \\
+& GAN-leaks                 & 0.528 & 0.811 & 0.012 & 0.110 & 0.635 & 0.860 & 0.021 & 0.186 & 0.514 & 0.809 & 0.014 & 0.115 & 0.503 & 0.802 & 0.012 & 0.104 \\
+& GAN-leaks-cal$^\dagger$   & 0.566 & 0.847 & 0.164 & 0.172 & 0.560 & 0.902 & 0.908 & 0.908 & 0.522 & 0.808 & 0.679 & 0.679 & 0.505 & 0.804 & 0.012 & 0.107 \\
+& DOMIAS-KDE$^\dagger$      & 0.500 & 0.800 & 0.009 & 0.100 & 0.500 & 0.800 & 0.011 & 0.100 & 0.499 & 0.799 & 0.011 & 0.099 & 0.500 & 0.801 & 0.014 & 0.100 \\
+& Conf-LR                   & 0.514 & 0.804 & 0.010 & 0.105 & 0.508 & 0.802 & 0.008 & 0.100 & 0.510 & 0.806 & 0.012 & 0.109 & 0.504 & 0.802 & 0.012 & 0.103 \\
+& Conf-RF                   & 0.512 & 0.807 & 0.011 & 0.114 & 0.512 & 0.806 & 0.013 & 0.107 & 0.507 & 0.805 & 0.012 & 0.106 & 0.507 & 0.804 & 0.010 & 0.103 \\
+ \cmidrule(l){2-18}
+ & \textbf{Ours}   & \bm{0.899} & 0.972 & 0.413 & 0.729 & \bm{0.677} & 0.872 & 0.022 & 0.194 & \bm{0.739} & 0.917 & 0.123 &  0.400 & \bm{0.556} & 0.840 & 0.038 & 0.178 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
+\begin{figure*}[!h]
+    \centering
+    \newcommand{\pcawidth}{0.22\textwidth}
+    \setlength{\tabcolsep}{2pt}
+    \begin{tabular}{c cccc} % Changed 'r' to 'c' for better horizontal centering of labels
+      % Header row
+      & \footnotesize{\textbf{MVN (noise = 0.7)}}
+      & \footnotesize{\textbf{CVAE}}
+      & \footnotesize{\textbf{NoisyDiffusion}}
+      & \footnotesize{\textbf{DP-PGM ($\varepsilon$\,=\,10)}} \\[2pt]
+
+      % Row 1: BRCA
+      \rotatebox[origin=c]{90}{\footnotesize{\textbf{BRCA}}}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/MVN/BRCA_0.7_pca_split_1.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/CVAE/BRCA_pca_split_1_labels.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/ND/BRCA_pca_split_1.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/PGM/pca_brca.pdf} \\[2pt]
+
+      % Row 2: COMBINED
+      \rotatebox[origin=c]{90}{\footnotesize{\textbf{COMBINED}}}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/MVN/COMBINED_0.7_pca_split_1.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/CVAE/COMBINED_pca_split_1_labels.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/ND/COMBINED_pca_split_1.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/PGM/pca_comb.pdf} \\
+    \end{tabular}
+    \caption{%
+      PCA projections of real ({\color{blue}$\bullet$}) and synthetic
+      ({\color{orange}$\bullet$}) data for split\,1 (seed\,42) of the
+      internal evaluation set.
+      Good overlap between real and synthetic points indicates high fidelity.
+    }
+    \label{fig:pca}
+\end{figure*}
+
+
+We additionally evaluate \textsc{MahalaMIA} as a model-agnostic attack by applying it without modification to synthetic data from the 2 other non-DP generators (CVAE and ND). On CVAE-generated data, \textsc{MahalaMIA} achieves AUC $= 0.986$ on BRCA --- exceeding the model-specific \textsc{MeLoMIA} on the same generator (AUC $= 0.753$) --- and AUC $= 0.583$ on COMBINED, suggesting that CVAE implicitly preserves the covariance structure of its training data, particularly on smaller cohorts. Performance on ND is more variable (BRCA: AUC $= 0.489$; COMBINED: AUC $= 0.753$), indicating that diffusion-based generation preserves covariance less consistently, likely due to the stochastic noise injection process.
+%\sikha{this para needs to be modified after all the results are in. Need to include discussion for GAN leaks hi performance in overview paper; shorten the analysi. Key takeaway and future work.}
+%\sikha{corss model attack}
+%Table~\ref{tab:internal} reports results for our model-specific attacks alongside SDG-method-agnostic baselines from~\cite{ozturk2026towards}. Our attacks substantially outperform all baselines on the generators evaluated. On TCGA-BRCA, \textsc{MahalaMIA} achieves AUC $= 0.922$, AUPR $= 0.981$, and T@1 $= 0.698$ against MVN, and \textsc{MeLoMIA} achieves AUC $= 0.844$ and T@10 $= 0.589$ against NoisyDiffusion, representing improvements of over 0.35 AUC points above the strongest baseline in each case. On the larger TCGA-COMBINED cohort, both attacks remain strong (MVN: AUC $= 0.899$, T@10 $= 0.729$; ND: AUC $= 0.738$, T@10 $= 0.382$), with a modest reduction relative to BRCA consistent with the expectation that larger training sets reduce per-sample memorisation. Across both datasets and all generators, generic attacks --- GAN-leaks, Conf-LR, and Conf-RF --- remain near-random (AUC $\leq 0.57$), confirming that SDG-method-agnostic approaches fail to surface the privacy risks exposed by model-specific attacks. 
+%\emma{(on BRCA) \textsc{MeLoMIA} achieves AUC $= 0.753$, AUPR $= 0.928$, and T@10 $= 0.489$ against CVAE}
+%\sikha{how to add names of attacks in table while saving space}
+
+
+%Figure~1 shows PCA projections of the real and synthetic data for the first split. MVN, CVAE, and ND produce synthetic datasets with substantial distributional overlap with $D_{{real}}$, indicating high fidelity, whereas DP-PGM produces tighter clusters concentrated around dense regions of the real distribution, reflecting the utility cost introduced by differential privacy at $\varepsilon = 10$.
+
+
+
+
+\paragraph{\textbf{Acknowledgements.}}
+This research was supported by NSF \#2451163, NIH 1OT2OD032581, NSF NAIRR 
+240485 (Cloudbank AWS), NSF NAIRR 240091 (TACC Frontera). Steven Golob is supported by an NSF CSGrad4US Fellowship. Sikha Pentyala is affiliated with eScience Institute.
+
+\bibliography{ref}
+
+
+
+
+\end{document}
+
+
+
+%\sikha{To do and refine, }
+%\sikha{need to confirm in the MISDT repo if we had access to shadow models in black box too?? CONFIRMED -- To facilitate participation in MIDST, we developed shadow models for both single table and multi-table tasks. The shadow models were the same for black-box and white-box tasks. Applicants were free to choose these shadow models and/or generate their own if needed in developing their MIAs.}
+%Tartan\_Federer, the winning attack from the MIDST challenge\footnote{\url{https://vectorinstitute.github.io/MIDST/}} against tabular diffusion models, they provided train, dev and final. train were 30 and we had membership labels. we train shadow models on these. but in CAMDA, we dont have any train dataset.
+%leverages the shadow generative models trained on $D$ provided by the organizers. It then extracts per-sample loss-trajectory features across different noises and time steps along with known training-set labels to train a MLP that models the relationship between loss values and membership status.
+%It extracts per-sample loss-trajectory features from shadow generators with known training-set labels and trains a meta-classifier on these features. loss features across different noises and time steps The  attacker received shadows pre-trained by the organizers on labeled real-data splits, plus (in some variants) query access to the target generator. Under our grey-box threat model, neither is available: the adversary has only the released challenge synthetic data, the public generator implementation, and the full real dataset. We must therefore train our own shadows. A second, less obvious gap motivates a more substantive change: at inference the only model we can construct is a \emph{proxy} generator trained on the released challenge synthetic data, whereas Tartan\_Federer's shadows were trained on real data. 
+
+
+
+
+\begin{figure*}[!ht]
+    \centering
+    \newcommand{\pcawidth}{0.22\textwidth}
+    \setlength{\tabcolsep}{2pt}
+    \begin{tabular}{c cccc} % Changed 'r' to 'c' for better horizontal centering of labels
+      % Header row
+      & \footnotesize{\textbf{MVN}}
+      & \footnotesize{\textbf{CVAE}}
+      & \footnotesize{\textbf{NoisyDiffusion}}
+      & \footnotesize{\textbf{DP-PGM ($\varepsilon$\,=\,10)}} \\[2pt]
+
+      % Row 1: BRCA
+      \rotatebox[origin=c]{90}{\footnotesize{\textbf{BRCA}}}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/MVN/pca_split_1.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/MVN/pca_split_1.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/MVN/pca_split_1.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/MVN/pca_split_1.pdf} \\[2pt]
+
+      % Row 2: COMBINED
+      \rotatebox[origin=c]{90}{\footnotesize{\textbf{COMBINED}}}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/MVN/pca_split_1.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/MVN/pca_split_1.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/MVN/pca_split_1.pdf}
+      & \includegraphics[width=\pcawidth,valign=m]{images/PCAPlots/MVN/pca_split_1.pdf} \\
+    \end{tabular}
+    \caption{%
+      PCA projections of real ({\color{blue}$\bullet$}) and synthetic
+      ({\color{orange}$\bullet$}) data for split\,1 (seed\,42) of the
+      internal evaluation set.
+      Good overlap between real and synthetic points indicates high fidelity.
+    }
+    \label{fig:pca}
+\end{figure*}
+
+% ============================================================
+% TABLE 1 -- Internal Evaluation: TCGA-BRCA
+% ============================================================
+\begin{table*}[!ht]
+\centering
+\caption{%
+  Internal MIA evaluation on \textbf{TCGA-BRCA} (1{,}089 samples $\times$ 978 genes).
+}
+\label{tab:brca_internal}
+\resizebox{\textwidth}{!}{%
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{l *{4}{cccc}}
+\toprule
+\rowcolor{headergray}
+ & \multicolumn{4}{c}{\textbf{MVN (Multivariate)}}
+ & \multicolumn{4}{c}{\textbf{CVAE}}
+ & \multicolumn{4}{c}{\textbf{NoisyDiffusion}}
+ & \multicolumn{4}{c}{\textbf{DP-PGM ($\varepsilon$\,=\,10)}} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}\cmidrule(lr){10-13}\cmidrule(lr){14-17}
+\textbf{Method}
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10 \\
+\midrule
+% ---- Baselines ----
+MC$^*$
+  & 0.508 & \nr & \nr & \best{0.818}
+  & 0.520 & \nr & \nr & \best{1.000}
+  & \nr   & \nr & \nr & \nr
+  & \nr   & \nr & \nr & \nr \\
+ 
+LOGAN$^\dagger$
+  & \na   & \na & \na & \na
+  & \na   & \na & \na & \na
+  & \na   & \na & \na & \na
+  & \na   & \na & \na & \na \\
+ 
+GAN-leaks
+  & 0.531 & \nr & \nr & 0.115
+  & \best{0.610} & \nr & \nr & 0.149
+  & \nr   & \nr & \nr & \nr
+  & \nr   & \nr & \nr & \nr \\
+ 
+GAN-leaks-cal$^\dagger$
+  & \na   & \na & \na & \na
+  & \na   & \na & \na & \na
+  & \na   & \na & \na & \na
+  & \na   & \na & \na & \na \\
+ 
+DOMIAS-KDE$^\dagger$
+  & \na   & \na & \na & \na
+  & \na   & \na & \na & \na
+  & \na   & \na & \na & \na
+  & \na   & \na & \na & \na \\
+ 
+Conf-LR
+  & \best{0.567} & \nr & \nr & 0.104
+  & 0.552 & \nr & \nr & 0.106
+  & \nr   & \nr & \nr & \nr
+  & \nr   & \nr & \nr & \nr \\
+ 
+Conf-RF
+  & 0.518 & \nr & \nr & 0.111
+  & 0.528 & \nr & \nr & 0.110
+  & \nr   & \nr & \nr & \nr
+  & \nr   & \nr & \nr & \nr \\
+ 
+\midrule
+% ---- Our method ----
+\rowcolor{ourrow}
+\ours
+  & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX}
+  & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX}
+  & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX}
+  & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX} \\
+\bottomrule
+\multicolumn{17}{l}{\footnotesize
+  $^*$MC is sensitive to high-dimensional inputs; its TPR@FPR results should be interpreted with caution \citep{github2026}.}
+\end{tabular}%
+}
+\end{table*}
+
+
+% ============================================================
+% TABLE 2 -- Internal Evaluation: TCGA-COMBINED
+% ============================================================
+\begin{table*}[!ht]
+\centering
+\caption{%
+  Internal MIA evaluation on \textbf{TCGA-COMBINED} (4{,}323 samples $\times$ 978 genes,
+  10 cancer tissue types).
+  Metrics and notation as in Table~\ref{tab:brca_internal}.
+  A reference dataset of 824 individuals is officially provided for this dataset.
+  All $^\dagger$ methods were run using this reference set.
+  \colorbox{ourrow}{\strut Shaded row} = our method.
+}
+\label{tab:combined_internal}
+\resizebox{\textwidth}{!}{%
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{l *{4}{cccc}}
+\toprule
+\rowcolor{headergray}
+ & \multicolumn{4}{c}{\textbf{MVN (Multivariate)}}
+ & \multicolumn{4}{c}{\textbf{CVAE}}
+ & \multicolumn{4}{c}{\textbf{NoisyDiffusion}}
+ & \multicolumn{4}{c}{\textbf{DP-PGM ($\varepsilon$\,=\,10)}} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}\cmidrule(lr){10-13}\cmidrule(lr){14-17}
+\textbf{Method}
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10 \\
+\midrule
+% ---- Baselines ----
+MC$^*$
+  & 0.506 & \nr & \nr & 0.640
+  & 0.510 & \nr & \nr & \best{1.000}
+  & \nr   & \nr & \nr & \nr
+  & \nr   & \nr & \nr & \nr \\
+ 
+LOGAN$^\dagger$
+  & 0.504 & \nr & \nr & 0.101
+  & 0.505 & \nr & \nr & 0.102
+  & \nr   & \nr & \nr & \nr
+  & \nr   & \nr & \nr & \nr \\
+ 
+GAN-leaks
+  & 0.526 & \nr & \nr & 0.111
+  & 0.539 & \nr & \nr & 0.121
+  & \nr   & \nr & \nr & \nr
+  & \nr   & \nr & \nr & \nr \\
+ 
+GAN-leaks-cal$^\dagger$
+  & \best{0.561} & \nr & \nr & \best{0.184}
+  & 0.516 & \nr & \nr & 0.922
+  & \nr   & \nr & \nr & \nr
+  & \nr   & \nr & \nr & \nr \\
+ 
+DOMIAS-KDE$^\dagger$
+  & 0.499 & \nr & \nr & 0.100
+  & 0.498 & \nr & \nr & 0.102
+  & \nr   & \nr & \nr & \nr
+  & \nr   & \nr & \nr & \nr \\
+ 
+Conf-LR
+  & 0.512 & \nr & \nr & 0.103
+  & 0.508 & \nr & \nr & 0.102
+  & \nr   & \nr & \nr & \nr
+  & \nr   & \nr & \nr & \nr \\
+ 
+Conf-RF
+  & 0.511 & \nr & \nr & 0.108
+  & \best{0.511} & \nr & \nr & 0.104
+  & \nr   & \nr & \nr & \nr
+  & \nr   & \nr & \nr & \nr \\
+ 
+\midrule
+% ---- Our method ----
+\rowcolor{ourrow}
+\ours
+  & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX}
+  & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX}
+  & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX}
+  & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX} & \textbf{XX.XX} \\
+\bottomrule
+\multicolumn{17}{l}{\footnotesize
+  $^*$MC is sensitive to high-dimensional inputs; its TPR@FPR results should be interpreted with caution \citep{github2026}.}
+\end{tabular}%
+}
+\end{table*}
+
+
+ 
+% ============================================================
+% TABLE 2 -- Leaderboard Results
+% ============================================================
+\begin{table}[!ht]
+\centering
+\caption{%
+  Internal vs.\ official leaderboard scores for our method
+  across all generators and datasets.
+  Internal scores computed on held-out folds;
+  leaderboard scores from the ELSA Benchmark Platform.
+  Metrics as in Table~\ref{tab:internal}.
+}
+\label{tab:leaderboard}
+\resizebox{\columnwidth}{!}{%
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{l *{4}{cccc}}
+\toprule
+ & \multicolumn{4}{c}{\textbf{MVN}}
+    & \multicolumn{4}{c}{\textbf{CVAE}}
+    & \multicolumn{4}{c}{\textbf{NoisyDiffusion}}
+    & \multicolumn{4}{c}{\textbf{DP-PGM ($\varepsilon$\,=\,10)}} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}\cmidrule(lr){10-13}\cmidrule(lr){14-17}
+\textbf{Evaluation}
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10
+  & AUC & AUPR & T@1 & T@10 \\
+ 
+\midrule
+\multicolumn{17}{c}{\textbf{TCGA-BRCA}} \\
+\midrule
+Internal             & & & & & & & & & & & & & & & & \\
+%\cmidrule(l){1-17}
+\textbf{Leaderboard} & & & & & & & & & & & & & & & & \\
+ 
+\midrule
+\multicolumn{17}{c}{\textbf{TCGA-COMBINED}} \\
+\midrule
+Internal             & & & & & & & & & & & & & & & & \\
+%\cmidrule(l){1-17}
+\textbf{Leaderboard} & & & & & & & & & & & & & & & & \\
+ 
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+

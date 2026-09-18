@@ -1,2 +1,15 @@
 .idea/
 __pycache__/
+*.pyc
+
+# Regenerable intermediates: target synthetic datasets, shadow models,
+# extracted features, meta-classifiers.  Rebuild with scripts/build_targets.py
+# and scripts/run_experiment.py.
+artifacts/
+logs/
+
+# Legacy output tree from the pre-refactor pipeline (see legacy/).
+mia_output/
+
+# Results are tracked, but keep the heavy per-run score files out of diffs
+# only if they grow unmanageable -- currently they are small and kept.

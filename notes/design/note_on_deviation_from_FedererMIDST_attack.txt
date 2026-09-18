@@ -1,0 +1,126 @@
+Adapting Tartan_Federer (MIDST → TabDDPM, transactional) for our CAMDA 2026 attacks                                                                                                                                 
+                                                                                                                                                                                                                      
+  The original Tartan_Federer pipeline is: train shadow DDPMs on real subsets → for each evaluation sample, sweep a fixed noise grid across denoising timesteps and record per-step MSE between the network's         
+  predicted noise and the injected noise → flatten the resulting loss trajectory → feed it to a 3-layer MLP that outputs a membership probability. Both of our variants keep this loss-trajectory + MLP scaffolding   
+  but change the things below.                                                                                                                                                                                        
+                                                                                                                                                                                                                      
+  ---                                                                                                                                                                                                                 
+  Part 1 — NoisyDiffusion variant (mia/nd/)
+                                                                                                                                                                                                                      
+  1. Domain & target model
+                                                                                                                                                                                                                      
+  ┌───────────────┬───────────────────────────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────────────────────────────────────────┐   
+  │               │                             Tartan_Federer (TabDDPM)                              │                              Ours (NoisyDiffusion / EmbeddedDiffusion, BRCA)                              │
+  ├───────────────┼───────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────┤   
+  │ Data          │ Bank transactions, ~10 mixed-type features per row                                │ Bulk RNA-seq, 978 continuous gene-expression features per sample                                          │
+  ├───────────────┼───────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Target arch   │ ResNet-MLP backbone with Gaussian + Multinomial diffusion (mixed                  │ ResLinear MLP backbone, Gaussian-only diffusion (no multinomial branch), GroupNorm, concatenated time +   │   
+  │               │ numerical/categorical), LayerNorm, additive sinusoidal time embedding             │ class embeddings at every block, optional self-attention                                                  │   
+  ├───────────────┼───────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────┤   
+  │ Conditioning  │ Unconditional / fold-implicit                                                     │ Trained unconditionally for the attack (UNCONDITIONAL_NUM_CLASSES=1) even though NoisyDiffusion can       │   
+  │               │                                                                                   │ condition on subtype                                                                                      │   
+  ├───────────────┼───────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Noise         │ linear/cosine                                                                     │ linear, β ∈ [0.001, 0.02] (matches MIDST)                                                                 │   
+  │ schedule      │                                                                                   │                                                                                                           │   
+  ├───────────────┼───────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Imported from │ in-repo                                                                           │ external ~/CAMDA25_NoisyDiffusion/TCGA-BRCA/model.py, instantiated at runtime by mia/nd/shadow_model.py   │   
+  └───────────────┴───────────────────────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────┘   
+  
+  2. Shadow models                                                                                                                                                                                                    
+                  
+  - MIDST gave us 30 pre-trained shadows on ~6k transaction rows each. CAMDA does not. We train our own.                                                                                                              
+  - We train 5 shadow EmbeddedDiffusions on the released CV splits (~871 members each) — or, in the "custom splits" mode, configurable up to 30 shadows on resampled member sets (config.NUM_CUSTOM_SPLITS,
+  default 30).                                                                                                                                                                                                        
+  - Hyperparameters (config.py): 200 epochs, batch 32, OneCycleLR (SHADOW_LR=1e-3, weight decay 1e-3, pct_start 0.2), early stopping (patience 30, min Δ=1e-4). DP-SGD noise from the upstream NoisyDiffusion code is
+  preserved but tiny (σ=1e-5, effectively off).                                                                                                                                                                       
+                  
+  3. Feature extraction (mia/nd/loss_features.py)                                                                                                                                                                     
+                  
+  - Same per-sample signal: for each evaluation sample x₀, freeze 300 noise vectors ε and 7 timesteps T_LIST=[5,10,20,30,40,50,100]; for each (t, ε) compute xₜ = √ᾱₜ·x₀ + √(1−ᾱₜ)·ε, then ‖model(xₜ,t) − ε‖². Same   
+  7×300 = 2,100-dim raw vector as Tartan_Federer.
+  - New "summary" feature mode: because the per-sample MSE is averaged over 978 dimensions (vs. ~10 for transactions), the LLN makes the 300 ε-draws nearly redundant. We added a mode that reduces each timestep's   
+  300 losses to {mean, std, min, max} → 28-dim vector. This is the default in the tuned profile.                                                                                                                      
+  
+  4. Meta-classifier (mia/classifier.py)                                                                                                                                                                              
+                  
+  - Same architecture template: 3-layer MLP with Tanh, Sigmoid output, BCE loss.                                                                                                                                      
+  - Default: 2100 → 200 → 200 → 1, identical to Tartan_Federer.
+  - tuned profile: 28 → 64 → 64 → 1, dropout 0.3, weight decay 1e-3.                                                                                                                                                  
+  - Epoch budget cut from MIDST's 5,000 to 2,000 (we have ~5k–16k training rows, vs. MIDST's ~180k — over-capacity hurt generalization in early runs; see note_on_hyperparameters.txt).                               
+  - Best checkpoint by TPR @ 10% FPR on held-out shadow splits (same metric as MIDST).                                                                                                                                
+                                                                                                                                                                                                                      
+  5. New "synth-shadow" pipeline (mia/nd/attack_synth_shadow.py) — not in Tartan_Federer                                                                                                                              
+                                                                                                                                                                                                                      
+  The CAMDA threat model only exposes a proxy trained on the published synthetic set, never the real target model. Real-data shadows therefore live in a different distribution from the proxy used at inference time.
+   To close that domain gap we added an alternative pipeline that trains shadow EmbeddedDiffusions on NoisyDiffusion synthetic data rather than real splits, and fits scalers on the synthetic data too. This matches
+  train-time and deploy-time distributions at the cost of some signal strength. Tartan_Federer has no analogue.                                                                                                       
+                  
+  6. Other RNA-seq-specific plumbing                                                                                                                                                                                  
+  
+  - QuantileTransformer(output_distribution='uniform') fit per-split (vs. MIDST's tabular-row preprocessing).                                                                                                         
+  - Custom 5–30 split JSON because we don't have the MIDST fold structure.
+  - BRCA: 1,089 samples × 978 genes; COMBINED: 6,733 × 978.                                                                                                                                                           
+                                                                                                                                                                                                                      
+  ---                                                                                                                                                                                                                 
+  Part 2 — CVAE variant (mia/cvae/)                                                                                                                                                                                   
+                                   
+  This is a much bigger conceptual change. The target is no longer a diffusion model, so the diffusion-specific loss-trajectory signal does not exist. We re-derived the analogous signal from the CVAE's two
+  intrinsic loss components: the per-dimension KL divergence and the stochastic reconstruction loss.                                                                                                                  
+  
+  1. Target model                                                                                                                                                                                                     
+                  
+  - Conditional VAE (mia/cvae/model.py): Encoder(x, y) → (μ, logvar) over a 128-dim latent; Decoder(z, y) → reconstructed 978-dim sample; ELBO = MSE + β·KL with β=1.                                                 
+  - Conditioned on disease subtype (BRCA: 5 classes; COMBINED: 12). Three label modes (CVAE_LABEL_MODE):
+    - real — ground-truth subtype labels (from BLUE-team release).                                                                                                                                                    
+    - knn — KNN-predicted subtype on NoisyDiffusion synthetic data (used when true labels are unavailable for synthetic samples).                                                                                     
+    - none — zero condition vector, effectively unconditional.                                                                                                                                                        
+                                                                                                                                                                                                                      
+  2. Shadow training (mia/cvae/shadow_model.py)                                                                                                                                                                       
+                                                                                                                                                                                                                      
+  Same split structure (5 or up to 30 shadows on the same member sets as ND). Hyperparameters (config.py): 200 epochs, batch 32, OneCycleLR (lr=1e-3, wd=1e-3), early stopping (patience 30). β fixed at 1.0.         
+  
+  3. Feature extraction (mia/cvae/loss_features.py) — the largest substantive change                                                                                                                                  
+                  
+  For each evaluation sample x with condition y:                                                                                                                                                                      
+                  
+  1. Encode once → (μ, logvar).                                                                                                                                                                                       
+  2. Per-dimension KL contribution: kl_d = -0.5·(1 + logvar_d − μ_d² − exp(logvar_d)), yielding 128 features that expose how each latent dim deviates from the prior (members tend to have sharper, more confident
+  posteriors).                                                                                                                                                                                                        
+  3. Temperature-swept stochastic reconstruction: for each α ∈ TEMP_LIST = [0, 0.5, 1, 1.5, 2] (5 temperatures), and for each of 300 frozen ε ∼ N(0, I), draw z = μ + α·σ·ε, decode, and record MSE(decode(z, y), x).
+  5 × 300 = 1,500 rec_losses per sample.                                                                                                                                                                              
+  4. Concatenate: 1,628-dim raw feature vector (1,500 rec_losses + 128 KL).
+                                                                                                                                                                                                                      
+  This replaces the diffusion timestep-sweep entirely. The temperature α plays a role analogous to the diffusion timestep t — α=0 gives the deterministic z=μ baseline; larger α probes a wider neighborhood of the   
+  encoded latent. Members are expected to have both lower per-dim KL and lower reconstruction loss across all α.                                                                                                      
+                                                                                                                                                                                                                      
+  A summary mode is also provided: per-temperature {mean, std, min, max} on rec_losses + the 128 KL dims → 148-dim vector (used in the tuned profile).                                                                
+   
+  4. Meta-classifier                                                                                                                                                                                                  
+                  
+  Identical scaffold to ND (same MembershipMLP, BCE, Adam, TPR@10%FPR checkpointing). Just a different input size: 1628 → 200 → 200 → 1 raw, or 148 → 64 → 64 → 1 tuned. CVAE_MLP_EPOCHS=750 (default), 2000 (tuned). 
+   
+  5. CVAE synth-shadow pipeline (mia/cvae/attack_synth_shadow.py)                                                                                                                                                     
+                  
+  Parallel to the ND synth-shadow pipeline but the synthetic data is generated by the trained CVAEs themselves (the --generate-synthetic flag in the main CVAE pipeline writes per-split CVAE samples to              
+  mia_output/cvae/synthetic_data/). Shadows are then re-trained on that CVAE-generated synthetic data, scalers re-fit on the synthetic, etc. The structural advantage over ND synth-shadow is that we can generate
+  arbitrary amounts of conditioned synthetic data on demand, rather than being limited to the released NoisyDiffusion synthetic set.                                                                                  
+                  
+  6. Shared with ND                                                                                                                                                                                                   
+   
+  Splits, data loaders, scaler logic, MLP training/eval, challenge-inference glue. Both attacks live under a unified mia/ package and are launched the same way (python -m mia.nd.attack / python -m mia.cvae.attack, 
+  with --profile baseline|tuned).
+                                                                                                                                                                                                                      
+  ---             
+  One-paragraph version for the abstract
+                                                                                                                                                                                                                      
+  ▎ We adapt the Tartan_Federer MIDST attack — a loss-trajectory + MLP membership inference attack originally targeting TabDDPM on tabular transactional data — to two generative models trained on bulk TCGA RNA-seq.
+  ▎  For NoisyDiffusion (a continuous-only Gaussian diffusion variant of the MIDST target), we preserve the 7-timestep × 300-noise loss-trajectory feature (2,100-dim) but introduce a summary aggregation that       
+  ▎ exploits the variance-reduction induced by averaging MSE over 978 genes, collapsing each trajectory to 28 dimensions and reducing classifier capacity to match the ~30× smaller per-fold training set. We also add
+  ▎  a "synth-shadow" variant in which shadow models are trained on synthetic data, eliminating the distribution gap between real-data shadows and the synthetic-trained proxy that is exposed at deployment. For our 
+  ▎ CVAE variant the diffusion-specific signal does not exist, so we re-derive the membership feature from the CVAE's intrinsic losses: a 128-dim per-latent-dimension KL contribution combined with reconstruction 
+  ▎ MSE under a 5-temperature × 300-noise sweep of the latent posterior, yielding a 1,628-dim raw or 148-dim summarized feature. The CVAE additionally conditions on disease subtype (with optional KNN-predicted
+  ▎ labels when true subtypes are unavailable). Both variants share data loading, splits, scaling, MLP architecture, and TPR@10%FPR-based checkpoint selection, and both expose a synth-shadow alternative, the CVAE
+  ▎ one self-generating its synthetic data via the trained shadows.
+
+  ---
+  If your colleague needs concrete numbers (sample counts, hyperparameters, dimensions), everything above is exact and grounded in the codebase — happy to pull specific file:line cites for any claim.

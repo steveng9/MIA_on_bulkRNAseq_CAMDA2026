@@ -1,0 +1,47 @@
+# Full attack x generator grid on TCGA-COMBINED.
+#
+# Four attacks scored against synthetic data from four generators, five splits
+# each: 20 target datasets, 16 grid cells, 80 runs.  The diagonal reproduces
+# the CAMDA 2026 abstract's "Ours" row; the off-diagonal measures how much of
+# each attack's power depended on knowing the generative mechanism.
+name: grid_combined
+dataset: COMBINED
+notes: "4x4 grid, 5 splits, MeLoMIA at K=20 shadows (cohort is 4x larger)"
+device: cuda
+
+generators: [mvn, cvae, nd, pgm]
+splits: [1, 2, 3, 4, 5]
+
+# Target hyperparameters that reproduce the challenge's released data.
+target_params:
+  mvn:
+    noise_level: 0.7          # the abstract's MVN column
+  pgm:
+    epsilon: 10.0             # DP-PGM (eps = 10)
+    n_bins: 4
+    pgm_iters: 1000
+    joint_mode: true
+
+attacks:
+  mahalamia:
+    class: mahalamia
+    params:
+      use_reference: true     # COMBINED ships an auxiliary non-member set
+  mamamia:
+    class: mamamia
+    params:
+      n_bins: 4               # match DP-PGM's own discretisation
+  melomia_nd:
+    class: melomia_nd
+    params:
+      n_shadows: 20           # the abstract used 5; see TODO item 2
+      n_noise: 600
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+  melomia_cvae:
+    class: melomia_cvae
+    params:
+      n_shadows: 20
+      n_noise: 50
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
