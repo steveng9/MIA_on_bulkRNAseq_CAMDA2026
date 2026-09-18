@@ -91,7 +91,11 @@ class NDBackend(Backend):
     n_noise_vectors: int = 600
     shadow_epochs: int = 200
     probe_epochs: int = 300
-    batch_size: int = 512
+    #: rows per forward pass during extraction.  Each sample is expanded by
+    #: n_noise, so the sample batch is derived from this rather than fixed --
+    #: otherwise the working set scales with the noise budget and a 600-vector
+    #: run allocates tens of GB, which matters when several workers share a GPU.
+    rows_per_forward: int = 40_000
 
     name = "nd"
 
@@ -143,13 +147,14 @@ class NDBackend(Backend):
         bank = torch.randn(n_noise, dim, generator=rng).to(self.device)
         X_gpu = torch.tensor(X, dtype=torch.float32, device=self.device)
         labels = torch.zeros(len(X), dtype=torch.long, device=self.device)
+        batch = max(1, self.rows_per_forward // n_noise)
 
         for si, t_val in enumerate(self.sweep_points):
             a = diff.sqrt_alpha_bar[t_val].item()
             b = diff.sqrt_one_minus_alpha_bar[t_val].item()
             t_scalar = torch.tensor(float(t_val), device=self.device)
-            for start in range(0, n, self.batch_size):
-                end = min(start + self.batch_size, n)
+            for start in range(0, n, batch):
+                end = min(start + batch, n)
                 x0 = X_gpu[start:end]
                 B = end - start
                 noisy = (a * x0.unsqueeze(1) + b * bank.unsqueeze(0)).reshape(B * n_noise, dim)

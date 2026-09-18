@@ -141,11 +141,14 @@ re-running updates in place instead of accumulating near-duplicates.
 
 ## Environment
 
-Python 3.9, CUDA.  Beyond the usual scientific stack:
+```bash
+conda env create -f environment.yml && conda activate camda-mia
+python -m pytest tests/ -q
+```
 
-```
-torch  scikit-learn  xgboost  lightgbm  catboost  optuna  imbalanced-learn  pyyaml
-```
+Python 3.9 with CUDA.  `numpy` is pinned below 2 for the Private-PGM stack; the
+rest of the versions are recorded for reproducibility rather than because they
+are delicate.
 
 Three external repos are read but not vendored, resolved through `mia/paths.py`
 or the matching environment variable:

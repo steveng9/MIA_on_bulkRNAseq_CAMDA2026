@@ -1,0 +1,36 @@
+# conda env create -f environment.yml && conda activate camda-mia
+#
+# Versions are the ones the recorded results were produced with.  Only three
+# need to be taken seriously:
+#
+#   numpy < 2      the Private-PGM stack (mbi) has not been ported
+#   torch          any CUDA build works; 1.13 is what the ND weights were
+#                  trained under and what loads them without warnings
+#   scikit-learn   QuantileTransformer's inverse is part of the ND generator's
+#                  output pipeline, so its behaviour is load-bearing rather than
+#                  incidental -- see results/FINDINGS.md
+#
+# The DP-PGM generator additionally needs the sibling private-pgm-rnaseq-camda2026
+# repo on disk (see mia/paths.py); install its `mbi` dependency from there.
+name: camda-mia
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - numpy=1.23
+  - pandas>=2.0
+  - scipy>=1.11
+  - scikit-learn>=1.5
+  - matplotlib>=3.8
+  - pyyaml>=6.0
+  - joblib>=1.4
+  - pytest>=8.0
+  - pip
+  - pip:
+      # install the CUDA build that matches your driver
+      - torch==1.13.1
+      - xgboost>=1.7
+      - lightgbm>=4.0
+      - catboost>=1.2
+      - optuna>=3.6
+      - imbalanced-learn>=0.12
