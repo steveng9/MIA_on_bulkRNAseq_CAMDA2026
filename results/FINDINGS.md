@@ -107,6 +107,41 @@ conditioned covariance, CVAE is as exposed as MVN (0.996 vs 1.000), and a purely
 statistical attack requiring no shadow models beats the tailored loss-trajectory
 attack on both.
 
+### The MVN result is a p ≈ n effect; the CVAE result is not
+
+COMBINED separates the two.  It has the same 978 genes but 3,458 training
+samples instead of 871, so the sample covariance is comfortably full rank:
+
+| MahalaMIA | cohort | MVN | CVAE | ND | DP-PGM |
+|---|---|---|---|---|---|
+| pseudo-inverse | BRCA | 0.928 | 0.891 | 0.806 | 0.503 |
+| ridge, α = 1e-4 | BRCA | **1.000** | 0.970 | 0.821 | 0.503 |
+| pseudo-inverse | COMBINED | 0.900 | 0.619 | 0.770 | 0.500 |
+| ridge, α = 1e-4 | COMBINED | 0.893 | **0.798** | 0.769 | 0.500 |
+
+Against MVN, ridge is worth +0.07 on BRCA and **nothing** on COMBINED (0.900 ->
+0.893).  Against CVAE it is worth +0.08 on BRCA and **+0.18** on COMBINED.  Two
+different mechanisms:
+
+* **MVN at p ≈ n.**  Fitting a 978-dimensional per-class Gaussian from ~870
+  samples leaves the covariance singular, and the generator's over-fit lives in
+  exactly those degenerate directions.  Keep them and membership is essentially
+  determined; discard them (pseudo-inverse) or shrink them (Ledoit-Wolf) and it
+  is not.  Give the same generator four times the data and the effect is gone.
+  The claim for the paper is therefore not "ridge breaks MVN" but *a per-class
+  Gaussian generator is catastrophically exposed whenever it is fitted to fewer
+  samples than it has genes* — which is the regime most single-cohort RNA-seq
+  studies are actually in.
+* **CVAE anywhere.**  Here conditioning helps *more* on the larger cohort, so
+  it is not a rank artefact.  The VAE's reconstruction error concentrates in
+  low-variance gene directions regardless of n, and the pseudo-inverse discards
+  precisely those.
+
+The direct test is a cohort-size sweep: subsample COMBINED's training half to
+n in {500, 871, 1500, 3458} at fixed p = 978 and watch the MVN column rise as n
+falls through p.  That is TODO item 5, which this turns from a generalisation
+check into a mechanism experiment.
+
 ---
 
 ## 3. Where we disagree with the abstract
