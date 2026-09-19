@@ -280,6 +280,38 @@ Migration needs a shim that registers the existing `artifacts/attacks/` and
 
 ---
 
+### 13. The ND generator's SMOTE budget is a confound on every cohort comparison
+
+`nd`'s `smote_upsample_to=3000` is applied **per class** and only to classes
+below the threshold (`mia/generators/nd.py:151`), so the generator's effective
+training set is `3000 x n_classes` regardless of the real cohort:
+
+| cohort | real train rows | classes | rows the generator sees | inflation |
+|---|---|---|---|---|
+| BRCA | 871 | 5 | 15,000 | 17.2x |
+| COMBINED | 3,458 | 12 | 36,000 | 10.4x |
+
+Two consequences.
+
+**It decouples "cohort size" from what the generator trains on**, which is why
+the ND arm of the cohort-size sweep (item 5) would produce a flat, meaningless
+curve and has not been run.
+
+**It predicts a direction for the COMBINED ND cell.**  SMOTE synthesises by
+interpolating between neighbours rather than copying, so a 10x inflation should
+blur individual records and reduce memorisation.  If that effect dominates,
+MeLoMIA-ND against COMBINED-ND should land below BRCA's 0.858 by *more* than
+cohort size alone explains — and the drop should be larger than the CVAE
+generator's, which has no such step.  Written down before the row lands so it is
+a prediction rather than a post-hoc story.
+
+The clean experiment is to re-run one ND column with `smote_upsample_to: null`
+(the shadow config already uses `None`) and see how much of the generator's
+resistance was the diffusion model and how much was the interpolation in front
+of it.
+
+---
+
 ## Smaller follow-ups
 
 * ~~**Give the MLP search early stopping.**~~ *Done.*  It was the worst
