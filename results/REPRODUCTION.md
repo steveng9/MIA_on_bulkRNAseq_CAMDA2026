@@ -5,9 +5,9 @@ What this repo's pipeline produces, next to the numbers in
 differences visible rather than to hide them: some are expected consequences of
 a cleaner setup, and at least one is a genuine disagreement worth chasing.
 
-*Status: BRCA statistical attacks and the MeLoMIA-ND row complete; the
-MeLoMIA-CVAE row and the COMBINED MeLoMIA rows are running.  This file is
-updated as cells land.*
+*Status: the BRCA grid is complete (all four attacks x all four generators,
+as-submitted and tuned).  The synth-shadow ablation and the COMBINED MeLoMIA
+rows are running.  This file is updated as cells land.*
 
 ## What is and is not the same
 
@@ -95,54 +95,59 @@ in the DP-PGM sense — with ~870 synthetic samples spread over 64 bins per gene
 the domain ratio is closer to a per-gene nearest-value detector — but it is a
 real attack on a deep generative model, and a strong one.  See TODO.
 
-### MeLoMIA-ND vs NoisyDiffusion — exceeded
+### MeLoMIA on its own generator — both exceeded
 
-| | AUC | AUPR | T@1 | T@10 |
+| MeLoMIA-ND vs ND | AUC | AUPR | T@1 | T@10 |
 |---|---|---|---|---|
-| abstract (K=5 shadows) | 0.620 | 0.858 | 0.045 | 0.193 |
-| **this repo (K=30 shadows)** | **0.858** | **0.959** | **0.329** | **0.622** |
+| abstract (K=5) | 0.620 | 0.858 | 0.045 | 0.193 |
+| **this repo (K=30)** | **0.858** | **0.959** | **0.329** | **0.622** |
 
-This is the headline change from more shadow models.  The abstract's K=5 was
-inherited from the blue team's five published splits rather than chosen, and a
-five-model pool is thin for a meta-classifier over 15 timesteps x 600 noise
-draws.  Raising it to 30 moves TPR at 1% FPR from 0.045 to 0.329 — 7.3x — and at
-10% FPR from 0.193 to 0.622.  The low-FPR end is where the improvement is
-concentrated, which is the end that matters for a privacy claim: the attack goes
-from flagging 1 in 22 members at a 1% false-positive budget to flagging 1 in 3.
-
-Nothing else about the attack changed.  Same features, same target synthetic
-data (the blue team's published ND datasets), same five splits, same metric
-definitions.  K is the only knob that moved, so the abstract's ND number should
-be read as a property of its shadow budget rather than of the generator.
-
-### MeLoMIA-ND applied across generators — it is not diffusion-specific
-
-| MeLoMIA-ND vs | MVN | CVAE | ND | DP-PGM |
+| MeLoMIA-CVAE vs CVAE | AUC | AUPR | T@1 | T@10 |
 |---|---|---|---|---|
-| AUC | 0.876 | 0.824 | 0.858 | 0.488 |
-| AUPR | 0.955 | 0.950 | 0.959 | 0.801 |
-| T@1 | 0.219 | 0.402 | 0.329 | 0.017 |
-| T@10 | 0.573 | 0.557 | 0.622 | 0.110 |
+| abstract (K=5) | 0.753 | 0.928 | 0.274 | 0.489 |
+| **this repo (K=30)** | **0.798** | **0.943** | **0.329** | **0.518** |
 
-The off-diagonal cells are new and they undercut the "attack matched to
-generator" framing.  MeLoMIA-ND scores its loss trajectory over the diffusion
-timesteps of a *proxy* model that the attacker trains on the released synthetic
-data; nothing in that pipeline requires the target to have been a diffusion
-model.  Against the MVN generator — which has no diffusion process at all and no
-neural network — it reaches 0.876, slightly *above* its own diagonal cell.
-Against the CVAE it reaches 0.824 with the best T@1 in the row (0.402).
+Both exceed the abstract, and the shadow count is the only thing that changed —
+same features, same splits, same metric definitions, and for ND the same
+published synthetic data.  But the two gain very differently from it.  ND
+improves by 0.238 AUC and multiplies TPR@1%FPR by 7.3x; CVAE improves by 0.045
+and by 1.2x.
 
-The reading is that the proxy's denoising loss is measuring how tightly the
-released synthetic distribution concentrates around each candidate record, and
-that quantity is informative for any generator that overfits, whatever
-mechanism produced the overfitting.  The diffusion ladder is a good
-multi-resolution probe, not a model-matched one.
+So K=5 was starving one attack rather than handicapping the method.  That is
+worth saying explicitly in the paper, because the abstract's headline ordering
+(CVAE attack stronger than ND attack, 0.753 vs 0.620) **reverses** at K=30:
+0.798 vs 0.858.  The conclusion that the CVAE is the more vulnerable deep
+generator does not survive giving the ND attack an adequate shadow budget.
 
-**DP-PGM is the exception on this row too**: 0.488 AUC, T@10 of 0.110 against a
-0.10 baseline.  It is the only cell in the BRCA grid where the strongest attack
-in the suite is at chance, and it is at chance by a wide margin rather than
-marginally.  Both statistical attacks and the strongest learned attack agree,
-which is the cleanest positive result for DP in the whole grid.
+### The full BRCA grid
+
+Every attack against every generator, as-submitted configurations, five splits.
+The abstract reports only the diagonal plus MahalaMIA's two cross-generator
+cells; everything else here is new.
+
+| AUC | MVN | CVAE | ND | DP-PGM |
+|---|---|---|---|---|
+| MahalaMIA | **0.928** | **0.891** | 0.806 | 0.497 |
+| MAMA-MIA | 0.520 | 0.528 | 0.539 | 0.501 |
+| MeLoMIA-CVAE | 0.553 | 0.798 | 0.563 | 0.491 |
+| MeLoMIA-ND | 0.876 | 0.824 | **0.858** | 0.488 |
+
+Two things in it are not in the abstract at all.
+
+**MahalaMIA wins two of the four columns** — and after the covariance
+conditioning of finding 2 it reaches 1.000 on MVN and 0.970 on CVAE.  A
+closed-form distance with no shadow-model budget beats both learned attacks on
+the two generators it beats them on, which makes it the more practically
+alarming result.
+
+**The two MeLoMIA backends behave completely differently off-diagonal.**
+MeLoMIA-ND transfers (0.876 against MVN, a per-class Gaussian with no diffusion
+process anywhere — above its own diagonal cell); MeLoMIA-CVAE does not (0.553
+against MVN, 0.563 against ND).  `results/FINDINGS.md` section 3 works through
+why.
+
+Tables and figures for both the as-submitted and the tuned grid are in
+`results/tables/grid_brca_BRCA.txt` and `results/tables/grid_brca_tuned_BRCA.txt`.
 
 ## COMBINED
 
