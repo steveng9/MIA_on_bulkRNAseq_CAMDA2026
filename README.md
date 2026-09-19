@@ -76,8 +76,18 @@ longer a performance estimate, but it is still the only honest signal for
 choosing hyperparameters and ensemble weights.  Selecting those against the
 final proxy's labels would be tuning on the evaluation set.
 
-See `docs/MODEL_ZOO.md` for the artifact store, the reuse patterns, and the six
-contamination rules that are checked rather than asserted.
+The internal proxy is also not a separate kind of model.  A synth-shadow is a
+probe fitted to synthetic data emitted by a generator fitted to a real split,
+which is the final proxy's construction exactly, minus the secrecy of the split.
+Holding a set of shadows out of the meta-classifier's training pool and scoring
+them *is* the internal-proxy role, and rotating that hold-out over the pool is
+model-disjoint cross-validation.  `MeLoMIA(internal_proxy_selection=True)` does
+this; it is off by default while the current grid is in flight.
+
+See `docs/FIVE_ROLES.md` for the audit of what the pipeline builds against what
+the five roles require, and `docs/MODEL_ZOO.md` for the artifact store, the
+reuse patterns, and the six contamination rules that are checked rather than
+asserted.
 
 ---
 
