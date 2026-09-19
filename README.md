@@ -50,6 +50,35 @@ synthetic data.  A sample's membership label for shadow *k* is inherited from
 the base shadow: `x` is a member of shadow *k* iff `x` was in split *k*'s
 training half, even though synth-shadow *k* never saw `x` at all.
 
+### The five roles
+
+Five distinct jobs, not five kinds of model — the same fitted generator can hold
+a different role in a different experiment, which is what makes the artifact
+store reusable.
+
+| role | trained on | labels known? | exists under |
+|---|---|---|---|
+| target | real training split | no | both threat models |
+| base shadow | a real split we control | yes | black-box only |
+| synth shadow | a base shadow's synthetic output | yes, inherited | black-box only |
+| internal proxy | a *held-out* base shadow's synthetic output | yes | black-box only |
+| final proxy | the target's released synthetic data | no | black-box only |
+
+Under a white-box threat the middle three collapse: with access to the target
+there is nothing to proxy, and since the target saw *real* data, shadows must be
+trained on real data to match the inference condition.
+
+The internal-proxy role deserves a note, because its job changed when we stopped
+competing.  In the challenge it was the only way to estimate performance at all,
+since the target's labels were secret.  Running internally we know our own
+targets' labels and score the final proxy directly — so the internal proxy is no
+longer a performance estimate, but it is still the only honest signal for
+choosing hyperparameters and ensemble weights.  Selecting those against the
+final proxy's labels would be tuning on the evaluation set.
+
+See `docs/MODEL_ZOO.md` for the artifact store, the reuse patterns, and the six
+contamination rules that are checked rather than asserted.
+
 ---
 
 ## Layout
@@ -58,6 +87,10 @@ training half, even though synth-shadow *k* never saw `x` at all.
 mia/
   paths.py           where everything lives; the only file to edit on a new machine
   datasets.py        TCGA cohort loaders, class labels, the 5 canonical splits
+  zoo/               content-addressed model + synthetic-dataset store
+    ids.py             canonical hashing; closure hashes over real sample ids
+    registry.py        get-or-create for fits and samples, provenance, locking
+    roles.py           the five roles and the contamination rules
   targets.py         building and loading the target synthetic datasets
   metrics.py         AUC / AUPR / TPR@FPR, shared by every attack
   runs.py            experiment record keeping (results/index.csv)
