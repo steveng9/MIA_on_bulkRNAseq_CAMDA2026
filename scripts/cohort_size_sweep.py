@@ -35,7 +35,8 @@ from mia import metrics as M             # noqa: E402
 from mia import runs as R                # noqa: E402
 from mia.attacks.mahalamia import (mahalanobis, precision,  # noqa: E402
                                    sigmoid_calibrate)
-from mia.generators.mvn import MVNGenerator  # noqa: E402
+from mia import generators as G           # noqa: E402
+from mia import targets as TG              # noqa: E402
 
 DEFAULT_SIZES = (500, 700, 871, 1100, 1500, 2000, 2800, 3458)
 # Both ends of the alpha range: on BRCA (n < p) the small alpha wins and the
@@ -96,9 +97,12 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--dataset", default="COMBINED")
+    p.add_argument("--generator", default="mvn", choices=("mvn", "cvae", "nd"),
+                   help="which generator to resample.  mvn is CPU and fast; "
+                        "cvae and nd train per size and want a GPU")
+    p.add_argument("--device", default="cpu")
     p.add_argument("--sizes", type=int, nargs="+", default=list(DEFAULT_SIZES))
     p.add_argument("--trials", type=int, default=3)
-    p.add_argument("--noise-level", type=float, default=0.7)
     p.add_argument("--no-save", action="store_true")
     args = p.parse_args()
 
@@ -111,7 +115,7 @@ def main() -> None:
     X_aux = ref.values.astype(np.float64) if ref is not None else None
 
     p_genes = X_all.shape[1]
-    print(f"{args.dataset}: {len(X_all)} samples x {p_genes} genes, "
+    print(f"{args.dataset} / {args.generator}: {len(X_all)} samples x {p_genes} genes, "
           f"{n_classes} classes, aux={'none' if X_aux is None else len(X_aux)}")
     print(f"p = {p_genes}; sizes crossing it: "
           f"{[n for n in args.sizes if n < p_genes]} below, "
@@ -125,8 +129,9 @@ def main() -> None:
             continue
 
         # Fit once per (n, trial) and score every covariance setting off the same
-        # synthetic data.  The generator fit is 12 per-class eigendecompositions
-        # of a 978x978 matrix and dominates the cost; the covariance variants
+        # synthetic data.  The generator fit dominates the cost -- 12 per-class
+        # eigendecompositions of a 978x978 matrix for MVN, a full training run
+        # for the deep generators -- while the covariance variants
         # differ only in how the attack inverts what it is given, so refitting
         # per variant would treble the work and also add noise between the rows
         # we most want to compare.
@@ -137,9 +142,9 @@ def main() -> None:
             y_member = np.zeros(len(X_all), dtype=int)
             y_member[train_idx] = 1
 
-            gen = MVNGenerator(noise_level=args.noise_level,
-                               seed=int(rng.randint(1 << 30)),
-                               device="cpu", verbose=False)
+            gen = G.build(args.generator, seed=int(rng.randint(1 << 30)),
+                          device=args.device, verbose=False,
+                          **TG.default_params(args.generator, args.dataset))
             gen.fit(X_all[train_idx].astype(np.float32), y_all[train_idx], n_classes)
             X_syn = gen.sample(len(train_idx))[0].astype(np.float64)
 
@@ -151,14 +156,15 @@ def main() -> None:
                 if not args.no_save:
                     tag = f"n{n}_{cov}" + (f"{alpha:g}" if cov == "ridge" else "")
                     R.save_run(
-                        dataset=args.dataset, attack="mahalamia", generator="mvn",
+                        dataset=args.dataset, attack="mahalamia",
+                        generator=args.generator,
                         split=trial, tag=tag, experiment="cohort_size",
                         variant=tag,
                         notes="cohort-size sweep at fixed gene count",
                         params={"attack": "mahalamia", "covariance": cov,
                                 "ridge_alpha": alpha, "use_reference": True,
                                 "n_train": n, "n_genes": p_genes,
-                                "noise_level": args.noise_level},
+                                "sweep_generator": args.generator},
                         metrics=met, sample_ids=ids, scores=sc,
                         y_member=y_member,
                     )
