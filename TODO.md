@@ -154,6 +154,61 @@ shadows are cheap (seconds and under a minute); DP-PGM base shadows are not
 
 Until this is run, read the off-diagonal MeLoMIA numbers as a lower bound.
 
+### 10. Model-disjoint validation (the internal-proxy role) — *found, not yet fixed*
+
+The meta-classifier's hyperparameters and ensemble weights are currently chosen
+by `StratifiedGroupKFold` **grouped by `sample_id`**.  That holds out *samples*
+but never *models*: every shadow appears on both sides of every fold.  So the CV
+measures "generalise to a new sample under a model I have already seen", while
+deployment asks the opposite — "generalise to a new model (the proxy) on samples
+I have all seen".
+
+This does not contaminate the reported grid numbers.  `score()` runs the real
+deployment path (train the final proxy on the released target data, apply the
+meta-classifier), and Optuna never sees the target's labels, so there is no
+leakage into the results.  What it does mean is that model selection is
+optimising the wrong generalisation axis, and the printed CV AUC is an
+optimistic number that should not be quoted in the paper as an attack result.
+
+The fix is block cross-validation over both axes at once: partition the shadows
+into F groups and the samples into F groups, train on (shadows not in f) x
+(samples not in f), validate on (shadows in f) x (samples in f).  Held-out
+shadows in that scheme *are* internal proxies in the five-role sense, so this
+implements the missing role rather than patching around it.
+
+Worth measuring once it exists: the gap between sample-disjoint CV AUC and
+model-disjoint CV AUC is itself a result — it quantifies how much of a loss
+attack's apparent power is model-specific memorisation rather than a
+transferable signal.
+
+See `docs/MODEL_ZOO.md`.
+
+### 11. Move the pipeline onto the zoo and reuse artifacts across trials
+
+`mia/zoo/` stores every fit and every synthetic dataset content-addressed by
+`(generator, params, source data, seed)`, with the real-sample closure attached,
+and `mia/zoo/roles.py` enforces the six contamination rules.  The attacks do not
+use it yet — they still keep private caches under `artifacts/attacks/`.
+
+Wiring them up buys three things beyond tidiness:
+
+* **New grid columns for free.**  A base shadow's synthetic output is just a
+  synthetic dataset with trustworthy provenance, which is exactly what a target
+  is.  Promoting shadows to targets adds generator columns at zero training
+  cost.
+* **Cross-trial reuse.**  Shadow stacks, target sets and proxies get shared
+  across every experiment that asks for the same spec, instead of each config
+  rebuilding its own.
+* **Machine-checkable claims.**  Every run records its role assignment, and
+  `scripts/zoo.py verify` re-checks the whole results tree.  "No experiment was
+  contaminated" stops being something we assert in prose.
+
+Migration needs a shim that registers the existing `artifacts/attacks/` and
+`artifacts/targets/` trees into the index by re-deriving their specs, so the
+30-shadow BRCA stacks already on disk are not rebuilt.
+
+---
+
 ## Smaller follow-ups
 
 * **DP-PGM attack is weak and we know it.**  MAMA-MIA reaches roughly

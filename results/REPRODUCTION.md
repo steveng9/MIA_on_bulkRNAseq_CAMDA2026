@@ -96,7 +96,33 @@ real attack on a deep generative model, and a strong one.  See TODO.
 
 ## COMBINED
 
-*Pending.*
+The larger cohort (4,323 samples, 12 classes, plus a held-out auxiliary
+reference set of 824) is not in the abstract, so there is nothing to reproduce
+here -- it is the generalisation check.  Statistical attacks, five splits:
+
+| AUC | MVN | CVAE | ND | DP-PGM |
+|---|---|---|---|---|
+| MahalaMIA (pinv, aux) | 0.900 | 0.619 | 0.770 | 0.500 |
+| MAMA-MIA (4 bins) | 0.512 | 0.517 | 0.528 | 0.499 |
+
+Two differences from BRCA matter.
+
+**CVAE gets much harder; MVN barely does.**  MahalaMIA against the CVAE falls
+from 0.891 to 0.619, while against the MVN generator it only moves from 0.928 to
+0.900.  That is the expected direction and a useful separation: a VAE trained on
+four times the data memorises far less per record, whereas a per-class Gaussian
+fit is a summary statistic whose fidelity to its training split does not decay
+with n.  The MVN generator's vulnerability is structural, not a small-sample
+artefact, and that is the stronger claim for the paper.
+
+**The NoisyDiffusion column stays high** (0.806 -> 0.770), which again contradicts
+the abstract's 0.489 rather than explaining it.  The gap is not a cohort-size
+effect.
+
+**DP-PGM is at chance on both cohorts** for both statistical attacks, consistent
+with the abstract.
+
+MeLoMIA rows on COMBINED are queued at K=20 shadows.
 
 ## Reproducing this file
 

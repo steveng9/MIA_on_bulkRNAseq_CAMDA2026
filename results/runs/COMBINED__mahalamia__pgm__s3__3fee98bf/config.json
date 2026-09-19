@@ -1,0 +1,23 @@
+{
+  "run_id": "COMBINED__mahalamia__pgm__s3__3fee98bf",
+  "timestamp": "2026-09-19T00:12:08+00:00",
+  "dataset": "COMBINED",
+  "attack": "mahalamia",
+  "generator": "pgm",
+  "split": 3,
+  "tag": "aux",
+  "experiment": "grid_combined",
+  "variant": "mahalamia",
+  "notes": "4x4 grid, 5 splits, MeLoMIA at K=20 shadows (cohort is 4x larger)",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "pinv",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "calibrate": true,
+    "attack": "mahalamia"
+  }
+}

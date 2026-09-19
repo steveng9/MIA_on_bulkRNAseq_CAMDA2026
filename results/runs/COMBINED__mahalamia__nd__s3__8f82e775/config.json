@@ -1,0 +1,23 @@
+{
+  "run_id": "COMBINED__mahalamia__nd__s3__8f82e775",
+  "timestamp": "2026-09-19T00:24:28+00:00",
+  "dataset": "COMBINED",
+  "attack": "mahalamia",
+  "generator": "nd",
+  "split": 3,
+  "tag": "aux_ridge1e-06",
+  "experiment": "tune_statistical_combined",
+  "variant": "ridge1e6",
+  "notes": "ridge alpha and bin-count sweeps on the larger cohort",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ridge",
+    "ridge_alpha": 1e-06,
+    "n_components": null,
+    "calibrate": true,
+    "attack": "mahalamia"
+  }
+}

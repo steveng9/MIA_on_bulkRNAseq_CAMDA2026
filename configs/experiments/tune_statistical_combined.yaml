@@ -1,0 +1,23 @@
+# Does the BRCA tuning transfer to the larger cohort?
+#
+# Two findings on BRCA need a second cohort before they go in the paper:
+#   * MahalaMIA with a lightly ridge-regularised inverse instead of the
+#     pseudo-inverse takes the MVN column from 0.93 to 1.00
+#   * MAMA-MIA's AUC against NoisyDiffusion rises monotonically with bin count,
+#     reaching ~1.00 by 2048 bins -- the quantile-support leak
+# Both are CPU-only, so this runs alongside the GPU MeLoMIA work.
+name: tune_statistical_combined
+dataset: COMBINED
+notes: "ridge alpha and bin-count sweeps on the larger cohort"
+device: cpu
+
+generators: [mvn, cvae, nd, pgm]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  ridge1e6:  {class: mahalamia, params: {covariance: ridge, ridge_alpha: 0.000001}}
+  ridge1e4:  {class: mahalamia, params: {covariance: ridge, ridge_alpha: 0.0001}}
+  ridge1e2:  {class: mahalamia, params: {covariance: ridge, ridge_alpha: 0.01}}
+  bins64:    {class: mamamia,   params: {n_bins: 64}}
+  bins256:   {class: mamamia,   params: {n_bins: 256}}
+  bins1024:  {class: mamamia,   params: {n_bins: 1024}}
