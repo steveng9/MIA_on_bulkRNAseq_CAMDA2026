@@ -77,7 +77,18 @@ denoise the loss features rather than discard the signal.  Fit the basis only on
 data the adversary legitimately holds — the released synthetic set, or the
 auxiliary reference — never on `D_real`.
 
-### 5. More cohorts and more cohort sizes
+### 5. More cohorts and more cohort sizes — *MahalaMIA x MVN done*
+
+`scripts/cohort_size_sweep.py` covers the MVN/MahalaMIA cell: COMBINED resampled
+to n = 500 … 3458 at p = 978, three trials each.  Result in `results/FINDINGS.md`
+-- exposure is a smooth function of n/p, perfect at n <= p, and the submitted
+pseudo-inverse is non-monotone in a way that understates risk exactly where risk
+is highest.  Still open: the same sweep for the other three generators (does a
+CVAE or a diffusion model have an analogous capacity-to-data threshold?), the
+MeLoMIA attacks at varying n, and genuinely different cohorts rather than
+subsamples of this one.
+
+#### (original note)
 
 Leakage should fall as the training set grows, and the abstract already hints at
 it (MVN and CVAE attacks are weaker on the larger COMBINED).  Turn the hint into
