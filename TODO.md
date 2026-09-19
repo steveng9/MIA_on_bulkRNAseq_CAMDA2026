@@ -83,10 +83,27 @@ auxiliary reference — never on `D_real`.
 to n = 500 … 3458 at p = 978, three trials each.  Result in `results/FINDINGS.md`
 -- exposure is a smooth function of n/p, perfect at n <= p, and the submitted
 pseudo-inverse is non-monotone in a way that understates risk exactly where risk
-is highest.  Still open: the same sweep for the other three generators (does a
-CVAE or a diffusion model have an analogous capacity-to-data threshold?), the
-MeLoMIA attacks at varying n, and genuinely different cohorts rather than
-subsamples of this one.
+is highest.  The CVAE arm is in too, and it
+turned the result into a single mechanism rather than two (see FINDINGS).
+
+Still open, in order of value:
+
+* **The ND arm — but it needs care.**  `nd`'s default params carry
+  `smote_upsample_to=3000`, which upsamples every class to 3000 samples
+  regardless of the `n` the sweep asked for.  Running it as-is would hold the
+  effective training size roughly constant and produce a flat, meaningless
+  curve.  Disable SMOTE for the sweep (or sweep the SMOTE target alongside n)
+  before trusting anything it prints.  The prediction to test: `rank_probe.py`
+  puts ND's synthetic condition number at 1.9e+02, near MVN's 1.6e+02 and the
+  real cohort's 1.5e+02, so ND should look like MVN -- a `pinv` gap that exists
+  only below n = p and closes above it -- rather than like the CVAE.
+* **DP-PGM at small n.**  It is at chance at every size tried so far.  Does the
+  privacy guarantee still hold when n falls below p, where both other
+  generators become perfectly attackable?  Expensive (~12 min per fit on CPU).
+* **The MeLoMIA attacks at varying n**, which is a different question again:
+  those attacks read losses, not covariance, so they need not follow the same
+  curve.
+* **Genuinely different cohorts** rather than subsamples of this one.
 
 #### (original note)
 
