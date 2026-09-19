@@ -389,6 +389,91 @@ def evaluate_grouped(clf_name, X, y, groups, hparams, n_folds=4, device="cuda") 
     }
 
 
+# ── Model-disjoint validation ────────────────────────────────────────────────
+# Grouping folds by sample id holds out *samples* but leaves every shadow model
+# on both sides of every fold, so it answers "generalise to a new sample under a
+# model I have seen".  Deployment asks the opposite: the meta-classifier is
+# applied to one model it has never seen -- the proxy -- on samples it has all
+# seen.  Blocking on both axes at once measures that instead, and a held-out
+# shadow under this scheme is precisely an *internal proxy* in the five-role
+# sense (see docs/MODEL_ZOO.md).
+
+def block_folds(sample_groups, shadow_groups, n_folds: int = 4, seed: int = SEED):
+    """Folds disjoint in samples *and* in shadow models.
+
+    Fold f validates on (samples in bucket f) x (shadows in bucket f) and trains
+    on the complement of both, so a validation row is never a sample the model
+    has seen and never a shadow the model has seen.  Rows in neither block are
+    dropped from that fold rather than leaked into training.
+
+    Yields (train_idx, val_idx) like a scikit-learn splitter.
+    """
+    rng = np.random.RandomState(seed)
+    samples = np.unique(sample_groups)
+    shadows = np.unique(shadow_groups)
+    n_folds = max(2, min(n_folds, len(shadows)))
+
+    s_bucket = dict(zip(rng.permutation(samples),
+                        np.arange(len(samples)) % n_folds))
+    m_bucket = dict(zip(rng.permutation(shadows),
+                        np.arange(len(shadows)) % n_folds))
+    s_of = np.array([s_bucket[s] for s in sample_groups])
+    m_of = np.array([m_bucket[m] for m in shadow_groups])
+
+    for f in range(n_folds):
+        val = np.where((s_of == f) & (m_of == f))[0]
+        train = np.where((s_of != f) & (m_of != f))[0]
+        if len(val) and len(train):
+            yield train, val
+
+
+def block_cv_score(clf_name, X, y, sample_groups, shadow_groups, hparams,
+                   n_folds: int = 4, device: str = "cuda") -> float:
+    """Mean TPR@10%FPR over folds disjoint in both samples and models."""
+    entry = get(clf_name)
+    scores = []
+    for tr, vl in block_folds(sample_groups, shadow_groups, n_folds):
+        if len(np.unique(y[tr])) < 2 or len(np.unique(y[vl])) < 2:
+            continue
+        try:
+            clf = entry.train(X[tr], y[tr], sample_groups[tr], None,
+                              hparams=hparams, device=device)
+            scores.append(tpr_at_fpr(y[vl].astype(int), entry.predict(clf, X[vl])))
+        except Exception as exc:
+            print(f"      [blockcv/{clf_name}] fold failed: {exc}", flush=True)
+            scores.append(0.0)
+    return float(np.mean(scores)) if scores else 0.0
+
+
+def evaluate_block(clf_name, X, y, sample_groups, shadow_groups, hparams,
+                   n_folds: int = 4, device: str = "cuda") -> dict:
+    """Out-of-fold diagnostics under model-disjoint validation.
+
+    Only rows that fall in some fold's validation block are scored, so this is
+    computed on the pooled block predictions rather than on every row.
+    """
+    entry = get(clf_name)
+    preds, truth = [], []
+    for tr, vl in block_folds(sample_groups, shadow_groups, n_folds):
+        if len(np.unique(y[tr])) < 2 or len(np.unique(y[vl])) < 2:
+            continue
+        clf = entry.train(X[tr], y[tr], sample_groups[tr], None,
+                          hparams=hparams, device=device)
+        preds.append(entry.predict(clf, X[vl]))
+        truth.append(y[vl])
+    if not preds:
+        return {"auc": 0.5, "aupr": 0.5, "tpr_at_fpr_0.1": 0.0,
+                "tpr_at_fpr_0.01": 0.0, "n_val": 0}
+    p, t = np.concatenate(preds), np.concatenate(truth)
+    return {
+        "auc": float(roc_auc_score(t, p)),
+        "aupr": float(average_precision_score(t, p)),
+        "tpr_at_fpr_0.1": tpr_at_fpr(t.astype(int), p, 0.10),
+        "tpr_at_fpr_0.01": tpr_at_fpr(t.astype(int), p, 0.01),
+        "n_val": int(len(t)),
+    }
+
+
 def softmax_weights(scores: dict, temperature: float = 0.05,
                     min_gate: float = 0.55) -> dict:
     """Blend weights from validation AUC, with a floor below which a model is cut.
