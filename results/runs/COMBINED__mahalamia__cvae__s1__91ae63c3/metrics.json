@@ -1,0 +1,14 @@
+{
+  "n": 4323,
+  "n_members": 500,
+  "prevalence": 0.11566042100393245,
+  "auc": 0.9034705728485484,
+  "aupr": 0.818785345629091,
+  "accuracy_at_median": 0.5949572056442285,
+  "tpr_at_fpr_0.001": 0.634,
+  "tpr_at_fpr_0.01": 0.708,
+  "tpr_at_fpr_0.05": 0.752,
+  "tpr_at_fpr_0.1": 0.806,
+  "tpr_at_fpr_0.2": 0.85,
+  "precision_at_5pct": 1.0
+}

@@ -107,95 +107,76 @@ conditioned covariance, CVAE is as exposed as MVN (0.996 vs 1.000), and a purely
 statistical attack requiring no shadow models beats the tailored loss-trajectory
 attack on both.
 
-### The MVN result is a p ≈ n effect; the CVAE result is not
+### One mechanism: the signal is in the low-variance directions, and `pinv` throws them away
 
-COMBINED separates the two.  It has the same 978 genes but 3,458 training
-samples instead of 871, so the sample covariance is comfortably full rank:
+The cohort-size sweep (`scripts/cohort_size_sweep.py`) holds everything fixed
+but n.  One cohort, COMBINED; the training set is resampled to each size at
+p = 978 genes, three trials each, so cohort composition, class count and tissue
+heterogeneity cannot explain any trend.  Both generators, all three covariance
+treatments:
 
-| MahalaMIA | cohort | n/p | MVN | CVAE | ND | DP-PGM |
+| n/p | MVN pinv | MVN ridge 1e-6 | MVN ridge 1e-2 | CVAE pinv | CVAE ridge 1e-6 | CVAE ridge 1e-2 |
 |---|---|---|---|---|---|---|
-| pseudo-inverse | BRCA | 0.89 | 0.928 | 0.891 | 0.806 | 0.503 |
-| ridge, α = 1e-6 | BRCA | 0.89 | **1.000** | **0.996** | 0.826 | 0.503 |
-| ridge, α = 1e-2 | BRCA | 0.89 | 0.959 | 0.844 | 0.752 | 0.504 |
-| pseudo-inverse | COMBINED | 3.54 | 0.900 | 0.619 | 0.770 | 0.500 |
-| ridge, α = 1e-6 | COMBINED | 3.54 | 0.888 | 0.780 | 0.765 | 0.500 |
-| ridge, α = 1e-2 | COMBINED | 3.54 | **0.924** | **0.799** | 0.799 | 0.500 |
+| 0.51 | 0.837 | **1.000** | 1.000 | 0.895 | **1.000** | 0.991 |
+| 0.72 | 0.904 | **1.000** | 1.000 | 0.983 | **1.000** | 0.990 |
+| 0.89 | 0.963 | **1.000** | 0.999 | 0.987 | **1.000** | 0.982 |
+| 1.12 | 1.000 | 1.000 | 0.999 | 0.874 | 0.993 | 0.978 |
+| 1.53 | 0.999 | 0.998 | 0.995 | 0.868 | 0.954 | 0.956 |
+| 2.04 | 0.986 | 0.980 | 0.982 | 0.670 | 0.898 | 0.914 |
+| 2.86 | 0.944 | 0.930 | 0.954 | 0.620 | 0.836 | 0.855 |
+| 3.54 | 0.899 | 0.888 | 0.924 | 0.646 | 0.780 | 0.798 |
 
-Ridge helps on both cohorts, but *the alpha that helps inverts*, and so does the
-ceiling.  On BRCA the attack improves monotonically as α falls, saturating at
-1.000 by α = 1e-6.  On COMBINED that ordering reverses -- 1e-6 is the worst
-setting tried and does worse than the pseudo-inverse -- and the best result so
-far, 0.924 at α = 1e-2, is nowhere near saturation.
+Figure: `results/figures/cohort_size_COMBINED_auc.pdf`.
 
-That inversion is the signature of a conditioning effect rather than a property
-of the generator.  At n < p the sample covariance is singular; the generator's
-over-fit to its training set lives in the near-null directions, so the useful
-move is to add as little as possible to the diagonal and keep them.  At n > p
-there are no null directions to recover, and the ridge is doing ordinary
-variance reduction on a well-conditioned estimate, which wants a much larger α.
+**Both generators are perfectly attackable at n ≤ p.**  With a conditioned
+covariance the attack reaches AUC 1.000 *and* TPR 1.000 at 10% FPR — every
+member recovered without spending any false-positive budget — against MVN *and*
+against the CVAE, everywhere below the crossover.  Exposure then decays smoothly
+as n grows.  BRCA is not an unusual cohort; it sits at n/p = 0.89.
 
-So the honest claim is not "ridge breaks the MVN generator" but *a per-class
-Gaussian generator becomes drastically more exposed as its training set shrinks
-toward the gene count* -- AUC 0.92 at n/p = 3.5, and 1.00 at n/p = 0.89.  That
-is the regime most single-cohort RNA-seq studies are actually in.
+That is one mechanism, not two.  The membership signal lives in the
+low-variance directions of the synthetic covariance — the directions where a
+generator's fit to its particular training set is tightest — and a pseudo-inverse
+discards them.  (The PCA rows above say the same thing from the other side:
+projecting onto the *leading* components puts the attack below chance.)
 
-The CVAE column behaves differently again: conditioning is worth +0.10 on BRCA
-and **+0.18** on COMBINED, so it strengthens with n and cannot be a rank
-artefact.  The VAE's reconstruction error concentrates in low-variance gene
-directions regardless of sample count, and the pseudo-inverse discards exactly
-those.
+**What differs between the generators is why the covariance is ill-conditioned.**
+Measuring the synthetic covariance at n = 3458, well above p:
 
-### The sweep: attack strength is set by n/p, and the submitted estimator hid it
-
-`scripts/cohort_size_sweep.py` holds everything fixed but n.  One cohort
-(COMBINED), one generator, one attack; the training set is resampled to each
-size at p = 978 genes, three trials each, so cohort composition, class count and
-tissue heterogeneity cannot explain any of the trend.
-
-| n | n/p | pseudo-inverse | ridge α=1e-6 | ridge α=1e-2 |
+| source | n | effective rank | components for 99% var | condition number |
 |---|---|---|---|---|
-| 500 | 0.51 | 0.837 | **1.000** | 1.000 |
-| 700 | 0.72 | 0.904 | **1.000** | 1.000 |
-| 871 | 0.89 | 0.963 | **1.000** | 0.999 |
-| 1100 | 1.12 | 1.000 | 1.000 | 0.999 |
-| 1500 | 1.53 | 0.999 | 0.998 | 0.995 |
-| 2000 | 2.04 | 0.986 | 0.980 | 0.982 |
-| 2800 | 2.86 | 0.944 | 0.930 | 0.954 |
-| 3458 | 3.54 | 0.899 | 0.888 | 0.924 |
+| real cohort | 4323 | 20.0 | 624 | 1.5e+02 |
+| MVN synthetic | 3458 | 26.9 | 595 | 1.6e+02 |
+| **CVAE synthetic** | 3458 | 11.5 | **268** | **6.2e+07** |
+| ND synthetic | 3458 | 14.7 | 531 | 1.9e+02 |
+| DP-PGM synthetic | 3458 | 97.4 | 881 | 2.8e+01 |
 
-(Figure: `results/figures/cohort_size_COMBINED_auc.pdf`.  All 152 COMBINED
-MahalaMIA runs, these included, pass the shuffled-label and cross-split
-controls.)
+* **MVN is rank-limited by the data.**  Its covariance is a sample covariance,
+  so it is singular exactly when n < p and well conditioned otherwise — 1.6e+02
+  at n = 3458, essentially the real cohort's own conditioning.  The
+  pseudo-inverse therefore fails only below the crossover, and the two curves
+  converge above it.
+* **The CVAE is rank-limited by its architecture.**  Its decoder maps a
+  128-dimensional latent onto 978 genes, so the synthetic data lies near a
+  low-dimensional manifold whatever n is: condition number 6.2e+07, five orders
+  of magnitude worse than anything else, and 268 components carrying 99% of the
+  variance against the real cohort's 624.  `np.linalg.pinv`'s default `rcond`
+  truncates hundreds of directions, and those are the ones that carry membership.
+  So the gap persists at every n and *widens* as n grows: +0.11 at n/p = 0.51,
+  +0.23 at n/p = 2.04.
 
-Two things fall out, and the second is the one that matters.
-
-**A properly conditioned attack decays monotonically in n/p.**  With ridge at
-1e-6 the attack is perfect — AUC 1.000 *and* TPR 1.000 at 10% FPR, meaning every
-member is recovered without spending any false-positive budget — everywhere at
-n ≤ p, and falls steadily to 0.888 by n/p = 3.5.  The MVN generator's exposure
-is a smooth function of how many samples it was fitted to, not a property of a
-particular cohort.  BRCA is not unusual; it is simply at n/p = 0.89.
-
-**The pseudo-inverse is non-monotone, and it fails worst exactly where the risk
-is greatest.**  It peaks at n/p ≈ 1.1 and falls off on *both* sides: 1.000 at
-1.12 but 0.837 at 0.51.  That drop is a property of the estimator, not of the
-generator — below n = p the pseudo-inverse discards the near-null directions,
-and those are precisely where a Gaussian fitted to too few samples imprints its
-training set.
-
-So the version of MahalaMIA that was submitted **understates the risk most in
-the regime where the risk is highest**.  At n/p = 0.51 it reports 0.837 where
-the true exposure is 1.000.  A blue team that benchmarked against it and
-concluded a small cohort was acceptably safe would have been reading an artefact
-of the attack's linear algebra.  For a privacy evaluation that is the worst
-possible direction for an error to run, and it is the strongest argument in this
+**The submitted estimator understates risk, and worst where risk is highest.**
+Against MVN the pseudo-inverse is non-monotone — it peaks at n/p ≈ 1.1 and falls
+away on both sides, reporting 0.837 at n/p = 0.51 where the true exposure is
+1.000.  Against the CVAE it is low everywhere above the crossover (0.620 at
+n/p = 2.86 against 0.855).  A blue team benchmarking against it and concluding a
+small cohort was acceptably safe would have been reading the attack's linear
+algebra rather than the generator's privacy.  For a privacy evaluation that is
+the worst direction for an error to run, and it is the strongest argument in this
 work for reporting attacks with a conditioned covariance.
 
-The CVAE column behaves differently again: conditioning is worth +0.10 on BRCA
-and **+0.18** on COMBINED, so it strengthens with n and cannot be a rank
-artefact.  The VAE's reconstruction error concentrates in low-variance gene
-directions regardless of sample count, and the pseudo-inverse discards exactly
-those.
+All 224 COMBINED MahalaMIA runs, these 144 included, pass the shuffled-label and
+cross-split negative controls.
 
 ---
 

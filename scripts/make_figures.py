@@ -226,17 +226,17 @@ def figure_sweep(dataset: str, param: str, metric: str = "auc",
 
 # ── Cohort-size sweep ────────────────────────────────────────────────────────
 
+GENERATOR_PANEL_ORDER = ["mvn", "cvae", "nd", "pgm"]
+
+
 def figure_cohort_size(dataset: str, metric: str = "auc") -> None:
-    """Attack strength against training-set size, at fixed gene count.
+    """Attack strength against training-set size, one panel per generator.
 
-    The x axis is n/p rather than n, because the claim is about the ratio: a
-    per-class Gaussian fitted to fewer samples than it has genes has a singular
-    covariance, and that is where the over-fit the attack reads lives.
-
-    The three covariance treatments sit on top of each other above the
-    crossover and separate only below it, so a label per curve at a fixed x
-    would pile up.  Each is placed where its own curve is furthest from the
-    others instead, and the legend carries identity regardless.
+    The x axis is n/p rather than n, because the claim is about the ratio: the
+    membership signal lives in the low-variance directions of the synthetic
+    covariance, and what makes that covariance ill-conditioned differs by
+    generator.  Small multiples rather than one crowded panel, since the
+    comparison being made is *between* generators at matched n/p.
     """
     import json
 
@@ -250,74 +250,71 @@ def figure_cohort_size(dataset: str, metric: str = "auc") -> None:
             continue
         prm = cfg.get("params", {})
         cov = prm.get("covariance", "?")
-        label = ("pseudo-inverse" if cov == "pinv"
-                 else f"ridge \u03b1={prm.get('ridge_alpha'):g}")
-        rows.append({"label": label, "ratio": prm["n_train"] / prm["n_genes"],
-                     metric: json.loads(met_path.read_text()).get(metric)})
+        rows.append({
+            "generator": cfg.get("generator", "?"),
+            "label": ("pseudo-inverse" if cov == "pinv"
+                      else f"ridge \u03b1={prm.get('ridge_alpha'):g}"),
+            "ratio": prm["n_train"] / prm["n_genes"],
+            metric: json.loads(met_path.read_text()).get(metric)})
     if not rows:
         print("  [skip] no cohort_size runs")
         return
 
     df = pd.DataFrame(rows).dropna()
-    fig, ax = plt.subplots(figsize=(6.0, 3.9))
+    gens = _order(df.generator.unique(), GENERATOR_PANEL_ORDER)
+    labels = ["pseudo-inverse"] + sorted(l for l in df.label.unique()
+                                         if l != "pseudo-inverse")
+    colors = {l: P.CATEGORICAL[i % len(P.CATEGORICAL)] for i, l in enumerate(labels)}
 
-    order = ["pseudo-inverse"] + sorted(l for l in df.label.unique()
-                                        if l != "pseudo-inverse")
-    series = {}
-    for i, label in enumerate(order):
-        sub = df[df.label == label].groupby("ratio")[metric].agg(["mean", "std"])
-        series[label] = (sub, P.CATEGORICAL[i % len(P.CATEGORICAL)])
-
-    lo = min(float(s_["mean"].min()) for s_, _ in series.values())
-    hi = max(float(s_["mean"].max()) for s_, _ in series.values())
-    pad = max(0.02, (hi - lo) * 0.10)
-    top = min(1.005, hi + pad * 0.6)
-
-    # n = p is the structural boundary the finding is about: drawn first, kept
-    # recessive, and annotated at the top where no series or legend can reach.
-    ax.axvline(1.0, color=P.TEXT_MUTED, linewidth=0.9, linestyle=(0, (4, 3)),
-               zorder=1)
-    ax.annotate("n = p", (1.0, lo - pad), xytext=(5, 4),
-                textcoords="offset points", fontsize=8, color=P.TEXT_MUTED,
-                ha="left", va="bottom")
-
-    for label, (sub, color) in series.items():
-        ax.plot(sub.index, sub["mean"], color=color, marker="o", markersize=4.5,
-                linewidth=2, zorder=3, label=label)
-        ax.fill_between(sub.index, sub["mean"] - sub["std"].fillna(0),
-                        sub["mean"] + sub["std"].fillna(0),
-                        color=color, alpha=0.13, linewidth=0, zorder=2)
-
-    # Direct labels at each curve's point of maximum separation from the rest,
-    # skipped entirely where the curves are indistinguishable anyway.
-    for label, (sub, color) in series.items():
-        others = [o for lbl, (o, _) in series.items() if lbl != label]
-        best_x, best_y, best_gap = None, None, 0.0
-        for x, y in sub["mean"].items():
-            gap = min((abs(y - float(o["mean"].get(x, y))) for o in others),
-                      default=0.0)
-            if gap > best_gap:
-                best_x, best_y, best_gap = x, y, gap
-        if best_gap > (hi - lo) * 0.12:
-            ax.annotate(label, (best_x, best_y), textcoords="offset points",
-                        xytext=(8, -2), fontsize=8, color=P.TEXT_SECONDARY,
-                        zorder=4)
-
+    lo = float(df[metric].min())
+    pad = max(0.02, (1.0 - lo) * 0.08)
     ticks = sorted(df.ratio.unique())
-    ax.set_xscale("log")
-    ax.set_xticks(ticks, [f"{t:.2f}" for t in ticks], fontsize=7.5)
-    ax.minorticks_off()
-    ax.set_ylim(lo - pad, top)
-    ax.set_xlabel("training samples per gene  (n / p)")
-    ax.set_ylabel(f"{METRIC_LABELS.get(metric, metric)}   (chance = "
-                  f"{'0.5' if metric == 'auc' else '0.1'})")
-    ax.set_title(f"MahalaMIA vs the MVN generator, {dataset} resampled to each "
-                 f"size", loc="left", pad=10, fontsize=11)
-    ax.legend(fontsize=8, loc="lower right", labelcolor=P.TEXT_SECONDARY,
-              frameon=False)
-    ax.set_xlim(min(ticks) * 0.85, max(ticks) * 1.45)
-    for sp in ("top", "right"):
-        ax.spines[sp].set_visible(False)
+
+    fig, axes = plt.subplots(1, len(gens), figsize=(3.6 * len(gens) + 0.6, 3.7),
+                             sharey=True)
+    axes = np.atleast_1d(axes)
+
+    for ax, gen in zip(axes, gens):
+        sub_all = df[df.generator == gen]
+        ax.axvline(1.0, color=P.TEXT_MUTED, linewidth=0.9, linestyle=(0, (4, 3)),
+                   zorder=1)
+        for label in labels:
+            g = sub_all[sub_all.label == label].groupby("ratio")[metric].agg(
+                ["mean", "std"])
+            if g.empty:
+                continue
+            ax.plot(g.index, g["mean"], color=colors[label], marker="o",
+                    markersize=4, linewidth=2, zorder=3, label=label)
+            ax.fill_between(g.index, g["mean"] - g["std"].fillna(0),
+                            g["mean"] + g["std"].fillna(0), color=colors[label],
+                            alpha=0.13, linewidth=0, zorder=2)
+        ax.set_xscale("log")
+        ax.set_xticks(ticks, [f"{t:.2f}" for t in ticks], fontsize=7)
+        ax.minorticks_off()
+        ax.set_xlim(min(ticks) * 0.85, max(ticks) * 1.18)
+        ax.set_xlabel("n / p")
+        ax.set_title(P.GENERATOR_LABELS.get(gen, gen), loc="left", fontsize=9.5,
+                     color=P.TEXT_PRIMARY, pad=6)
+        ax.annotate("n = p", (1.0, lo - pad), xytext=(4, 3),
+                    textcoords="offset points", fontsize=7.5,
+                    color=P.TEXT_MUTED, ha="left", va="bottom")
+        for sp in ("top", "right"):
+            ax.spines[sp].set_visible(False)
+
+    axes[0].set_ylim(lo - pad, 1.005)
+    axes[0].set_ylabel(f"{METRIC_LABELS.get(metric, metric)}   "
+                       f"(chance = {'0.5' if metric == 'auc' else '0.1'})")
+    # One legend for the whole figure, above the panels: inside either panel it
+    # would land on the data or on the n = p label.
+    handles, names = axes[0].get_legend_handles_labels()
+    fig.legend(handles, names, fontsize=8, ncol=len(names), frameon=False,
+               labelcolor=P.TEXT_SECONDARY, loc="upper left",
+               bbox_to_anchor=(0.012, 0.925), handletextpad=0.5,
+               columnspacing=1.6)
+    fig.suptitle(f"MahalaMIA as the training set shrinks — {dataset}, "
+                 f"resampled to each size", x=0.012, y=0.985, ha="left",
+                 fontsize=11, color=P.TEXT_PRIMARY)
+    fig.tight_layout(rect=(0, 0, 1, 0.86))
     _save(fig, f"cohort_size_{dataset}_{metric}")
 
 
