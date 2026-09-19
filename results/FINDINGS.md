@@ -145,9 +145,57 @@ artefact.  The VAE's reconstruction error concentrates in low-variance gene
 directions regardless of sample count, and the pseudo-inverse discards exactly
 those.
 
-`scripts/cohort_size_sweep.py` tests the mechanism directly: one cohort, one
-generator, one attack, resampling the training set across n = 500 … 3,458 at
-fixed p = 978 so nothing but n/p varies.
+### The sweep: attack strength is set by n/p, and the submitted estimator hid it
+
+`scripts/cohort_size_sweep.py` holds everything fixed but n.  One cohort
+(COMBINED), one generator, one attack; the training set is resampled to each
+size at p = 978 genes, three trials each, so cohort composition, class count and
+tissue heterogeneity cannot explain any of the trend.
+
+| n | n/p | pseudo-inverse | ridge α=1e-6 | ridge α=1e-2 |
+|---|---|---|---|---|
+| 500 | 0.51 | 0.837 | **1.000** | 1.000 |
+| 700 | 0.72 | 0.904 | **1.000** | 1.000 |
+| 871 | 0.89 | 0.963 | **1.000** | 0.999 |
+| 1100 | 1.12 | 1.000 | 1.000 | 0.999 |
+| 1500 | 1.53 | 0.999 | 0.998 | 0.995 |
+| 2000 | 2.04 | 0.986 | 0.980 | 0.982 |
+| 2800 | 2.86 | 0.944 | 0.930 | 0.954 |
+| 3458 | 3.54 | 0.899 | 0.888 | 0.924 |
+
+(Figure: `results/figures/cohort_size_COMBINED_auc.pdf`.  All 152 COMBINED
+MahalaMIA runs, these included, pass the shuffled-label and cross-split
+controls.)
+
+Two things fall out, and the second is the one that matters.
+
+**A properly conditioned attack decays monotonically in n/p.**  With ridge at
+1e-6 the attack is perfect — AUC 1.000 *and* TPR 1.000 at 10% FPR, meaning every
+member is recovered without spending any false-positive budget — everywhere at
+n ≤ p, and falls steadily to 0.888 by n/p = 3.5.  The MVN generator's exposure
+is a smooth function of how many samples it was fitted to, not a property of a
+particular cohort.  BRCA is not unusual; it is simply at n/p = 0.89.
+
+**The pseudo-inverse is non-monotone, and it fails worst exactly where the risk
+is greatest.**  It peaks at n/p ≈ 1.1 and falls off on *both* sides: 1.000 at
+1.12 but 0.837 at 0.51.  That drop is a property of the estimator, not of the
+generator — below n = p the pseudo-inverse discards the near-null directions,
+and those are precisely where a Gaussian fitted to too few samples imprints its
+training set.
+
+So the version of MahalaMIA that was submitted **understates the risk most in
+the regime where the risk is highest**.  At n/p = 0.51 it reports 0.837 where
+the true exposure is 1.000.  A blue team that benchmarked against it and
+concluded a small cohort was acceptably safe would have been reading an artefact
+of the attack's linear algebra.  For a privacy evaluation that is the worst
+possible direction for an error to run, and it is the strongest argument in this
+work for reporting attacks with a conditioned covariance.
+
+The CVAE column behaves differently again: conditioning is worth +0.10 on BRCA
+and **+0.18** on COMBINED, so it strengthens with n and cannot be a rank
+artefact.  The VAE's reconstruction error concentrates in low-variance gene
+directions regardless of sample count, and the pseudo-inverse discards exactly
+those.
 
 ---
 

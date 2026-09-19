@@ -1,0 +1,21 @@
+{
+  "run_id": "COMBINED__mahalamia__mvn__s2__32eca55b",
+  "timestamp": "2026-09-19T01:18:40+00:00",
+  "dataset": "COMBINED",
+  "attack": "mahalamia",
+  "generator": "mvn",
+  "split": 2,
+  "tag": "n1100_ridge1e-06",
+  "experiment": "cohort_size",
+  "variant": "n1100_ridge1e-06",
+  "notes": "cohort-size sweep at fixed gene count",
+  "params": {
+    "attack": "mahalamia",
+    "covariance": "ridge",
+    "ridge_alpha": 1e-06,
+    "use_reference": true,
+    "n_train": 1100,
+    "n_genes": 978,
+    "noise_level": 0.7
+  }
+}

@@ -123,26 +123,30 @@ def main() -> None:
         if n > len(X_all):
             print(f"  [skip] n={n} exceeds the cohort ({len(X_all)})")
             continue
-        for cov, alpha in COVARIANCES:
-            aucs, tprs = [], []
-            for trial in range(1, args.trials + 1):
-                rng = np.random.RandomState(10_000 * trial + n)
-                train_idx = stratified_sample(y_all, n, rng)
-                y_member = np.zeros(len(X_all), dtype=int)
-                y_member[train_idx] = 1
 
-                gen = MVNGenerator(noise_level=args.noise_level,
-                                   seed=int(rng.randint(1 << 30)),
-                                   device="cpu", verbose=False)
-                gen.fit(X_all[train_idx].astype(np.float32),
-                        y_all[train_idx], n_classes)
-                X_syn, _ = gen.sample(len(train_idx))
+        # Fit once per (n, trial) and score every covariance setting off the same
+        # synthetic data.  The generator fit is 12 per-class eigendecompositions
+        # of a 978x978 matrix and dominates the cost; the covariance variants
+        # differ only in how the attack inverts what it is given, so refitting
+        # per variant would treble the work and also add noise between the rows
+        # we most want to compare.
+        results: dict = {}
+        for trial in range(1, args.trials + 1):
+            rng = np.random.RandomState(10_000 * trial + n)
+            train_idx = stratified_sample(y_all, n, rng)
+            y_member = np.zeros(len(X_all), dtype=int)
+            y_member[train_idx] = 1
 
-                s = score(X_all, X_syn.astype(np.float64), X_aux, cov, alpha,
-                          aux_cache)
-                met = M.evaluate(y_member, s)
-                aucs.append(met["auc"])
-                tprs.append(met["tpr_at_fpr_0.1"])
+            gen = MVNGenerator(noise_level=args.noise_level,
+                               seed=int(rng.randint(1 << 30)),
+                               device="cpu", verbose=False)
+            gen.fit(X_all[train_idx].astype(np.float32), y_all[train_idx], n_classes)
+            X_syn = gen.sample(len(train_idx))[0].astype(np.float64)
+
+            for cov, alpha in COVARIANCES:
+                sc = score(X_all, X_syn, X_aux, cov, alpha, aux_cache)
+                met = M.evaluate(y_member, sc)
+                results.setdefault((cov, alpha), []).append(met)
 
                 if not args.no_save:
                     tag = f"n{n}_{cov}" + (f"{alpha:g}" if cov == "ridge" else "")
@@ -155,13 +159,16 @@ def main() -> None:
                                 "ridge_alpha": alpha, "use_reference": True,
                                 "n_train": n, "n_genes": p_genes,
                                 "noise_level": args.noise_level},
-                        metrics=met, sample_ids=ids, scores=s,
+                        metrics=met, sample_ids=ids, scores=sc,
                         y_member=y_member,
                     )
+
+        for (cov, alpha), mets in results.items():
             label = cov if cov == "pinv" else f"{cov} {alpha:g}"
             print(f"{n:>8} {n / p_genes:>6.2f} {label:>12} "
-                  f"{np.mean(aucs):>7.4f} {np.mean(tprs):>7.4f}")
-        print()
+                  f"{np.mean([m['auc'] for m in mets]):>7.4f} "
+                  f"{np.mean([m['tpr_at_fpr_0.1'] for m in mets]):>7.4f}", flush=True)
+        print(flush=True)
 
 
 if __name__ == "__main__":
