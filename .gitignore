@@ -13,3 +13,6 @@ mia_output/
 
 # Results are tracked, but keep the heavy per-run score files out of diffs
 # only if they grow unmanageable -- currently they are small and kept.
+
+# CatBoost writes a training log beside the working directory on every fit.
+catboost_info/

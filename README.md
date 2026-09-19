@@ -117,10 +117,19 @@ mia/
       meta.py        classifier zoo, Optuna search, ensembling
 
 configs/experiments/ one YAML per experiment
-scripts/             build_targets, run_experiment, make_tables
-results/             tracked: per-run config, row-level scores, metrics
+scripts/             build_targets, run_experiment, make_tables, make_figures,
+                     sanity_check, zoo; orchestrate_rest + after_orchestrate
+                     sequence a whole queue, shadow_loop adds workers to a
+                     shadow build already in flight
+docs/
+  FIVE_ROLES.md      the five model roles and which ones the code builds
+  MODEL_ZOO.md       the artifact store, reuse patterns, contamination rules
+results/             tracked: per-run config, row-level scores, metrics,
+                     FINDINGS.md and REPRODUCTION.md
 artifacts/           git-ignored: targets, shadow models, features, classifiers
 legacy/mia_v1/       the pre-refactor pipeline, kept for reference
+legacy/orchestration/ superseded one-off run scripts, with a map to what
+                     replaced them
 notes/               design notes and historical run logs
 ```
 
