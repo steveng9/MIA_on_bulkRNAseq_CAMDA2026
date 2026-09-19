@@ -124,3 +124,30 @@ def test_evaluate_block_reports_how_much_was_validated():
                             n_folds=4, device="cpu")
     assert 0 < diag["n_val"] < len(y)
     assert diag["auc"] > 0.5
+
+
+# ── the internal-proxy role is wired through the attack ─────────────────────
+
+
+def _attack(**kw):
+    from mia.attacks import build
+    return build("melomia_nd", **kw)
+
+
+def test_internal_proxy_selection_forks_the_meta_cache():
+    """Block-CV selection must not reuse a meta trained under grouped CV.
+
+    The two make different hyperparameter choices from the same features, so
+    sharing a cache key would silently serve one run's model to the other.
+    """
+    grouped = _attack()
+    block = _attack(internal_proxy_selection=True)
+    assert grouped.tag() != block.tag()
+    assert "blockcv" in block.tag()
+    # The shadow stack itself is unaffected, so the expensive artifacts are
+    # still shared between the two runs.
+    assert grouped.stack_tag() == block.stack_tag()
+
+
+def test_default_selection_is_the_submitted_one():
+    assert _attack().internal_proxy_selection is False

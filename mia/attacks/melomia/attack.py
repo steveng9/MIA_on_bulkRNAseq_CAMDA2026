@@ -117,6 +117,14 @@ class MeLoMIA(Attack):
     cv_folds: int = 4
     ensemble_temperature: float = 0.05
     ensemble_min_auc: float = 0.55
+    internal_proxy_selection: bool = False
+    #: Rotate the *internal proxy* role over the shadow pool when selecting
+    #: features, hyperparameters and ensemble weights.  Each fold holds a set of
+    #: shadow models out entirely and scores them, so validation rows share
+    #: neither a record nor a model with training rows -- which is the axis the
+    #: final proxy actually generalises along.  The default keeps the
+    #: sample-grouped CV the CAMDA submission used, so cached runs stay
+    #: comparable; see docs/FIVE_ROLES.md and TODO item 11.
 
     # behaviour
     synth_shadow: bool = True           # False trains the feature-extraction
@@ -165,6 +173,8 @@ class MeLoMIA(Attack):
         t = f"k{self.n_shadows}_{self.stack_tag()}"
         if not self.optuna_enabled:
             t += "_nooptuna"
+        if self.internal_proxy_selection:
+            t += "_blockcv"
         if self.label:
             t += f"_{self.label}"
         return t
@@ -382,10 +392,12 @@ class MeLoMIA(Attack):
         """Stack every shadow's features into one training matrix.
 
         Each real sample contributes `n_shadows` rows -- same sample, different
-        membership label under each shadow.  Sample ids travel with the rows as
-        group keys so no split can put one sample on both sides.
+        membership label under each shadow.  Two group keys travel with the
+        rows: the sample id, so no split can put one record on both sides, and
+        the shadow index, so a split can additionally hold whole models out
+        (the internal-proxy role -- see docs/FIVE_ROLES.md).
         """
-        L, E, Y, Gp = [], [], [], []
+        L, E, Y, Gp, Sh = [], [], [], [], []
         for k in range(1, self.n_shadows + 1):
             path = self._features_path(dataset, k)
             if not path.exists():
@@ -398,8 +410,9 @@ class MeLoMIA(Attack):
             E.append(extra if extra is not None else np.zeros((len(losses), 0), np.float32))
             Y.append(y)
             Gp.append(ids)
+            Sh.append(np.full(len(losses), k, dtype=np.int64))
         return (np.concatenate(L), np.concatenate(E),
-                np.concatenate(Y), np.concatenate(Gp))
+                np.concatenate(Y), np.concatenate(Gp), np.concatenate(Sh))
 
     # ── Stage 4: meta-classifier ────────────────────────────────────────────
 
@@ -416,22 +429,31 @@ class MeLoMIA(Attack):
 
         be = self._backend(dataset)
         n_sweep, n_noise = len(be.sweep_points), be.n_noise
-        losses, extra, y, groups = self._pooled(dataset)
+        losses, extra, y, groups, shadows = self._pooled(dataset)
         self._say(f"  [melomia] meta-classifier pool: {losses.shape[0]} rows "
                   f"({self.n_shadows} shadows x {losses.shape[0] // self.n_shadows} samples)")
+        if self.internal_proxy_selection:
+            self._say("  [melomia] selection holds whole shadow models out "
+                      "(internal-proxy role); CV numbers below are model-disjoint")
 
         result = {"backend": self.backend, "dataset": dataset,
                   "sweep_points": list(be.sweep_points), "n_noise": n_noise,
-                  "n_shadows": self.n_shadows, "classifiers": {}}
+                  "n_shadows": self.n_shadows,
+                  "selection": "block" if self.internal_proxy_selection else "grouped",
+                  "classifiers": {}}
         cv_aucs = {}
 
         for clf_name in self.classifiers:
             sweep_idx, noise_budget, hparams = self._search(
-                clf_name, losses, extra, y, groups, n_sweep, n_noise
+                clf_name, losses, extra, y, groups, shadows, n_sweep, n_noise
             )
             X = F.prepare(losses, extra, sweep_idx, noise_budget)
-            diag = MM.evaluate_grouped(clf_name, X, y, groups, hparams,
-                                       n_folds=self.cv_folds, device=self.device)
+            if self.internal_proxy_selection:
+                diag = MM.evaluate_block(clf_name, X, y, groups, shadows, hparams,
+                                         n_folds=self.cv_folds, device=self.device)
+            else:
+                diag = MM.evaluate_grouped(clf_name, X, y, groups, hparams,
+                                           n_folds=self.cv_folds, device=self.device)
             self._say(f"    [{clf_name}] CV AUC={diag['auc']:.4f} "
                       f"TPR@10%={diag['tpr_at_fpr_0.1']:.4f}  "
                       f"sweep={[be.sweep_points[i] for i in sweep_idx]} "
@@ -454,8 +476,14 @@ class MeLoMIA(Attack):
         MM.save_meta(meta_path, result)
         return result
 
-    def _search(self, clf_name, losses, extra, y, groups, n_sweep, n_noise) -> tuple:
-        """Joint Optuna search over feature slice and model hyperparameters."""
+    def _search(self, clf_name, losses, extra, y, groups, shadows,
+                n_sweep, n_noise) -> tuple:
+        """Joint Optuna search over feature slice and model hyperparameters.
+
+        The objective is scored on whichever validation scheme the run selects:
+        sample-grouped folds (the submission's) or model-disjoint folds, which
+        rotate the internal-proxy role over the shadow pool.
+        """
         if not self.optuna_enabled:
             return list(range(n_sweep)), n_noise, {}
 
@@ -474,8 +502,13 @@ class MeLoMIA(Attack):
             budget = trial.suggest_int("noise_budget", max(10, n_noise // 4), n_noise,
                                        step=max(1, n_noise // 12))
             X = F.prepare(losses, extra, sorted(set(chosen)), budget)
-            return MM.grouped_cv_score(clf_name, X, y, groups, MM._suggest(trial, clf_name),
-                                       n_folds=min(3, self.cv_folds), device=self.device)
+            hp = MM._suggest(trial, clf_name)
+            folds = min(3, self.cv_folds)
+            if self.internal_proxy_selection:
+                return MM.block_cv_score(clf_name, X, y, groups, shadows, hp,
+                                         n_folds=folds, device=self.device)
+            return MM.grouped_cv_score(clf_name, X, y, groups, hp,
+                                       n_folds=folds, device=self.device)
 
         study = optuna.create_study(
             direction="maximize",

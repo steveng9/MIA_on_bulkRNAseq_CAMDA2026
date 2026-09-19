@@ -182,7 +182,7 @@ shadows are cheap (seconds and under a minute); DP-PGM base shadows are not
 
 Until this is run, read the off-diagonal MeLoMIA numbers as a lower bound.
 
-### 10. Model-disjoint validation (the internal-proxy role) — *found, not yet fixed*
+### 10. Model-disjoint validation (the internal-proxy role) — *implemented, not yet run*
 
 The meta-classifier's hyperparameters and ensemble weights are currently chosen
 by `StratifiedGroupKFold` **grouped by `sample_id`**.  That holds out *samples*
@@ -209,7 +209,33 @@ model-disjoint CV AUC is itself a result — it quantifies how much of a loss
 attack's apparent power is model-specific memorisation rather than a
 transferable signal.
 
-See `docs/MODEL_ZOO.md`.
+**Status.**  `meta.py: block_folds / block_cv_score / evaluate_block` implement
+the scheme and `tests/test_validation.py` pins its behaviour: a signal carried
+in a per-model offset scores ~1.0 under sample-grouped CV and at chance under
+block CV.  `MeLoMIA(internal_proxy_selection=True)` routes both the Optuna
+objective and the reported diagnostics through it, and forks the meta-cache tag
+with `_blockcv` so nothing selected the old way is served to the new path.
+
+It defaults to **off**, deliberately.  Turning it on changes every
+hyperparameter choice in the grid, and the BRCA and COMBINED rows were mid-flight
+when it landed; a grid whose cells were selected two different ways is not a
+grid.  Flip the default after the current queue drains.
+
+**The run:** `configs/experiments/ablation_internal_proxy.yaml`.  It costs one
+meta-classifier search per backend and nothing else — the `_grouped` arm's tag
+(`k30_n600`) is exactly the one the main grid already built, so that arm is a
+cache hit, and the `_blockcv` arm shares the same `stack_tag` and therefore the
+same 30 shadows and the same extracted features.
+
+Two numbers come out of it.  The CV AUCs should fall — that is the point, the
+grouped number was optimistic, and the size of the fall is the result described
+above.  The *grid* numbers are scored against real target labels in both arms
+and so are honest either way; they go up only if grouped selection had been
+picking features that exploit model-specific quirks.
+
+See `docs/FIVE_ROLES.md` for the role audit this came out of, and
+`docs/MODEL_ZOO.md` for the artifact store that will make the held-out shadows
+addressable as internal proxies in their own right.
 
 ### 11. Move the pipeline onto the zoo and reuse artifacts across trials
 

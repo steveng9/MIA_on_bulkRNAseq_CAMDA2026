@@ -1,0 +1,45 @@
+# TODO item 11: which generalisation axis should the meta-classifier be
+# selected on?
+#
+# At inference the meta-classifier reads features from a *proxy model it has
+# never seen*, scoring *records it has seen thirty times over* during training.
+# The submission selected features, hyperparameters and ensemble weights with
+# StratifiedGroupKFold grouped on sample id, which holds records out and keeps
+# every shadow model on both sides of every fold -- the opposite of the
+# deployment condition.
+#
+#   melomia_*_grouped   sample-grouped folds (what the submission did)
+#   melomia_*_blockcv   folds disjoint in samples *and* in shadow models, which
+#                       is the internal-proxy role rotated over the pool
+#                       (docs/FIVE_ROLES.md)
+#
+# Everything upstream is shared: both variants read the same K=30 shadow stack
+# and the same cached features, so this costs two meta-classifier searches per
+# backend and nothing else.  The cache tag forks on `_blockcv`.
+#
+# Two things to read off the result.  The CV numbers should *fall* under block
+# CV -- that is the point, the grouped number was optimistic.  The question is
+# whether the final grid numbers, which are scored against real target labels
+# either way and so are honest in both arms, go up.  They go up only if the
+# grouped selection was picking features that exploit model-specific quirks.
+name: ablation_internal_proxy
+dataset: BRCA
+notes: "sample-grouped vs model-disjoint selection, same shadow stack"
+device: cuda
+
+generators: [mvn, cvae, nd, pgm]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  melomia_nd_grouped:
+    class: melomia_nd
+    params: {n_shadows: 30, n_noise: 600, internal_proxy_selection: false}
+  melomia_nd_blockcv:
+    class: melomia_nd
+    params: {n_shadows: 30, n_noise: 600, internal_proxy_selection: true}
+  melomia_cvae_grouped:
+    class: melomia_cvae
+    params: {n_shadows: 30, n_noise: 50, internal_proxy_selection: false}
+  melomia_cvae_blockcv:
+    class: melomia_cvae
+    params: {n_shadows: 30, n_noise: 50, internal_proxy_selection: true}
