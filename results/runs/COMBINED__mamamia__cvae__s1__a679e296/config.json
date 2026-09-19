@@ -1,0 +1,23 @@
+{
+  "run_id": "COMBINED__mamamia__cvae__s1__a679e296",
+  "timestamp": "2026-09-19T01:00:48+00:00",
+  "dataset": "COMBINED",
+  "attack": "mamamia",
+  "generator": "cvae",
+  "split": 1,
+  "tag": "k1024_1w_2w",
+  "experiment": "tune_statistical_combined",
+  "variant": "bins1024",
+  "notes": "ridge alpha and bin-count sweeps on the larger cohort",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mamamia",
+    "n_bins": 1024,
+    "use_oneway": true,
+    "use_twoway": true,
+    "use_subtype_marginal": true,
+    "calibrate": true,
+    "attack": "mamamia"
+  }
+}
