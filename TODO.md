@@ -239,14 +239,17 @@ Migration needs a shim that registers the existing `artifacts/attacks/` and
 
 ## Smaller follow-ups
 
-* **Give the MLP search early stopping.**  After the thread fix
-  (`meta.py:n_jobs`) the four tree models take 4-15 min each on the BRCA pool,
-  and the MLP takes 90-110.  Its space allows `epochs` up to 800 with no
-  early-stopping callback, so every one of the 240 fits runs to the end even
-  once it has converged: 800 epochs x 24 batches x 4 folds x 60 trials.  The
-  tree models all land within 0.79-0.81 on this data and the MLP has never been
-  the top of the blend, so this is the worst cost-per-unit-information in the
-  pipeline.  Add patience on the held-out split, or drop 800 from the space.
+* ~~**Give the MLP search early stopping.**~~ *Done.*  It was the worst
+  cost-per-unit-information in the pipeline: 90-110 min per search against
+  4-15 min for each tree model, because `epochs` went to 800 with nothing to
+  stop it and a `DataLoader` handed back CPU tensors that were copied to the
+  device every batch.  At ~24 batches an epoch the transfer and the Python
+  around it, not the arithmetic, set the pace.  The pool now lives on the
+  device and epochs are a permutation over it, with patience on the held-out
+  split.  A full 800-epoch budget on a same-shaped pool went from ~30 s to
+  2.9 s.  The best-by-validation state was always what got returned, so
+  stopping early only changes how long the search looks, not which model it
+  keeps.
 
 
 * **DP-PGM attack is weak and we know it.**  MAMA-MIA reaches roughly

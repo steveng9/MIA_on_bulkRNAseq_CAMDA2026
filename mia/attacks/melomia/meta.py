@@ -38,7 +38,6 @@ import torch
 import torch.nn as nn
 from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.model_selection import GroupShuffleSplit, StratifiedGroupKFold
-from torch.utils.data import DataLoader, TensorDataset
 
 from ...metrics import tpr_at_fpr
 
@@ -117,18 +116,23 @@ def _train_mlp(X, y, groups, save_dir, hparams=None, device="cuda"):
     crit = nn.BCEWithLogitsLoss(
         pos_weight=torch.tensor([_pos_weight(y_fit)], dtype=torch.float32).to(device)
     )
-    loader = DataLoader(
-        TensorDataset(torch.tensor(X_fit, dtype=torch.float32),
-                      torch.tensor(y_fit, dtype=torch.float32)),
-        batch_size=bs, shuffle=True,
-    )
+    # The whole pool is a few tens of MB, so it lives on the device and epochs
+    # are a permutation over it.  A DataLoader here would hand back CPU tensors
+    # and copy every batch across the bus -- at ~24 batches an epoch that
+    # transfer and the Python around it, not the arithmetic, set the pace.
+    patience = int(hp.get("patience", 40))
+    X_fit_t = torch.tensor(X_fit, dtype=torch.float32, device=device)
+    y_fit_t = torch.tensor(y_fit, dtype=torch.float32, device=device)
     X_es_t = torch.tensor(X_es, dtype=torch.float32, device=device)
+    n_fit = len(X_fit_t)
 
-    best, best_state = -1.0, None
+    best, best_state, since_best = -1.0, None, 0
     for _ in range(epochs):
         model.train()
-        for xb, yb in loader:
-            loss = crit(model(xb.to(device)).squeeze(1), yb.to(device))
+        order = torch.randperm(n_fit, device=device)
+        for start in range(0, n_fit, bs):
+            idx = order[start:start + bs]
+            loss = crit(model(X_fit_t[idx]).squeeze(1), y_fit_t[idx])
             opt.zero_grad()
             loss.backward()
             opt.step()
@@ -137,8 +141,14 @@ def _train_mlp(X, y, groups, save_dir, hparams=None, device="cuda"):
             s = torch.sigmoid(model(X_es_t).squeeze(1)).cpu().numpy()
         metric = tpr_at_fpr(y_es.astype(int), s)
         if metric > best:
-            best = metric
+            best, since_best = metric, 0
             best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+        else:
+            since_best += 1
+            # The best state is kept either way, so stopping only decides how
+            # long we keep looking -- and the search calls this 240 times.
+            if since_best >= patience:
+                break
 
     if best_state:
         model.load_state_dict(best_state)
