@@ -45,6 +45,27 @@ from ...metrics import tpr_at_fpr
 SEED = 42
 
 
+def n_jobs() -> int:
+    """Threads per tree model.
+
+    Every one of these libraries defaults to "all cores", which is the wrong
+    answer here: the meta-classifier search runs inside cross-validation inside
+    Optuna, and two attacks are usually searching at once.  Handing each fit all
+    48 cores then oversubscribes the box several times over, and these models
+    lose more to thread contention than they gain from the extra threads --
+    measured at load 86 on 48 cores, with LightGBM taking 10x longer than xgb
+    and rf combined on the same data.
+
+    MIA_N_JOBS overrides it; the default leaves room for a second concurrent
+    attack and for whatever else is on the machine.
+    """
+    import os
+    env = os.environ.get("MIA_N_JOBS")
+    if env:
+        return max(1, int(env))
+    return max(4, (os.cpu_count() or 8) // 6)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Grouped splitting helper
 # ─────────────────────────────────────────────────────────────────────────────
@@ -155,7 +176,7 @@ def _train_xgb(X, y, groups, save_dir, hparams=None, device="cuda"):
     params = {"max_depth": 4, "learning_rate": 0.02, "subsample": 0.7,
               "colsample_bytree": 0.3, "min_child_weight": 20, "gamma": 1.0,
               "reg_alpha": 1.0, "reg_lambda": 5.0, "n_estimators": 2000,
-              "tree_method": "hist", **(hparams or {})}
+              "tree_method": "hist", "n_jobs": n_jobs(), **(hparams or {})}
     n_estimators = params.pop("n_estimators")
     X_fit, X_es, y_fit, y_es = group_holdout(X, y, groups)
     clf = XGBClassifier(n_estimators=n_estimators, scale_pos_weight=_pos_weight(y_fit),
@@ -173,7 +194,8 @@ def _train_rf(X, y, groups, save_dir, hparams=None, device="cuda"):
     params = {"n_estimators": 500, "max_depth": 8, "max_features": "sqrt",
               "min_samples_leaf": 20, "max_samples": 0.7, **(hparams or {})}
     clf = RandomForestClassifier(
-        **params, class_weight={0: 1.0, 1: _pos_weight(y)}, n_jobs=-1, random_state=SEED
+        **params, class_weight={0: 1.0, 1: _pos_weight(y)}, n_jobs=n_jobs(),
+        random_state=SEED
     )
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -193,8 +215,9 @@ def _train_lgbm(X, y, groups, save_dir, hparams=None, device="cuda"):
     from lightgbm import LGBMClassifier
     params = {"num_leaves": 31, "learning_rate": 0.02, "subsample": 0.7,
               "subsample_freq": 1, "colsample_bytree": 0.3, "min_child_samples": 20,
-              "reg_alpha": 1.0, "reg_lambda": 5.0, "n_estimators": 2000,
-              "verbose": -1, "n_jobs": -1, "random_state": SEED, **(hparams or {})}
+              "reg_alpha": 1.0, "reg_lambda": 5.0, "n_estimators": 800,
+              "verbose": -1, "n_jobs": n_jobs(), "random_state": SEED,
+              **(hparams or {})}
     X_fit, X_es, y_fit, y_es = group_holdout(X, y, groups)
     cols = _lgbm_cols(X.shape[1])
     clf = LGBMClassifier(scale_pos_weight=_pos_weight(y_fit), **params)
@@ -217,7 +240,7 @@ def _train_cat(X, y, groups, save_dir, hparams=None, device="cuda"):
     params = {"iterations": 1000, "depth": 6, "learning_rate": 0.02,
               "l2_leaf_reg": 5.0, "bootstrap_type": "Bernoulli", "subsample": 0.7,
               "early_stopping_rounds": 50, "eval_metric": "Logloss",
-              "use_best_model": True, "thread_count": -1, "random_seed": SEED,
+              "use_best_model": True, "thread_count": n_jobs(), "random_seed": SEED,
               "verbose": 0, **(hparams or {})}
     if params.get("bootstrap_type") == "Bayesian":
         params.pop("subsample", None)
@@ -306,6 +329,8 @@ def _suggest(trial, clf_name):
         }
     if clf_name == "lgbm":
         return {
+            "n_estimators": trial.suggest_categorical("n_estimators",
+                                                      [200, 500, 800]),
             "num_leaves": trial.suggest_int("num_leaves", 16, 128),
             "learning_rate": trial.suggest_float("learning_rate", 5e-3, 0.05, log=True),
             "subsample": trial.suggest_float("subsample", 0.6, 0.9),
