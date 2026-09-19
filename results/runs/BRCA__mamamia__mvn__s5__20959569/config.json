@@ -1,0 +1,23 @@
+{
+  "run_id": "BRCA__mamamia__mvn__s5__20959569",
+  "timestamp": "2026-09-19T07:29:48+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia",
+  "generator": "mvn",
+  "split": 5,
+  "tag": "k2_1w_2w",
+  "experiment": "grid_brca_tuned",
+  "variant": "mamamia",
+  "notes": "tuned statistical attacks; MeLoMIA unchanged (Optuna tunes it per run)",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mamamia",
+    "n_bins": 2,
+    "use_oneway": true,
+    "use_twoway": true,
+    "use_subtype_marginal": true,
+    "calibrate": true,
+    "attack": "mamamia"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "run_id": "BRCA__mahalamia__pgm__s5__635f0ddb",
+  "timestamp": "2026-09-19T07:29:47+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "pgm",
+  "split": 5,
+  "tag": "aux_ridge0.0001",
+  "experiment": "grid_brca_tuned",
+  "variant": "mahalamia",
+  "notes": "tuned statistical attacks; MeLoMIA unchanged (Optuna tunes it per run)",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ridge",
+    "ridge_alpha": 0.0001,
+    "n_components": null,
+    "calibrate": true,
+    "attack": "mahalamia"
+  }
+}

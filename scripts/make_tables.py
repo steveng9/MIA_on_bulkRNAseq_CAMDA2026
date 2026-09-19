@@ -14,6 +14,8 @@ narrows the table to exactly the variants that experiment defines, which is what
 you want for the headline grid; without it every recorded variant is shown.
 """
 
+from __future__ import annotations
+
 import argparse
 import sys
 from pathlib import Path
@@ -76,7 +78,7 @@ def selection_from_config(config_path) -> tuple:
         key = (attack.params().get("attack", attack.name), attack.tag())
         pairs.append(key)
         labels[key] = label
-    return exp.dataset, pairs, labels
+    return exp.dataset, pairs, labels, getattr(exp, "name", None)
 
 
 def apply_selection(df, pairs):
@@ -90,11 +92,16 @@ def _order(values, preferred):
     return known + sorted(v for v in values if v not in preferred)
 
 
-def grid_text(summary: pd.DataFrame, dataset: str) -> str:
+def grid_text(summary: pd.DataFrame, dataset: str, config: str | None = None) -> str:
     attacks = _order(summary.row.unique(), ATTACK_ORDER)
     gens = _order(summary.generator.unique(), GENERATOR_ORDER)
+    title = f"ATTACK x GENERATOR GRID -- {dataset}"
+    if config:
+        # Several configs produce a grid for the same dataset and their numbers
+        # differ, so the table has to say which one it is.
+        title += f"  [{config}]"
     lines = [f"\n{'=' * 100}",
-             f"  ATTACK x GENERATOR GRID -- {dataset}",
+             f"  {title}",
              f"  cells are mean over splits; +- is the standard deviation across splits",
              f"{'=' * 100}"]
 
@@ -152,9 +159,9 @@ def main():
     p.add_argument("--out", default=None, help="directory to write the table into")
     args = p.parse_args()
 
-    pairs = labels = None
+    pairs = labels = cfg_name = None
     if args.config:
-        cfg_dataset, pairs, labels = selection_from_config(args.config)
+        cfg_dataset, pairs, labels, cfg_name = selection_from_config(args.config)
         args.dataset = args.dataset or cfg_dataset
 
     datasets = [args.dataset] if args.dataset else sorted(load().dataset.unique())
@@ -171,16 +178,22 @@ def main():
         elif args.format == "latex":
             rendered = grid_latex(summary, ds)
         else:
-            rendered = grid_text(summary, ds)
+            rendered = grid_text(summary, ds, cfg_name)
         print(rendered)
 
         if args.out:
             d = Path(args.out)
             d.mkdir(parents=True, exist_ok=True)
             ext = {"text": "txt", "latex": "tex", "csv": "csv"}[args.format]
-            (d / f"grid_{ds}.{ext}").write_text(rendered)
-            summary.to_csv(d / f"grid_{ds}_summary.csv", index=False)
-            print(f"\n  wrote {d / f'grid_{ds}.{ext}'}")
+            # Name the file after the *config*, not just the dataset.  Several
+            # configs produce a BRCA grid -- as-submitted, tuned, each ablation
+            # -- and keying on the dataset alone silently overwrote one with
+            # the next, which is how the as-submitted grid went missing the
+            # first time the tuned one ran.
+            stem = f"{cfg_name}_{ds}" if cfg_name else f"grid_{ds}"
+            (d / f"{stem}.{ext}").write_text(rendered)
+            summary.to_csv(d / f"{stem}_summary.csv", index=False)
+            print(f"\n  wrote {d / f'{stem}.{ext}'}")
 
 
 if __name__ == "__main__":

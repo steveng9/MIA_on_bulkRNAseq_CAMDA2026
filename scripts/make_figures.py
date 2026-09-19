@@ -61,7 +61,8 @@ def _order(values, preferred):
 
 # ── Grid heatmap ─────────────────────────────────────────────────────────────
 
-def figure_grid(df: pd.DataFrame, dataset: str, metric: str = "auc") -> None:
+def figure_grid(df: pd.DataFrame, dataset: str, metric: str = "auc",
+                stem: str | None = None) -> None:
     cell = df.groupby(["row", "generator"])[metric].mean().unstack()
     attacks = _order(cell.index, ATTACK_ORDER)
     gens = _order(cell.columns, GENERATOR_ORDER)
@@ -98,19 +99,27 @@ def figure_grid(df: pd.DataFrame, dataset: str, metric: str = "auc") -> None:
     for s in ax.spines.values():
         s.set_visible(False)
 
-    ax.set_title(f"{METRIC_LABELS.get(metric, metric)} — {dataset}",
-                 loc="left", pad=12, fontsize=11)
+    # Name the config in the title: several of them produce a grid for the same
+    # dataset with different numbers, and a figure pulled out of the directory
+    # on its own has to say which it is.
+    title = f"{METRIC_LABELS.get(metric, metric)} — {dataset}"
+    if stem and stem not in ("grid", f"grid_{dataset.lower()}"):
+        title += f"   ({stem.replace('_', ' ')})"
+    ax.set_title(title, loc="left", pad=12, fontsize=11)
     cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.03)
     cb.outline.set_visible(False)
     cb.ax.tick_params(length=0, colors=P.TEXT_SECONDARY)
     if metric == "auc":
         cb.set_label("0.5 = no better than guessing", color=P.TEXT_SECONDARY)
-    _save(fig, f"grid_{dataset}_{metric}")
+    # Keyed on the config, not the dataset: the as-submitted and tuned BRCA
+    # grids are different figures and must not overwrite each other.
+    _save(fig, f"{stem or 'grid'}_{dataset}_{metric}")
 
 
 # ── ROC curves ───────────────────────────────────────────────────────────────
 
-def figure_roc(df: pd.DataFrame, dataset: str, attack: str) -> None:
+def figure_roc(df: pd.DataFrame, dataset: str, attack: str,
+               stem: str | None = None) -> None:
     from sklearn.metrics import roc_curve
 
     sub = df[df.row == attack]
@@ -169,7 +178,7 @@ def figure_roc(df: pd.DataFrame, dataset: str, attack: str) -> None:
               title_fontsize=8, labelcolor=P.TEXT_SECONDARY)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
-    _save(fig, f"roc_{dataset}_{attack}")
+    _save(fig, f"{stem or 'grid'}_roc_{dataset}_{attack}")
 
 
 # ── Parameter sweep ──────────────────────────────────────────────────────────
@@ -333,10 +342,10 @@ def main():
 
     P.apply_style()
 
-    pairs = labels = None
+    pairs = labels = _cfg_name = None
     if args.config:
         from make_tables import apply_selection, selection_from_config
-        cfg_dataset, pairs, labels = selection_from_config(args.config)
+        cfg_dataset, pairs, labels, _cfg_name = selection_from_config(args.config)
         args.dataset = args.dataset or cfg_dataset
 
     df = R.load_index()
@@ -364,10 +373,10 @@ def main():
 
     if "grid" in args.figures:
         for m in args.metrics:
-            figure_grid(df, args.dataset, m)
+            figure_grid(df, args.dataset, m, stem=_cfg_name)
     if "roc" in args.figures:
         for attack in _order(df.row.unique(), ATTACK_ORDER):
-            figure_roc(df, args.dataset, attack)
+            figure_roc(df, args.dataset, attack, stem=_cfg_name)
     if "cohort" in args.figures:
         for m in args.metrics:
             figure_cohort_size(args.dataset, m)
