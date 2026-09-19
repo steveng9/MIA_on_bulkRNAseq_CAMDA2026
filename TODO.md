@@ -146,7 +146,7 @@ Needs `--retrain-nd` targets (so the ND column's weights are ours) and a
 white-box mode in the MeLoMIA backends that extracts from the target rather
 than from a proxy.
 
-### 8. With and without synth-shadow modelling
+### 8. With and without synth-shadow modelling — *BRCA done; COMBINED open*
 
 The head-to-head that justifies the central methodological claim.  Identical
 splits, identical features, identical meta-classifier; only the feature-extraction
@@ -155,10 +155,27 @@ shadows differ:
   (a) trained directly on real-data splits;
   (b) trained on internal synthetic datasets produced by base shadows.
 
-Earlier notes in this repo record ND real-data shadows reaching validation
-TPR@10%FPR of 0.58 and collapsing to about 0.14 when scored through a
-synthetic-trained proxy — the domain gap synth-shadow modelling exists to close.
-Reproduce that cleanly for both backends on both cohorts.
+**Result on BRCA** (`configs/experiments/ablation_synth_shadow.yaml`, K=15,
+table in `results/tables/ablation_synth_shadow_BRCA.txt`): synth-shadows win
+every cell.  On the ND diagonal +0.161 AUC and 2.9x TPR@1%FPR; on the CVAE
+diagonal +0.108 and 1.6x.  The only near-tie is MeLoMIA-CVAE against ND (+0.029),
+where the attack is at chance under both conditions.
+
+The bigger result is that **cross-validation ranks the two arms backwards** —
+real-data shadows score 1.000/0.969 in sample-grouped CV and deploy at
+0.685/0.686, while synth-shadows score 0.789/0.791 and deploy at 0.793/0.848.
+Written up as finding 4; it is the empirical case for item 10's block CV,
+arrived at independently.
+
+Note the earlier repo note claiming real-data shadows "collapse to about 0.14"
+was quoting the worst cell (MeLoMIA-CVAE vs ND, measured here at 0.137
+TPR@10%FPR) as if it were the general case.  They do not collapse; they plateau
+around 0.69 AUC, and synth-shadow modelling lifts them from there.  The
+docstring in `attack.py` has been corrected.
+
+**Still open:** the same ablation on COMBINED, where four times the training
+data should reduce how much the base shadows memorise and so may narrow the
+gap.
 
 ---
 

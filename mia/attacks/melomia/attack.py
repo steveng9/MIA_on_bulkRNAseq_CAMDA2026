@@ -10,10 +10,17 @@ from.  At inference the adversary has no target model -- only the released
 synthetic dataset -- so the only model it can build is a *proxy* trained on that
 synthetic data.  Shadow models trained on real data therefore produce loss
 distributions from a different domain than the proxy does, and a meta-classifier
-fitted to the former transfers poorly to the latter.  Earlier runs in this repo
-measured that gap directly: real-data shadows reached TPR@10%FPR of 0.58 when
-validated against each other and collapsed to about 0.14 when the features came
-from a synthetic-trained proxy.
+fitted to the former transfers poorly to the latter.  `configs/experiments/
+ablation_synth_shadow.yaml` measures that gap under matched conditions (K=15,
+same splits, same features, same proxy).  Synth-shadows win every cell: on the
+ND diagonal +0.161 AUC and 2.9x TPR@1%FPR, on the CVAE diagonal +0.108 and 1.6x.
+
+The validation numbers invert.  Real-data shadows score 1.000 and 0.969 in
+sample-grouped cross-validation and deploy at 0.685 and 0.686; synth-shadows
+score 0.789 and 0.791 and deploy at 0.793 and 0.848.  A shadow trained on a real
+split has memorised its own rows, so cross-validating it against itself is
+perfect and meaningless.  Never quote a MeLoMIA CV AUC as an attack result --
+see results/FINDINGS.md section 4.
 
 **Synth-shadow modelling** closes it by inserting a layer:
 

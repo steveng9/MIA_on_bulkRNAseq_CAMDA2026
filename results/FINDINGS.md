@@ -284,7 +284,93 @@ have stopped it.
 
 ---
 
-## 4. Where we disagree with the abstract
+## 4. Cross-validation score and attack strength point in opposite directions
+
+TODO item 8 asked whether synth-shadow modelling pays for itself.  It does, and
+the ablation also produced the most useful methodological result in the repo.
+
+Both arms are identical except for where the feature-extraction shadows were
+trained: `_synth` on internal synthetic data emitted by base shadows (the
+method), `_real` directly on real splits (the ablation).  Same K=15, same
+splits, same features, same meta-classifier, same proxy at inference.
+
+| AUC | vs CVAE | vs ND |
+|---|---|---|
+| MeLoMIA-ND, real shadows | 0.704 | 0.686 |
+| MeLoMIA-ND, synth-shadows | **0.810** | **0.848** |
+| MeLoMIA-CVAE, real shadows | 0.685 | 0.532 |
+| MeLoMIA-CVAE, synth-shadows | **0.793** | **0.561** |
+
+| TPR@1%FPR | vs CVAE | vs ND |
+|---|---|---|
+| MeLoMIA-ND, real shadows | 0.137 | 0.104 |
+| MeLoMIA-ND, synth-shadows | **0.368** | **0.295** |
+| MeLoMIA-CVAE, real shadows | 0.209 | 0.026 |
+| MeLoMIA-CVAE, synth-shadows | **0.329** | **0.045** |
+
+Synth-shadow modelling wins every cell.  On the ND diagonal it is worth +0.161
+AUC and 2.9x TPR@1%FPR; on the CVAE diagonal +0.108 and 1.6x.  The one cell
+where it barely matters (+0.029) is MeLoMIA-CVAE against ND, where the attack is
+near chance under both conditions and there is nothing for the extra layer to
+lift.
+
+### The part worth the paper's attention
+
+Look at what cross-validation said about these same runs.
+
+| | CV AUC (sample-grouped) | deployed, diagonal |
+|---|---|---|
+| real-data shadows | 1.000 / 0.969 | 0.685 / 0.686 |
+| synth-shadows | 0.789 / 0.791 | 0.793 / 0.848 |
+
+**The two orderings are opposite.**  Real-data shadows produce a near-perfect
+cross-validation score and the weaker attack; synth-shadows produce a visibly
+worse cross-validation score and the stronger attack.  An experimenter choosing
+between the two designs on CV score — the obvious thing to do — would pick the
+wrong one and give up 0.11 to 0.16 AUC.
+
+The 1.000 is not a bug, it is the honest answer to the wrong question.  A shadow
+trained on a real split has memorised its own training rows, so a classifier
+reading that shadow's losses separates members from non-members perfectly.  The
+`_real` arm's search noticed: it selected the *smallest* feature budget on offer
+(2 temperatures, 12 noise draws) because nothing more was needed.  The ensemble
+weights then came out exactly uniform — with every classifier at 1.000 there was
+nothing left to discriminate on, so the blend carried no information while
+looking like a considered choice.
+
+The synth arm's CV number, by contrast, is roughly *honest*: 0.789 against 0.793
+deployed on the CVAE diagonal.  Synth-shadow modelling does not only attack
+better, it makes its own validation trustworthy, because the models the
+meta-classifier learns from are in the same domain as the one it is applied to.
+
+This is the same disease as finding 3's selection problem, on a second axis.
+Sample-grouped CV fails to hold out *models*; real-data shadows fail to match
+the inference *domain*.  Either one alone makes the CV number an unreliable
+guide to deployment, and the repo had both at once.  `MeLoMIA(
+internal_proxy_selection=True)` fixes the first; synth-shadow modelling, now
+measured, fixes the second.
+
+**Practical rule for the paper: never report a MeLoMIA cross-validation AUC as
+an attack result.**  Report the grid cell, which is scored against real target
+labels through the real deployment path.
+
+### A shadow-count curve that saturates early
+
+The `_synth` arm runs K=15 where the main grid runs K=30, which gives a third
+point on the curve from finding 3c:
+
+| MeLoMIA-ND vs ND | K=5 (abstract) | K=15 | K=30 |
+|---|---|---|---|
+| AUC | 0.620 | 0.848 | 0.858 |
+
+Almost all of the gain is between K=5 and K=15; K=30 adds 0.010.  So the grid's
+K=30 sits comfortably past the knee rather than being an arbitrary choice, and
+the full sweep in TODO item 2 should spend its budget below K=15 rather than
+above K=30.
+
+---
+
+## 5. Where we disagree with the abstract
 
 The abstract reports MahalaMIA applied to NoisyDiffusion on BRCA at AUC 0.489 —
 chance — and concludes that "diffusion-based generation preserves covariance

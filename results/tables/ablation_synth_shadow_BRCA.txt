@@ -1,0 +1,33 @@
+
+====================================================================================================
+  ATTACK x GENERATOR GRID -- BRCA  [ablation_synth_shadow]
+  cells are mean over splits; +- is the standard deviation across splits
+====================================================================================================
+
+-- AUC ------------------------------------------------------------
+attack                                 CVAE       NoisyDiffusion
+melomia_cvae_real              0.685+-0.014         0.532+-0.022
+melomia_cvae_synth             0.793+-0.023         0.561+-0.042
+melomia_nd_real                0.704+-0.051         0.686+-0.023
+melomia_nd_synth               0.810+-0.057         0.848+-0.056
+
+-- AUPR ------------------------------------------------------------
+attack                                 CVAE       NoisyDiffusion
+melomia_cvae_real              0.908+-0.006         0.823+-0.016
+melomia_cvae_synth             0.942+-0.007         0.840+-0.021
+melomia_nd_real                0.900+-0.020         0.895+-0.006
+melomia_nd_synth               0.945+-0.023         0.955+-0.021
+
+-- T@1 ------------------------------------------------------------
+attack                                 CVAE       NoisyDiffusion
+melomia_cvae_real              0.209+-0.029         0.026+-0.012
+melomia_cvae_synth             0.329+-0.019         0.045+-0.020
+melomia_nd_real                0.137+-0.062         0.104+-0.037
+melomia_nd_synth               0.368+-0.139         0.295+-0.116
+
+-- T@10 ------------------------------------------------------------
+attack                                 CVAE       NoisyDiffusion
+melomia_cvae_real              0.396+-0.027         0.137+-0.037
+melomia_cvae_synth             0.515+-0.051         0.168+-0.059
+melomia_nd_real                0.275+-0.077         0.293+-0.014
+melomia_nd_synth               0.527+-0.123         0.608+-0.130
