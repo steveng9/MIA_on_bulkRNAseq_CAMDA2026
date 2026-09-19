@@ -1,14 +1,14 @@
 {
   "run_id": "BRCA__melomia_nd__mvn__s5__3a2dbb88",
-  "timestamp": "2026-09-19T07:29:55+00:00",
+  "timestamp": "2026-09-19T15:55:15+00:00",
   "dataset": "BRCA",
   "attack": "melomia_nd",
   "generator": "mvn",
   "split": 5,
   "tag": "k30_n600",
-  "experiment": "grid_brca_tuned",
-  "variant": "melomia_nd",
-  "notes": "tuned statistical attacks; MeLoMIA unchanged (Optuna tunes it per run)",
+  "experiment": "ablation_internal_proxy",
+  "variant": "melomia_nd_grouped",
+  "notes": "sample-grouped vs model-disjoint selection, same shadow stack",
   "params": {
     "seed": 42,
     "device": "cuda",

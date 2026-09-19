@@ -180,10 +180,12 @@ cross-split negative controls.
 
 ---
 
-## 3. The BRCA grid: the cheapest attack wins twice, and only one attack transfers
+## 3. Both grids: the cheapest attack wins, and only one attack transfers — on one cohort
 
-The completed 4x4 grid, five splits per cell, each attack's as-submitted
-configuration.  Bold is the best attack in each column.
+Four attacks x four generators x five splits, on both cohorts, as-submitted
+configurations.  Bold is the best attack in each column.
+
+**BRCA** (1,089 samples, 871 train, 5 subtypes)
 
 | AUC | MVN | CVAE | ND | DP-PGM |
 |---|---|---|---|---|
@@ -192,93 +194,126 @@ configuration.  Bold is the best attack in each column.
 | MeLoMIA-CVAE | 0.553 | 0.798 | 0.563 | 0.491 |
 | MeLoMIA-ND | 0.876 | 0.824 | **0.858** | 0.488 |
 
-| TPR@1%FPR | MVN | CVAE | ND | DP-PGM |
+**COMBINED** (4,323 samples, 3,458 train, 12 classes, plus an 824-sample auxiliary set)
+
+| AUC | MVN | CVAE | ND | DP-PGM |
 |---|---|---|---|---|
-| MahalaMIA | **0.631** | 0.339 | 0.225 | 0.015 |
-| MAMA-MIA | 0.016 | 0.036 | 0.026 | 0.019 |
-| MeLoMIA-CVAE | 0.023 | 0.329 | 0.039 | 0.014 |
-| MeLoMIA-ND | 0.219 | **0.402** | **0.329** | 0.017 |
+| MahalaMIA | **0.900** | 0.619 | **0.770** | 0.500 |
+| MAMA-MIA | 0.512 | 0.517 | 0.528 | 0.499 |
+| MeLoMIA-CVAE | 0.528 | **0.731** | 0.525 | 0.494 |
+| MeLoMIA-ND | 0.644 | 0.591 | 0.648 | 0.499 |
 
-Three things fall out of it.
+### 3a. MahalaMIA is the best attack on most columns, and the gap widens at the low-FPR end
 
-### 3a. MahalaMIA is the best attack on two of the four generators
+On BRCA it takes MVN and CVAE; on COMBINED it takes MVN and ND.  At TPR@1%FPR —
+the metric a privacy claim actually rests on — it takes **all three non-DP
+columns on COMBINED**:
 
-A Mahalanobis distance to the synthetic covariance — no shadow models, no
-neural network, seconds of compute — beats both learned loss attacks against
-MVN (0.928 vs 0.876) and against the CVAE (0.891 vs 0.824), and at the low-FPR
-end against MVN it is not close: TPR@1%FPR of 0.631 against MeLoMIA-ND's 0.219.
-And that is *before* the covariance conditioning of finding 2, which takes it to
-1.000 and 0.970 on those two columns.
-
-The expensive machinery earns its place on exactly one column, NoisyDiffusion,
-where MeLoMIA-ND leads on every metric.  For a paper arguing that synthetic
-bulk RNA-seq leaks, the cheap attack is the more alarming result: it needs no
-shadow-model budget, so it is available to an adversary who has only the
-released file.
-
-### 3b. Only the ND backend transfers; the CVAE backend is model-matched
-
-Restricting to the three non-DP columns:
-
-| | diagonal | mean off-diagonal | gap |
+| TPR@1%FPR, COMBINED | MVN | CVAE | ND |
 |---|---|---|---|
-| MeLoMIA-ND | 0.858 | 0.850 | **+0.008** |
-| MeLoMIA-CVAE | 0.798 | 0.558 | **+0.240** |
+| MahalaMIA | **0.411** | **0.079** | **0.196** |
+| MeLoMIA-CVAE | 0.015 | 0.052 | 0.011 |
+| MeLoMIA-ND | 0.075 | 0.031 | 0.058 |
 
-MeLoMIA-ND has essentially no diagonal advantage — it does not care which
-generator produced the data, and against MVN, a per-class Gaussian with no
-network and no diffusion process anywhere, it scores 0.876, slightly *above* its
-own diagonal cell.  MeLoMIA-CVAE collapses to chance off its own generator
-(0.553 on MVN, 0.563 on ND).
+A closed-form Mahalanobis distance to the synthetic covariance — no shadow
+models, no neural network, seconds of compute — beats both learned loss attacks
+5x at the 1% budget on MVN and 3x on ND.  And this is before the covariance
+conditioning of finding 2, which takes the BRCA MVN and CVAE cells to 1.000 and
+0.970.
 
-This is not one backend simply being stronger.  On the CVAE column the two are
-within 0.03 AUC, and MeLoMIA-CVAE's TPR@1%FPR there (0.329) is respectable.
-The difference is in what the probe measures.  The ND probe reads a denoising
-loss across fifteen noise scales, which is a multi-resolution estimate of how
-tightly the released distribution concentrates around a candidate record — a
-quantity any overfitting generator produces, whatever mechanism did the
-overfitting.  The CVAE probe reads an ELBO across posterior temperatures, which
-needs the target's own encoder-decoder geometry to be reflected in the data it
-was fitted to.  MVN synthetic data is genuinely Gaussian, so a CVAE fitted to it
-reconstructs members and non-members about equally well and there is nothing
-left to re-expose.
+For a paper arguing that synthetic bulk RNA-seq leaks, this is the more alarming
+result: the strongest practical attack needs only the released file, no shadow
+budget, and no access to the generator's family.
 
-So the grid should be presented as attack-vs-generator *transfer*, not as each
-attack paired with its target, and the two MeLoMIA backends are complementary
-rather than redundant.
+### 3b. Transfer is a property of the cohort, not just of the attack
 
-### 3c. The shadow budget, not the generator, set the abstract's ND number
+On BRCA, MeLoMIA-ND appeared to be generator-agnostic: a +0.008 diagonal
+advantage, scoring 0.876 against MVN — a per-class Gaussian with no diffusion
+process anywhere — slightly *above* its own diagonal cell.  MeLoMIA-CVAE was the
+opposite, +0.240 and at chance off-diagonal.
 
-| MeLoMIA-ND vs ND | AUC | AUPR | T@1 | T@10 |
-|---|---|---|---|---|
-| abstract, K=5 shadows | 0.620 | 0.858 | 0.045 | 0.193 |
-| **here, K=30 shadows** | **0.858** | **0.959** | **0.329** | **0.622** |
+That distinction does not survive the larger cohort.  Holding the attack fixed
+at MeLoMIA-ND:
 
-K=5 was inherited from the blue team's five published splits rather than
-chosen.  The meta-classifier sees 15 timesteps x 600 noise draws per record, so
-a five-model pool is a very small sample of the *between-model* variation it has
-to generalise over.  Raising K to 30 — nothing else changed: same features, same
-published ND synthetic data, same splits, same metrics — multiplies TPR at a 1%
-false-positive budget by 7.3x, and at 10% by 3.2x.  The gain is concentrated at
-the low-FPR end, which is where a privacy claim lives or dies: at K=5 the attack
-flags about 1 member in 22 before spending its 1% budget on false positives; at
-K=30, 1 in 3.
+| MeLoMIA-ND vs | BRCA | COMBINED | drop |
+|---|---|---|---|
+| MVN | 0.876 | 0.644 | −0.232 |
+| CVAE | 0.824 | 0.591 | −0.233 |
+| ND | 0.858 | 0.648 | −0.210 |
 
-The same change is worth far less to the CVAE backend — 0.753 to 0.798, against
-the abstract's own K=5 number.  So K=5 was starving one attack specifically
-rather than handicapping the method in general, and the shadow budget belongs in
-the paper as a per-attack tuning axis rather than a fixed protocol detail.
+The drop is **uniform to within 0.023 across three structurally unrelated
+generators**.  MeLoMIA-ND does not become selective on COMBINED; it becomes
+uniformly weaker.  So the honest statement is conditional: the denoising-loss
+probe transfers across generator families *when the target has memorised enough
+for a density probe to find*, and a 4x larger training set removes most of that
+for every family at once.
 
-### 3d. DP-PGM is the one generator that holds, against everything
+MeLoMIA-CVAE, by contrast, keeps its shape exactly — 0.553/0.798/0.563 on BRCA
+becomes 0.528/0.731/0.525 on COMBINED.  Only its diagonal moves.  Its ELBO probe
+needs the target's own encoder-decoder geometry, which no amount of extra data
+changes.
 
-Its whole column sits between 0.488 and 0.501 AUC, and its best TPR@10%FPR
-across all four attacks is 0.110 against a 0.100 baseline.  This is the
-cleanest positive result in the grid: not "the attacks we tried did poorly" but
-"four attacks spanning a closed-form distance, a marginal-ratio test and two
-learned loss-trajectory classifiers all land on chance."
+An earlier draft of this section generalised the BRCA behaviour into a claim
+that the attack "is not diffusion-specific."  On one cohort that reads as a
+property of the probe; on two it is visibly a property of how much the
+generators memorised.
+
+### 3c. AUC understates how much a larger cohort protects
+
+| MeLoMIA-CVAE vs CVAE | AUC | T@1 | T@10 |
+|---|---|---|---|
+| BRCA | 0.798 | 0.329 | 0.518 |
+| COMBINED | 0.731 | 0.052 | 0.319 |
+
+AUC falls 0.067 — a modest-sounding number.  TPR at 1% FPR falls **6.3x**, from
+flagging one member in three to one in nineteen.  The same pattern holds for
+MeLoMIA-ND's diagonal (0.329 to 0.058, 5.7x) and MahalaMIA's CVAE column (0.339
+to 0.079, 4.3x).
+
+Reporting AUC alone would describe cohort size as a mild mitigation.  The
+low-FPR metrics say it is close to an order of magnitude.  This is a concrete
+reason for the paper to lead with TPR at fixed low FPR.
+
+Note the exception: MahalaMIA against MVN barely moves (0.928 to 0.900 AUC,
+0.631 to 0.411 at 1% FPR).  A per-class Gaussian fit is a summary statistic
+whose fidelity to its own training split does not decay with n, so the MVN
+generator's vulnerability is structural rather than a small-sample artefact —
+the stronger claim for the paper.
+
+### 3d. The shadow budget, not the generator, set the abstract's ND number
+
+| MeLoMIA-ND vs ND (BRCA) | K=5 (abstract) | K=15 | K=30 |
+|---|---|---|---|
+| AUC | 0.620 | 0.848 | 0.858 |
+
+K=5 was inherited from the blue team's five published splits rather than chosen.
+The meta-classifier sees 15 timesteps x 600 noise draws per record, so a
+five-model pool is a very small sample of the *between-model* variation it must
+generalise over.  Raising K to 30 — nothing else changed — multiplies TPR at a
+1% false-positive budget by 7.3x and at 10% by 3.2x.
+
+The curve saturates early: almost all the gain is between K=5 and K=15, and
+K=30 adds 0.010.  So the grid's K=30 sits past the knee, and the sweep in TODO
+item 2 should spend its budget below K=15.
+
+The same change is worth far less to the CVAE backend (0.753 to 0.798).  K=5 was
+starving one attack specifically, and the abstract's headline ordering — CVAE
+attack ahead of ND attack — **reverses** on BRCA once both have an adequate
+budget.
+
+### 3e. DP-PGM is the one generator that holds, on both cohorts, against everything
+
+Its column spans 0.488-0.501 AUC on BRCA and 0.494-0.500 on COMBINED.  Best
+TPR@10%FPR across all four attacks and both cohorts: 0.110, against a 0.100
+baseline.
+
+This is the cleanest positive result in the project: not "the attacks we tried
+did poorly" but *four attacks spanning a closed-form distance, a marginal-ratio
+test and two learned loss-trajectory classifiers, at two cohort sizes, all land
+on chance.*
 
 It should be read alongside finding 1, which is the reminder that this protects
-the *model*.  NoisyDiffusion's quantile leak lives in a post-processing step
+the **model**.  NoisyDiffusion's quantile leak lives in a post-processing step
 bolted to the generator's output, and no amount of DP in the training loop would
 have stopped it.
 

@@ -1,14 +1,14 @@
 {
   "run_id": "BRCA__melomia_cvae__cvae__s2__a058a19c",
-  "timestamp": "2026-09-19T07:30:10+00:00",
+  "timestamp": "2026-09-19T15:55:14+00:00",
   "dataset": "BRCA",
   "attack": "melomia_cvae",
   "generator": "cvae",
   "split": 2,
   "tag": "k30_n50",
-  "experiment": "grid_brca_tuned",
-  "variant": "melomia_cvae",
-  "notes": "tuned statistical attacks; MeLoMIA unchanged (Optuna tunes it per run)",
+  "experiment": "ablation_internal_proxy",
+  "variant": "melomia_cvae_grouped",
+  "notes": "sample-grouped vs model-disjoint selection, same shadow stack",
   "params": {
     "seed": 42,
     "device": "cuda",

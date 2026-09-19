@@ -157,10 +157,12 @@ here -- it is the generalisation check.  Statistical attacks, five splits:
 
 | AUC | MVN | CVAE | ND | DP-PGM |
 |---|---|---|---|---|
-| MahalaMIA (pinv, aux) | 0.900 | 0.619 | 0.770 | 0.500 |
+| MahalaMIA (pinv, aux) | **0.900** | 0.619 | **0.770** | 0.500 |
 | MAMA-MIA (4 bins) | 0.512 | 0.517 | 0.528 | 0.499 |
+| MeLoMIA-CVAE (K=20) | 0.528 | **0.731** | 0.525 | 0.494 |
+| MeLoMIA-ND (K=20) | 0.644 | 0.591 | 0.648 | 0.499 |
 
-Two differences from BRCA matter.
+Three differences from BRCA matter.
 
 **CVAE gets much harder; MVN barely does.**  MahalaMIA against the CVAE falls
 from 0.891 to 0.619, while against the MVN generator it only moves from 0.928 to
@@ -177,7 +179,18 @@ effect.
 **DP-PGM is at chance on both cohorts** for both statistical attacks, consistent
 with the abstract.
 
-MeLoMIA rows on COMBINED are queued at K=20 shadows.
+**The learned attacks lose more than the statistical ones.**  MeLoMIA-ND falls
+by a near-constant 0.21-0.23 AUC against all three non-DP generators, while
+MahalaMIA holds 0.900 on MVN and 0.770 on ND.  The consequence is that the
+ordering changes with cohort size: on BRCA the best attack on the ND column was
+MeLoMIA-ND (0.858 vs MahalaMIA's 0.806); on COMBINED it is MahalaMIA (0.770 vs
+0.648).  Only the CVAE column goes the other way, where MeLoMIA-CVAE (0.731)
+overtakes MahalaMIA (0.619).
+
+Any claim of the form "attack X is the strongest against generator Y" therefore
+has to name the cohort.  See `FINDINGS.md` section 3 for the full treatment, and
+note in particular that AUC understates the protection a larger cohort gives:
+TPR at 1% FPR falls 4-6x across the diagonal cells where AUC falls under 0.1.
 
 ## Reproducing this file
 
