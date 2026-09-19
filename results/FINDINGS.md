@@ -405,7 +405,94 @@ above K=30.
 
 ---
 
-## 5. Where we disagree with the abstract
+## 5. Model-disjoint selection: the CV number was wrong, the hyperparameters were not
+
+Finding 4 showed cross-validation ranking two *designs* backwards.  This is the
+narrower question it raised: within the chosen design, was the meta-classifier
+also selected on the wrong axis?
+
+The submission selected features, hyperparameters and ensemble weights with
+`StratifiedGroupKFold` grouped on `sample_id`, which holds *records* out while
+leaving every shadow model on both sides of every fold.  At inference the model
+is the new thing and every record has been seen K times under K different
+membership labels — the opposite arrangement.  Rotating a hold-out over the
+shadow pool instead is the internal-proxy role of `docs/FIVE_ROLES.md`, and
+`MeLoMIA(internal_proxy_selection=True)` implements it.  Both arms share the
+same K=30 stack and the same features, so only selection differs.
+
+### The CV numbers do fall, in proportion to how much there is to overfit
+
+| BRCA, mean over 5 classifiers | sample-grouped | model-disjoint | gap |
+|---|---|---|---|
+| MeLoMIA-ND | 0.7969 | 0.7738 | **+0.0231** |
+| MeLoMIA-CVAE | 0.7924 | 0.7826 | **+0.0098** |
+
+The gap is the model-specific component of the signal: what a classifier can
+learn about *these thirty shadows* that does not transfer to a new model.  It is
+2.4x larger for the ND backend, which is what you would expect from capacity —
+its feature grid is 15 timesteps x 600 draws against the CVAE's 6 x 50.
+
+The searches agree, unprompted.  Under model-disjoint folds both backends chose
+*smaller* feature budgets — ND from 15 timesteps and 600 draws to 9 and 350,
+CVAE from 5 temperatures and 44 draws to 4 and 32.  Once validation stops
+rewarding quirks of models already seen, the search stops wanting the surplus
+features.
+
+### But the attack is unchanged
+
+| BRCA AUC | grouped | block-CV | Δ |
+|---|---|---|---|
+| MeLoMIA-ND vs MVN | 0.8761 | 0.8678 | −0.008 |
+| MeLoMIA-ND vs CVAE | 0.8239 | 0.8151 | −0.009 |
+| MeLoMIA-ND vs ND | 0.8584 | 0.8538 | −0.005 |
+| MeLoMIA-CVAE vs CVAE | 0.7980 | 0.7981 | +0.000 |
+| MeLoMIA-CVAE vs ND | 0.5628 | 0.5604 | −0.002 |
+
+Every difference is well inside the split-to-split spread (±0.02 to ±0.07).  So
+the two claims separate, and only one survives:
+
+* **Reporting** — the grouped CV AUC is inflated by up to 0.036 relative to an
+  honest model-disjoint estimate, so it must not be quoted as an attack result.
+  Confirmed.
+* **Selection** — it was nonetheless not choosing materially worse
+  hyperparameters.  Refuted.
+
+This is a useful negative result.  The contamination was real and the fix is
+correct, but the grid never depended on it.  Worth one paragraph in the paper as
+methodology, not a headline.
+
+### A correction to how the CV number should be described
+
+It is tempting — and this write-up did it earlier — to call the grouped number
+"optimistic" full stop.  That is wrong in an instructive way.  Set the CV
+numbers beside the deployed diagonal cells:
+
+| BRCA | grouped CV | model-disjoint CV | deployed diagonal |
+|---|---|---|---|
+| MeLoMIA-ND | 0.797 | 0.774 | **0.858** |
+| MeLoMIA-CVAE | 0.792 | 0.783 | **0.798** |
+
+Both CV numbers sit *below* the ND attack's actual grid cell.  The grouped
+number is optimistic **relative to model-disjoint CV**, which is what the
+inflation measures — but it is not an upper bound on deployment, and for the ND
+backend it understates the real result by 0.06.
+
+The reason is that the two quantities are different tasks.  CV scores shadow
+membership on internal synthetic data emitted by base shadows; the grid scores
+target membership on the released dataset, whose generator was fitted to more
+data with different hyperparameters.  Nothing forces them to agree in either
+direction.  Finding 4's real-data-shadow arm is the case where CV runs far
+*ahead* of deployment (1.000 against 0.685); this is a case where it runs
+behind.
+
+**The rule that survives all of it:** a MeLoMIA cross-validation AUC is a
+diagnostic of the meta-classifier, not an estimate of the attack.  Report the
+grid cell, which is scored against real target labels through the deployment
+path.
+
+---
+
+## 6. Where we disagree with the abstract
 
 The abstract reports MahalaMIA applied to NoisyDiffusion on BRCA at AUC 0.489 —
 chance — and concludes that "diffusion-based generation preserves covariance

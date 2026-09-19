@@ -199,7 +199,7 @@ shadows are cheap (seconds and under a minute); DP-PGM base shadows are not
 
 Until this is run, read the off-diagonal MeLoMIA numbers as a lower bound.
 
-### 10. Model-disjoint validation (the internal-proxy role) — *implemented, not yet run*
+### 10. Model-disjoint validation (the internal-proxy role) — *done; a negative result*
 
 The meta-classifier's hyperparameters and ensemble weights are currently chosen
 by `StratifiedGroupKFold` **grouped by `sample_id`**.  That holds out *samples*
@@ -238,7 +238,26 @@ hyperparameter choice in the grid, and the BRCA and COMBINED rows were mid-fligh
 when it landed; a grid whose cells were selected two different ways is not a
 grid.  Flip the default after the current queue drains.
 
-**The run:** `configs/experiments/ablation_internal_proxy.yaml`.  It costs one
+**Result.**  Ran as `configs/experiments/ablation_internal_proxy.yaml`.  The CV
+numbers fall as predicted — ND by 0.0231 mean over five classifiers, CVAE by
+0.0098, and both searches independently chose smaller feature budgets once
+model-specific quirks stopped being rewarded.  But **the grid cells do not
+move**: every arm is within 0.015 AUC of its grouped counterpart, inside the
+split-to-split spread.  Selection was on the wrong axis and it did not matter.
+
+So the reporting claim holds (never quote a MeLoMIA CV AUC as an attack result)
+and the selection claim does not (it was not choosing worse hyperparameters).
+Finding 5 has the full treatment, including a correction: the grouped number is
+inflated relative to model-disjoint CV but is *not* an upper bound on
+deployment — for the ND backend it understates the real grid cell by 0.06,
+because CV scores shadow membership on internal synthetic data while the grid
+scores target membership on the released dataset.
+
+Left `internal_proxy_selection=False` as the default: it costs a search, changes
+nothing measurable, and keeping it off means the grid stays comparable with the
+CAMDA submission.  Turn it on when reporting a CV number.
+
+**Original plan:**  It costs one
 meta-classifier search per backend and nothing else — the `_grouped` arm's tag
 (`k30_n600`) is exactly the one the main grid already built, so that arm is a
 cache hit, and the `_blockcv` arm shares the same `stack_tag` and therefore the
