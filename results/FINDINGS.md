@@ -675,7 +675,149 @@ DP-PGM stays at 0.496–0.506 AUC in all 1988 runs across both cohorts — but s
 
 ---
 
-## 7. Where we disagree with the abstract
+## 7. DP-PGM's flat row was two defects, not a privacy result
+
+Every DP-PGM cell in every table above sits at 0.488–0.506.  The abstract read
+that as the generator being private.  Two defects, one ours and one upstream,
+produce the same table for reasons that have nothing to do with privacy, and
+both are now fixed.
+
+### 7a. The adapter permuted the gene columns
+
+`mia/generators/pgm.py` dropped the upstream generator's
+`selected_gene_names` and returned its matrix as though column *j* were gene
+*j*.  The upstream selects genes by variance and returns them in *that* order,
+so every gene's distribution was silently transposed onto a different gene.
+
+A column permutation leaves the multiset of columns unchanged, so every global
+statistic survives it — synthetic mean 11.298 against a real 11.296.  Nothing
+that checked totals could have caught it.  Per gene, on BRCA split 1:
+
+| | before | after |
+|---|---|---|
+| mean per-gene mean error | 1.931 | 0.374 |
+| per-gene Wasserstein (training SDs) | 2.898 | 0.727 |
+| TSTR macro-F1 (real ceiling 0.811) | 0.092 | 0.185 |
+| real-vs-synthetic discriminator AUC | 1.000 | 1.000 |
+
+Fixed in `c29d6b5`, together with `mia/fidelity.py` and
+`scripts/eval_fidelity.py` — the harness that caught it, and the first thing in
+this repo to measure generator quality at all.  **Every DP-PGM number recorded
+before 2026-09-20 is affected.**
+
+### 7b. The budget was spent under basic composition
+
+`src/pgm_fitter.py` in `steveng9/PrivateRNAseqGen` divided ε linearly across
+marginals and calibrated each with the classical Gaussian bound, so σ grew
+*linearly* in the number of measurements.  Gaussian mechanisms compose
+additively in ρ = 1/(2σ²), which makes it **√k**.  At the submitted
+configuration — 978 genes, joint mode, 1956 marginals, ε=10, δ=1e-5:
+
+| | 1-way σ | 2-way σ |
+|---|---|---|
+| basic (as shipped) | 1435.8 | 707.2 |
+| zCDP | 28.8 | 20.2 |
+| reduction | **49.8×** | **35.0×** |
+
+σ = 1436 on a cohort of **871 rows**: the injected noise exceeded the size of
+the entire study, and was roughly seven times the ~218 counts in a one-way cell.
+
+The penalty is √k, so it is a function of how many features you measure:
+
+| marginals k | basic σ | zCDP σ | penalty |
+|---|---|---|---|
+| 5 | 2.4 | 1.2 | 2.0× |
+| 20 | 9.7 | 2.4 | 4.1× |
+| 50 | 24.2 | 3.7 | 6.5× |
+| 100 | 48.5 | 5.3 | 9.1× |
+| 978 | 473.8 | 16.6 | 28.6× |
+| 1956 | 947.6 | 23.4 | 40.5× |
+
+**This is the part that generalises beyond our repo.**  Below roughly 50
+measurements basic composition costs a small constant, which is the regime
+tabular DP synthesisers are usually demonstrated in.  Genomic feature counts —
+hundreds to thousands of marginals — are what turn a tolerable constant into a
+30–60× loss.  Any tabular DP-SDG method carried over to omics inherits this, and
+the looseness is invisible because the output is still formally (ε, δ)-DP.
+
+Fixed in `9e1fe87` as `composition="zcdp"`, now the default, with
+`composition="basic"` retained byte-for-byte so earlier results reproduce.  The
+accounting is McKenna's, transcribed rather than derived: MST writes the same
+rule as `weights / np.linalg.norm(weights)` then `sigma / weight`, which for k
+equal weights is exactly σ√k.  ρ comes from OpenDP's numerically-inverted
+conversion — snsynth's `cdp_rho`, what MST and AIM call — with the closed form
+ε = ρ + 2√(ρ ln(1/δ)) as a fallback that returns a *smaller* ρ and therefore more
+noise, so it can only be conservative.  Sixteen tests in the generator repo's
+`tests/test_composition.py` check σ against MST's formulation at k = 1, 10, 978,
+1956 and assert the ρ accumulated across the measurement loop equals the budget
+to 1e-9; the fitter raises if it ever exceeds it.
+
+### 7c. Under basic composition, fidelity and coverage cannot both be had
+
+Nine configurations, BRCA split 1, ε=10, all on the original basic accounting
+(`scripts/pgm_fidelity_sweep.py`, `results/pgm_sweep.csv`):
+
+| config | TSTR macro-F1 | vs ceiling | W1 (SDs) | corr-MAE | disc. AUC |
+|---|---|---|---|---|---|
+| n₁=978, k=4, joint *(submitted)* | 0.185 | 0.23 | **0.727** | 0.209 | 1.000 |
+| n₁=400, k=4, joint | 0.165 | 0.20 | 1.680 | 0.251 | 1.000 |
+| n₁=200, k=4, joint | 0.283 | 0.35 | 2.028 | 0.195 | 1.000 |
+| n₁=100, k=4, joint | 0.470 | 0.58 | 2.307 | 0.169 | 1.000 |
+| **n₁=50, k=4, joint** | **0.658** | **0.81** | 2.264 | 0.168 | 1.000 |
+| n₁=200, k=8, joint | 0.182 | 0.22 | 1.964 | 0.197 | 1.000 |
+| n₁=200, k=2, joint | 0.342 | 0.42 | 2.188 | 0.178 | 1.000 |
+| n₁=200, n₂=50, k=4, strat | 0.234 | 0.29 | 2.100 | 0.189 | 1.000 |
+| n₁=100, n₂=50, k=4, strat | 0.349 | 0.43 | 2.302 | 0.172 | 1.000 |
+
+Utility rises monotonically as fewer genes are measured — at 50 genes the
+synthetic data recovers **81% of the real-data classification ceiling** against
+23% at the submitted setting — because σ falls linearly with the marginal count.
+
+But the two metrics move in opposite directions.  W1 *worsens* from 0.73 to 2.26
+SDs over the same sweep, because at n₁=50 only 50 of 978 genes are modelled at
+all and the other 928 are filled with a constant.  The n₁=50 release is a good
+classifier substrate and a bad RNA-seq dataset.  Discriminator AUC is pinned at
+1.000 throughout; 928 constant columns are not subtle.  More bins costs utility
+at fixed σ (k=8 → 0.182, k=2 → 0.342), since the same budget is spread over more
+cells.
+
+**No setting of this knob gives both, and the knob is not the problem.**  The
+trade-off exists only because σ scales linearly in the number of marginals.
+That is what 7b removes.
+
+### 7d. What the re-accounting does not fix
+
+ε is still not an end-to-end guarantee.  Two steps read the private training
+data and spend no budget:
+
+1. **Marginal selection** ranks genes by the variance of the private data and
+   pairs by its Spearman correlations, so which genes appear in the released
+   model is a deterministic function of the training split.  MST spends a full
+   **ρ/3** on exactly this step, via the exponential mechanism.
+2. **Discretisation** takes bin edges from `np.percentile` of the private data,
+   and `inverse_transform` releases values interpolated between them — the same
+   structure as finding 1, where NoisyDiffusion's `QuantileTransformer` leaked
+   its training support at AUC 0.9996.
+
+Both are fixable and neither is fixed.  Until they are, the reported ε covers
+the noisy marginals only, and the paper has to say so.  Full treatment in
+`docs/PGM_ATTACK_SURFACE.md` §5.
+
+### 7e. What this means for the DP-PGM column
+
+**"All four attacks sit at chance against DP-PGM at ε=10" was not a safe
+claim.**  Attacking column-scrambled data whose marginals carry seven times
+their own signal in noise, and attacking a genuinely private generator, predict
+exactly the same table.  The flat row was consistent with privacy but was not
+evidence of it, because the experiment could not have distinguished the two.
+
+The attack grid needs re-running against the corrected generator before the
+DP-PGM column means anything, and the useful result is a privacy/utility curve
+over ε rather than a single flat row.
+
+---
+
+## 8. Where we disagree with the abstract
 
 The abstract reports MahalaMIA applied to NoisyDiffusion on BRCA at AUC 0.489 —
 chance — and concludes that "diffusion-based generation preserves covariance
@@ -688,6 +830,15 @@ abstract's cross-model run was configured.  This should be resolved before the
 paper repeats the claim, because our numbers point the opposite way: ND
 preserves quite a lot of covariance structure, and (see finding 1) rather more
 than that.
+
+The second disagreement is about DP-PGM, and it is a disagreement with our own
+submitted numbers as much as with the abstract's.  Both report the DP-PGM
+column at chance and read it as the differentially private generator doing its
+job.  Finding 7 shows the experiment could not have distinguished that from two
+defects — permuted gene columns, and marginals carrying seven times their own
+signal in noise — which predict the identical table.  The claim may well survive
+re-running against the corrected generator, but it is not currently supported,
+and the paper should not repeat it until the grid has been re-run.
 
 ---
 
