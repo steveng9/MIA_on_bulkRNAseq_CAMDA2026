@@ -785,6 +785,39 @@ cells.
 trade-off exists only because σ scales linearly in the number of marginals.
 That is what 7b removes.
 
+### 7c-ii. Re-accounted, the trade-off disappears rather than moving
+
+Same cohort, same split, same seed, same ε and δ, same 978 genes — only the
+composition theorem differs (`scripts/pgm_composition_compare.py`,
+`results/pgm_composition.csv`):
+
+| | basic | **zCDP** |
+|---|---|---|
+| 1-way σ | 1435.8 | **28.8** |
+| 2-way σ | 707.2 | **20.2** |
+| TSTR macro-F1 | 0.185 | **0.553** |
+| vs real ceiling (0.811) | 0.23 | **0.68** |
+| per-gene W1 (training SDs) | 0.727 | **0.511** |
+| corr-MAE | 0.209 | **0.142** |
+| discriminator AUC | 1.000 | 1.000 |
+
+The `basic` arm reproduces 7c's first row exactly, so the two are directly
+comparable.
+
+**zCDP at full gene coverage beats every basic configuration on both axes
+simultaneously.**  Its W1 (0.511) is better than the best W1 any basic config
+achieved (0.727, at the setting whose utility was 0.185), and its utility
+(0.553) is second only to the n₁=50 degenerate case that models 5% of the
+genome and fills the other 95% with a constant.  Three times the utility at
+better per-gene fidelity, for an identical formal guarantee.  The trade-off in
+7c was an artefact of the accounting, not a property of the generator.
+
+**It is still not a good generator.**  The discriminator remains at AUC 1.000 —
+real and synthetic are perfectly separable — and utility is at 68% of the
+real-data ceiling, not at it.  What changed is that DP-PGM now has enough signal
+in it to be worth attacking, which is the precondition for the DP-PGM column
+meaning anything.
+
 ### 7d. What the re-accounting does not fix
 
 ε is still not an end-to-end guarantee.  Two steps read the private training

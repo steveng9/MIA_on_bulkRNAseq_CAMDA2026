@@ -48,6 +48,7 @@ def main():
     p.add_argument("--dataset", default="BRCA")
     p.add_argument("--split", type=int, default=1)
     p.add_argument("--epsilon", type=float, default=10.0)
+    p.add_argument("--composition", default="zcdp", choices=["zcdp", "basic"])
     args = p.parse_args()
 
     X = D.load_expression(args.dataset).values.astype(np.float64)
@@ -61,7 +62,8 @@ def main():
                  f"{'joint' if cfg['joint_mode'] else 'strat'}")
         t0 = time.time()
         try:
-            gen = G.build("pgm", epsilon=args.epsilon, pgm_iters=1000, seed=42, **cfg)
+            gen = G.build("pgm", epsilon=args.epsilon, pgm_iters=1000, seed=42,
+                          composition=args.composition, **cfg)
             gen.fit(X[m], y[m], n_classes)
             X_syn, y_syn = gen.sample(int(m.sum()))
         except Exception as exc:
@@ -69,7 +71,8 @@ def main():
             continue
         row = F.evaluate(X_syn, y_syn, X[~m], y[~m], X[m], y[m])
         row.update(cfg, dataset=args.dataset, split=args.split,
-                   epsilon=args.epsilon, seconds=round(time.time() - t0, 1))
+                   epsilon=args.epsilon, composition=args.composition,
+                   seconds=round(time.time() - t0, 1))
         rows.append(row)
         print(f"{label:42s} TSTR-F1={row['tstr_macro_f1']:.3f} "
               f"ratio={row['utility_ratio']:.3f} "
@@ -81,7 +84,8 @@ def main():
         df = pd.DataFrame(rows)
         if OUT.exists():
             df = pd.concat([pd.read_csv(OUT), df], ignore_index=True)
-        key = ["dataset", "split", "epsilon", "n_1way", "n_2way", "n_bins", "joint_mode"]
+        key = ["dataset", "split", "epsilon", "composition",
+               "n_1way", "n_2way", "n_bins", "joint_mode"]
         df.drop_duplicates(subset=key, keep="last").to_csv(OUT, index=False)
 
     print(f"\n{len(rows)} configs -> {OUT}")
