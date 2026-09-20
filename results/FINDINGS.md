@@ -519,9 +519,13 @@ decide everything:
 
 ### 6a. PCA never wins, and on COMBINED it only ever loses
 
-Mean AUC over MVN/CVAE/ND (DP-PGM is at chance in every row and is omitted):
+Each cell below is **one number averaged over three generators** — the mean AUC
+across MVN, CVAE and ND, five splits each.  DP-PGM is at chance in every row and
+is excluded from the average.  Section 6f breaks the same quantity out per
+generator, so the `pinv` row here is exactly the mean of the `pinv` column
+there (BRCA 0.928/0.880/0.806 -> 0.872; COMBINED 0.900/0.619/0.770 -> 0.763).
 
-| variant | BRCA | COMBINED |
+| variant | BRCA, mean AUC over 3 gens | COMBINED, mean AUC over 3 gens |
 |---|---|---|
 | ridge 1e-8 | **0.941** | 0.810 |
 | Ledoit–Wolf | 0.807 | **0.868** |
@@ -533,6 +537,13 @@ Mean AUC over MVN/CVAE/ND (DP-PGM is at chance in every row and is omitted):
 | PCA 400 | 0.565 | 0.683 |
 | PCA 200 | 0.445 | 0.613 |
 | pinv (submitted) | 0.872 | 0.763 |
+
+The three-generator mean is a ranking convenience, not a quantity anyone should
+quote on its own: it weights three unrelated generators equally and hides
+variants that are excellent against one and harmful against another.  Section 6d
+is exactly that case — class-conditional scoring looks mid-table here while
+being the single best setting against MVN on both cohorts.  Rank with it, report
+per generator.
 
 On **BRCA** there is a real band — k ≈ 850 of 978, a 13% reduction — where PCA
 beats the submitted pseudo-inverse by a wide margin (0.929 vs 0.872).  That band
@@ -557,6 +568,8 @@ even there it is strictly the cruder instrument.
 Condition the covariance instead.
 
 ### 6b. Which conditioner, though, flips with the regime
+
+Mean AUC over the same three generators:
 
 | | BRCA (n/p 0.89) | COMBINED (n/p 3.54) |
 |---|---|---|
@@ -631,7 +644,7 @@ COMBINED is the only cohort with an unlabelled auxiliary set (824 samples), so
 it is the only place the PCA basis can be estimated from something other than
 the synthetic data:
 
-| basis | mean AUC |
+| basis | mean AUC over 3 gens |
 |---|---|
 | synthetic (default) | 0.810 |
 | reference | 0.811 |
@@ -642,7 +655,9 @@ is not defining a better subspace.
 
 ### 6f. Recommended settings, and what they cost the submitted numbers
 
-| cohort / generator | submitted (`pinv`) | best geometry | setting |
+Per generator now, not averaged — these are the cells whose means appear in 6a:
+
+| cohort / generator | submitted (`pinv`) AUC | best geometry AUC | setting |
 |---|---|---|---|
 | BRCA / MVN | 0.928 | **1.000** | ridge 1e-6 (+cc also 1.000) |
 | BRCA / CVAE | 0.880 | **0.996** | ridge 1e-8 |
