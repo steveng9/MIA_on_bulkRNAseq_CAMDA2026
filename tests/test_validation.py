@@ -151,3 +151,40 @@ def test_internal_proxy_selection_forks_the_meta_cache():
 
 def test_default_selection_is_the_submitted_one():
     assert _attack().internal_proxy_selection is False
+
+
+def test_index_survives_concurrent_writers(tmp_path, monkeypatch):
+    """Two experiments sharing one index must not corrupt it.
+
+    `_append_index` de-duplicates on run_id, so it rewrites the whole file every
+    time.  Without a lock, one process truncating while another reads leaves NUL
+    bytes in the index and every later reader dies with `_csv.Error: line
+    contains NUL`.  That happened for real on 2026-09-20 with one experiment per
+    cohort running side by side.
+    """
+    import multiprocessing as mp
+
+    import numpy as np
+
+    from mia import paths, runs as R
+
+    monkeypatch.setattr(paths, "RESULTS", tmp_path)
+    monkeypatch.setattr(paths, "INDEX_CSV", tmp_path / "index.csv")
+    monkeypatch.setattr(paths, "RUNS_DIR", tmp_path / "runs")
+
+    def worker(w):
+        for i in range(25):
+            R.save_run(dataset="T", attack="a", generator="g", split=i,
+                       params={"w": w, "i": i}, sample_ids=["s0"],
+                       scores=np.zeros(1), y_member=np.zeros(1, dtype=int),
+                       metrics={"auc": 0.5}, tag=f"w{w}", experiment="race")
+
+    procs = [mp.Process(target=worker, args=(w,)) for w in range(4)]
+    for p in procs:
+        p.start()
+    for p in procs:
+        p.join()
+
+    raw = (tmp_path / "index.csv").read_bytes()
+    assert b"\x00" not in raw
+    assert len(R.load_index()) == 100

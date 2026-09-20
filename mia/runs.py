@@ -20,8 +20,10 @@ count get different directories.
 from __future__ import annotations
 
 import csv
+import fcntl
 import hashlib
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -106,6 +108,20 @@ def save_run(
 
 
 def _append_index(record: dict, metrics: dict) -> None:
+    """Replace this run's row in the index, atomically and under a lock.
+
+    De-duplicating on run_id means the whole file is rewritten every time, which
+    is a read-modify-write and therefore a race.  Two experiment processes
+    sharing one index -- one per cohort, say -- will interleave and leave NUL
+    bytes where one truncated the file while the other was reading it, and the
+    next reader dies with `_csv.Error: line contains NUL`.
+
+    So: an exclusive flock held across the whole read-modify-write, and a write
+    to a temp file followed by `os.replace`, which is atomic on POSIX.  A reader
+    that takes no lock still never sees a torn file, only the old one or the new
+    one.  The run directory is written before this is called and is the source
+    of truth -- `scripts/reindex.py` rebuilds the index from it.
+    """
     paths.RESULTS.mkdir(parents=True, exist_ok=True)
     row = {c: "" for c in INDEX_COLUMNS}
     row.update({k: record.get(k, "") for k in _META_FIELDS})
@@ -113,17 +129,28 @@ def _append_index(record: dict, metrics: dict) -> None:
         if k in metrics:
             row[k] = metrics[k]
 
-    existing = []
-    if paths.INDEX_CSV.exists():
-        with open(paths.INDEX_CSV, newline="") as f:
-            existing = [r for r in csv.DictReader(f) if r.get("run_id") != row["run_id"]]
+    lock_path = paths.INDEX_CSV.with_suffix(".csv.lock")
+    with open(lock_path, "w") as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            existing = []
+            if paths.INDEX_CSV.exists():
+                with open(paths.INDEX_CSV, newline="") as f:
+                    existing = [r for r in csv.DictReader(f)
+                                if r.get("run_id") != row["run_id"]]
 
-    with open(paths.INDEX_CSV, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=INDEX_COLUMNS)
-        w.writeheader()
-        for r in existing:
-            w.writerow({c: r.get(c, "") for c in INDEX_COLUMNS})
-        w.writerow(row)
+            tmp = paths.INDEX_CSV.with_suffix(".csv.tmp")
+            with open(tmp, "w", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=INDEX_COLUMNS)
+                w.writeheader()
+                for r in existing:
+                    w.writerow({c: r.get(c, "") for c in INDEX_COLUMNS})
+                w.writerow(row)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp, paths.INDEX_CSV)
+        finally:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
 
 def load_index() -> pd.DataFrame:

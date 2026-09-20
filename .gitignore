@@ -16,3 +16,5 @@ mia_output/
 
 # CatBoost writes a training log beside the working directory on every fit.
 catboost_info/
+results/index.csv.lock
+results/index.csv.tmp
