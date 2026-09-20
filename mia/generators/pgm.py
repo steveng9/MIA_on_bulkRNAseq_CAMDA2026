@@ -13,6 +13,21 @@ attack.  Those same marginals are the surface MAMA-MIA aims at.
 `joint_mode=True` reproduces the CAMDA 2025 winner's structure (one PGM over all
 classes with the label as a node plus every gene x label marginal), which is the
 configuration the challenge's DP-PGM synthetic data came from.
+
+Composition
+-----------
+`composition="zcdp"` is the default and is the accounting McKenna's own
+mechanisms (MST, AIM) use: Gaussian releases compose additively in rho, so the
+noise scale grows as sqrt(k) in the number of marginals rather than linearly.
+At our configuration -- 978 genes, joint mode, 1956 marginals, eps=10 -- that is
+sigma 29 against sigma 1436, a 50x reduction at an identical (eps, delta).
+`composition="basic"` keeps the original linear split so earlier results
+reproduce.
+
+Neither setting makes the reported epsilon an end-to-end guarantee: marginal
+selection ranks genes by the variance of the private data and discretisation
+takes bin edges from its percentiles, and both spend zero budget.  MST spends a
+full rho/3 on selection alone.  See docs/PGM_ATTACK_SURFACE.md.
 """
 
 from __future__ import annotations
@@ -52,6 +67,10 @@ class PGMGenerator(Generator):
     budget_weights: tuple = (0.33, 0.67, 0.0, 0.0)
     pgm_iters: int = 1000
     joint_mode: bool = True
+    #: "zcdp" (default) or "basic".  See the composition note in the module
+    #: docstring; "basic" reproduces every DP-PGM result recorded before
+    #: 2026-09-20.
+    composition: str = "zcdp"
 
     name = "pgm"
 
@@ -72,7 +91,7 @@ class PGMGenerator(Generator):
             n_1way=self.n_1way, n_2way=self.n_2way, n_3way=self.n_3way,
             n_4way=self.n_4way, budget_weights=tuple(self.budget_weights),
             pgm_iters=self.pgm_iters, joint_mode=self.joint_mode,
-            random_seed=self.seed,
+            random_seed=self.seed, composition=self.composition,
         )
         # The upstream generator takes string labels; integers round-trip fine.
         self._gen.fit(X, y.astype(str), gene_names=self._gene_names)

@@ -191,11 +191,77 @@ Three consequences:
    Steven before anything built on it goes in the paper -- not a silent default
    flip.
 
-### Question 7 for Steven
+### Question 7 -- ANSWERED 2026-09-20: re-accounting done
 
-Do you want the zCDP re-accounting done, and if so do we report DP-PGM at both
-accountings?  My read is that we have to: the honest version of "DP-PGM resists
-all four attacks" is "DP-PGM as configured in the challenge adds 7x more noise
-than its own epsilon requires, and at that noise level nothing survives to
-attack -- including utility."  Re-accounted, it becomes a real generator with a
-real attack surface and the privacy/utility trade-off becomes the finding.
+Steven approved the switch to zCDP and asked me to own the accounting.
+Implemented as `composition="zcdp"`, now the default, with `composition="basic"`
+retained so every DP-PGM result recorded before 2026-09-20 still reproduces.
+
+**What the implementation does.**  A Gaussian release with L2 sensitivity 1 and
+noise scale sigma is rho-zCDP for rho = 1/(2 sigma^2); k such releases cost the
+sum of their rho.  Inverting that at a fixed budget gives
+
+    sigma_order = sqrt(k_order / (2 * weight_order * rho_total))
+
+so sigma grows as sqrt(k) rather than k.  `budget_weights` now splits rho
+instead of epsilon.  `rho_total` comes from OpenDP's numerically-inverted
+zCDP-to-approxDP conversion -- the same `cdp_rho` snsynth uses for MST and AIM
+-- falling back to the closed form eps = rho + 2 sqrt(rho ln(1/delta)) (Bun &
+Steinke 2016, Prop. 1.3) if OpenDP is missing.  The fallback returns a *smaller*
+rho, hence more noise, so it can only ever be conservative.
+
+**Why we should trust it.**  It is not a derivation of ours; it is McKenna's,
+transcribed.  MST writes the identical rule as a weight vector normalised by its
+L2 norm (`weights / np.linalg.norm(weights)`, then `sigma / weight` per clique),
+which for k equal weights is exactly sigma * sqrt(k).
+`tests/test_composition.py` in the generator repo checks our sigma against that
+formulation directly, at k = 1, 10, 978 and 1956, and asserts that the rho
+actually accumulated over the measurement loop equals rho_total to 1e-9.  The
+fitter raises if it ever exceeds it.  16 tests.
+
+**The effect at our configuration** (BRCA, 978 genes, joint mode, 1956
+marginals, eps=10, delta=1e-5):
+
+| | 1-way sigma | 2-way sigma |
+|---|---|---|
+| basic (as shipped) | 1435.8 | 707.2 |
+| zCDP | 28.8 | 20.2 |
+| reduction | 49.8x | 35.0x |
+
+Steven's own observation is the right way to frame this in the paper: basic
+composition is tolerable below roughly 50 measurements, which is the regime
+tabular DP synthesisers are usually demonstrated in.  It is genomic feature
+counts -- hundreds to thousands of marginals -- that turn a constant-factor
+looseness into a 50x one.  That is a transferable finding about applying tabular
+DP-SDG methods to omics, not a bug report about one repo.
+
+---
+
+## 5. What the re-accounting does NOT fix
+
+Switching composition makes the *measurement* budget correct.  It does not make
+the reported epsilon an end-to-end guarantee, and the paper must not imply that
+it does.  Two steps read the private training data and spend nothing:
+
+1. **Marginal selection** (`marginal_selection.select`) ranks genes by the
+   variance of the private data and gene pairs by its Spearman correlations.
+   Which genes appear in the released model is therefore a deterministic
+   function of the private data.  MST spends a full **rho/3** -- a third of its
+   entire budget -- on exactly this step, via the exponential mechanism.
+2. **Discretisation** (`discretization.fit`) sets bin edges with
+   `np.percentile(col, ...)` on the private data, and `inverse_transform`
+   releases values interpolated between those edges.  This is structurally the
+   same leak as finding 1 in `results/FINDINGS.md`, where NoisyDiffusion's
+   `QuantileTransformer` reproduced its training set's per-gene empirical
+   support and MAMA-MIA read it off at AUC 0.9996.
+
+Both are fixable -- selection via an exponential mechanism against a rho slice,
+discretisation via edges from the auxiliary/public data rather than the training
+split -- and neither is fixed today.  Until then the honest statement is that
+epsilon covers the noisy marginals only.
+
+Note also that stratified mode builds one fitter per class, each spending the
+full epsilon.  That is legitimate parallel composition, since the per-class
+subsets are disjoint and rho-zCDP composes in parallel over them -- but it is
+only legitimate because the label partitions the data, and the class sizes
+themselves are released unprivatised.
