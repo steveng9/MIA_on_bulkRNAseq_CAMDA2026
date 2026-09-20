@@ -1,0 +1,28 @@
+{
+  "run_id": "BRCA__mahalamia__mvn__s2__07598877",
+  "timestamp": "2026-09-20T18:34:50+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "mvn",
+  "split": 2,
+  "tag": "aux_ridge1e-06_cc",
+  "experiment": "mahala_geometry_brca",
+  "variant": "ridge1.0e-6_cc",
+  "notes": "MahalaMIA geometry: conditioning x projection x band x scaling x class",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ridge",
+    "ridge_alpha": 1e-06,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": true,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  }
+}

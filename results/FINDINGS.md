@@ -94,6 +94,12 @@ a lightly ridge-regularised full inverse:
 Performance is flat for α below about 1e-4, so nothing delicate is being tuned;
 what matters is that the near-null directions are kept rather than discarded.
 
+(Both tables above are BRCA, where n < p.  Section 6 scans the same axes far more
+finely and on both cohorts, and finds that the ranking of *conditioners* flips
+above the crossover — Ledoit–Wolf is the worst choice here and the best on
+COMBINED.  The PCA conclusion survives the finer scan; the Ledoit–Wolf one does
+not generalise.)
+
 The PCA rows say the same thing from the other side.  Projecting onto the
 *leading* synthetic principal components drops the attack below chance, and it
 recovers only as k approaches full rank.  The membership signal lives in the
@@ -492,7 +498,169 @@ path.
 
 ---
 
-## 6. Where we disagree with the abstract
+## 6. The geometry sweep: PCA is a worse ridge, and the right fix depends on n/p
+
+Section 2 established that conditioning the covariance matters and that
+aggressive PCA is harmful.  It scanned only k = 50 and k = 500, which skipped
+the region where PCA could plausibly have helped, and it tested one cohort's
+regime.  This is the full scan: 43 variants on BRCA (860 runs) and 47 on
+COMBINED (1128 runs), five splits each, over five axes — covariance conditioning,
+PCA dimension, *leading*-component removal, per-gene standardisation, and
+class-conditional mean/covariance.  Configs in
+`configs/experiments/mahala_geometry_{brca,combined}.yaml`.
+
+The two cohorts sit on opposite sides of the crossover, and that turns out to
+decide everything:
+
+| cohort | train n | genes p | n/p | synthetic covariance |
+|---|---|---|---|---|
+| TCGA-BRCA | 871 | 978 | 0.89 | rank-deficient |
+| TCGA-COMBINED | 3458 | 978 | 3.54 | full rank |
+
+### 6a. PCA never wins, and on COMBINED it only ever loses
+
+Mean AUC over MVN/CVAE/ND (DP-PGM is at chance in every row and is omitted):
+
+| variant | BRCA | COMBINED |
+|---|---|---|
+| ridge 1e-8 | **0.941** | 0.810 |
+| Ledoit–Wolf | 0.807 | **0.868** |
+| PCA 900 | 0.912 | 0.746 |
+| PCA 850 | 0.929 | 0.696 |
+| PCA 800 | 0.917 | 0.678 |
+| PCA 700 | 0.825 | 0.731 |
+| PCA 600 | 0.732 | 0.728 |
+| PCA 400 | 0.565 | 0.683 |
+| PCA 200 | 0.445 | 0.613 |
+| pinv (submitted) | 0.872 | 0.763 |
+
+On **BRCA** there is a real band — k ≈ 850 of 978, a 13% reduction — where PCA
+beats the submitted pseudo-inverse by a wide margin (0.929 vs 0.872).  That band
+is narrow and it is not where the earlier sweep looked.  But **a tiny ridge at
+full rank beats every PCA setting in it** (0.941), and the same holds at the
+low-FPR end: 0.721 vs 0.668 mean TPR at 1% FPR.
+
+On **COMBINED**, PCA is harmful at every k tested.  Every projection is worse
+than leaving the 978 dimensions alone.
+
+Both facts follow from the same thing.  Mahalanobis distance is invariant to
+any invertible linear map, so a full-rank PCA changes nothing at all; PCA only
+has an effect *because the regulariser is applied after the projection and is
+not equivariant*.  Truncating to k < p is therefore not a distinct idea — it is
+an implicit, very aggressive regulariser, one that sets the discarded directions
+to zero weight instead of down-weighting them.  Ridge does the same job while
+keeping the low-variance directions that Section 2 showed carry the membership
+signal.  PCA can only help where there is rank deficiency to fix (BRCA), and
+even there it is strictly the cruder instrument.
+
+**So the user-visible recommendation is: do not put PCA in front of MahalaMIA.**
+Condition the covariance instead.
+
+### 6b. Which conditioner, though, flips with the regime
+
+| | BRCA (n/p 0.89) | COMBINED (n/p 3.54) |
+|---|---|---|
+| ridge 1e-8 | **0.941** | 0.810 |
+| ridge 1e-2 | 0.852 | 0.841 |
+| Ledoit–Wolf | 0.807 | **0.868** |
+
+Below the crossover the covariance is singular and the near-null directions are
+signal, so the correct move is the *smallest* regulariser that makes the inverse
+exist — hence ridge 1e-8, and hence Ledoit–Wolf's shrinkage being actively
+counterproductive (0.807, below even `pinv`).  Above the crossover the covariance
+is invertible and the problem is no longer rank but *estimation noise* in 978×978
+= 956,484 entries from 3458 samples.  There, shrinkage toward a structured
+target is the right estimator and it wins clearly (0.868 vs 0.763 for `pinv`).
+
+Section 2's Ledoit–Wolf row was measured on BRCA only, and its poor showing
+there should not be read as a verdict on shrinkage in general.
+
+### 6c. Removing the *leading* components separates ND from the CVAE
+
+`drop_leading` keeps full rank but deletes the top components.  On BRCA:
+
+| dropped | MVN | CVAE | ND |
+|---|---|---|---|
+| 0 (ridge 1e-8) | 1.000 | 0.996 | 0.826 |
+| 5 | 0.990 | 0.995 | 0.705 |
+| 20 | 0.988 | 0.995 | 0.684 |
+| 50 | 0.986 | 0.995 | 0.666 |
+| 200 | 0.979 | **0.996** | **0.631** |
+
+Deleting the 200 highest-variance directions costs the CVAE *nothing* — 0.996
+before and after — and costs NoisyDiffusion a third of its AUC.  The CVAE's leak
+is entirely in the low-variance directions, consistent with its 128-dimensional
+decoder bottleneck (Section 2).  ND's leak is substantially in the dominant
+directions, consistent with the quantile-support mechanism of Section 1, which
+reproduces the training set's per-gene marginals and therefore its principal
+axes.  **The two generators leak in geometrically orthogonal places**, which is
+why no single projection is right for both.
+
+### 6d. Class-conditional scoring closes MVN completely
+
+Fitting a per-class mean and covariance, and scoring each sample against its own
+class:
+
+| | MVN AUC | MVN TPR@1%FPR | CVAE AUC | ND AUC |
+|---|---|---|---|---|
+| COMBINED, pinv (submitted) | 0.900 | 0.411 | 0.619 | 0.770 |
+| COMBINED, ridge 1e-4 | 0.893 | 0.449 | 0.798 | 0.769 |
+| COMBINED, ridge 1e-4 + class-conditional | **1.000** | **1.000** | 0.776 | 0.666 |
+| BRCA, ridge 1e-6 + class-conditional | **1.000** | **1.000** | 0.772 | 0.660 |
+
+Every COMBINED member is recovered with no false-positive budget spent at all.
+The reason is structural rather than statistical: our MVN generator *is* a set of
+per-class Gaussians, so a per-class Mahalanobis distance is exactly its negative
+log-likelihood.  Matching the attack's geometry to the generator's is worth more
+than any amount of regulariser tuning.
+
+It is also strictly generator-specific — it costs the CVAE 0.32 → 0.13 and ND
+0.27 → 0.03 in TPR@1%FPR on COMBINED, since neither is class-structured in that
+way.  This is an argument for reporting MahalaMIA as a small family parameterised
+by an assumed generator structure, not as one fixed statistic.
+
+Per-class PCA *bases* (`pca_per_class`) are a different matter and fail badly —
+0.35–0.41 AUC, consistently below chance on both cohorts.  With as few as ~70
+samples in a class, a per-class basis is fit to noise, and a consistently
+below-chance score means the resulting distance is anti-correlated with
+membership.
+
+### 6e. The auxiliary reference set does not help the projection
+
+COMBINED is the only cohort with an unlabelled auxiliary set (824 samples), so
+it is the only place the PCA basis can be estimated from something other than
+the synthetic data:
+
+| basis | mean AUC |
+|---|---|
+| synthetic (default) | 0.810 |
+| reference | 0.811 |
+| pooled | 0.702 |
+
+No gain.  Pooling actively hurts.  Whatever the auxiliary set is useful for, it
+is not defining a better subspace.
+
+### 6f. Recommended settings, and what they cost the submitted numbers
+
+| cohort / generator | submitted (`pinv`) | best geometry | setting |
+|---|---|---|---|
+| BRCA / MVN | 0.928 | **1.000** | ridge 1e-6 (+cc also 1.000) |
+| BRCA / CVAE | 0.880 | **0.996** | ridge 1e-8 |
+| BRCA / ND | 0.806 | **0.826** | ridge 1e-6 |
+| COMBINED / MVN | 0.900 | **1.000** | ridge 1e-4 + class-conditional |
+| COMBINED / CVAE | 0.619 | **0.838** | Ledoit–Wolf |
+| COMBINED / ND | 0.770 | **0.820** | Ledoit–Wolf |
+
+The largest single gain is COMBINED/CVAE, +0.22 AUC, and the largest at the
+low-FPR end is COMBINED/MVN, TPR@1%FPR 0.411 → 1.000.  None of it comes from
+PCA.
+
+DP-PGM stays at 0.496–0.506 AUC in all 1988 runs across both cohorts — but see
+`docs/PGM_ATTACK_SURFACE.md` before reading that as evidence of privacy.
+
+---
+
+## 7. Where we disagree with the abstract
 
 The abstract reports MahalaMIA applied to NoisyDiffusion on BRCA at AUC 0.489 —
 chance — and concludes that "diffusion-based generation preserves covariance

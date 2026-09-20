@@ -1,0 +1,28 @@
+{
+  "run_id": "BRCA__mahalamia__pgm__s1__5b5a45d3",
+  "timestamp": "2026-09-20T18:33:25+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "pgm",
+  "split": 1,
+  "tag": "aux_ledoit_wolf",
+  "experiment": "mahala_geometry_brca",
+  "variant": "ledoit",
+  "notes": "MahalaMIA geometry: conditioning x projection x band x scaling x class",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ledoit_wolf",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  }
+}

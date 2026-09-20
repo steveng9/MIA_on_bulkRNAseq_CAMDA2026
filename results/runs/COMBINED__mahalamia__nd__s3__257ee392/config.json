@@ -1,0 +1,28 @@
+{
+  "run_id": "COMBINED__mahalamia__nd__s3__257ee392",
+  "timestamp": "2026-09-20T18:49:14+00:00",
+  "dataset": "COMBINED",
+  "attack": "mahalamia",
+  "generator": "nd",
+  "split": 3,
+  "tag": "aux_ridge1e-06_pca20_ccpc",
+  "experiment": "mahala_geometry_combined",
+  "variant": "pca20_ccpc",
+  "notes": "MahalaMIA geometry: conditioning x projection x band x scaling x class",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ridge",
+    "ridge_alpha": 1e-06,
+    "n_components": 20,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": true,
+    "pca_per_class": true,
+    "calibrate": true,
+    "attack": "mahalamia"
+  }
+}
