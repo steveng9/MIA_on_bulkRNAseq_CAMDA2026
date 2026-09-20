@@ -1,0 +1,103 @@
+# TODO item 4, reopened: how should MahalaMIA see the gene space?
+#
+# The first pass at this coupled PCA to a single ridge level (1e-3) and never
+# crossed it with the ridge levels that actually win, so it concluded PCA was
+# harmful when what it had measured was PCA competing against a control that was
+# itself badly conditioned.  On BRCA/MVN that control question is moot -- a ridge
+# of 1e-6 alone scores 1.000 AUC and 1.000 TPR@1%FPR, leaving nothing to improve
+# -- so the interesting cells are the ones with headroom: BRCA/ND (0.85),
+# COMBINED/CVAE (0.79), COMBINED/MVN (0.89), and low-FPR everywhere.
+#
+# Five axes, crossed:
+#
+#   A  conditioning     pinv / ledoit-wolf / ridge across six decades
+#   B  projection       a PCA band, swept densely near full rank where the
+#                       earlier sweep had no points at all
+#   C  spectral band    drop_leading, which keeps the *trailing* directions --
+#                       the test of whether the leak lives below the dominant
+#                       tissue axes rather than in them
+#   D  gene scaling     z-score before PCA, which makes the ridge isotropic in
+#                       correlation space instead of covariance space
+#   E  class structure  per-class mean and covariance, matching the fact that
+#                       MVN fits one Gaussian per class and CVAE conditions on
+#                       the label
+#
+# A and E are the ones that moved on the probe.  B and C are the honest test of
+# the PCA question, and D is nearly free.
+#
+# Mahalanobis distance is invariant to any invertible linear map, so none of
+# B, C or D would do anything at all against an exact inverse.  They have an
+# effect only because the regulariser is applied *after* the projection, and so
+# is not equivariant.  That is worth stating in the paper: what looks like
+# feature selection is really a choice of where to put the prior.
+name: mahala_geometry_combined
+dataset: COMBINED
+notes: "MahalaMIA geometry: conditioning x projection x band x scaling x class"
+device: cpu
+
+generators: [mvn, cvae, nd, pgm]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  # -- A: conditioning, pooled (the as-submitted row is pinv) ----------
+  pinv:                      {class: mahalamia, params: {covariance: pinv}}
+  ledoit:                    {class: mahalamia, params: {covariance: ledoit_wolf}}
+  ridge1.0e-8:               {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-8}}
+  ridge1.0e-6:               {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6}}
+  ridge1.0e-4:               {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-4}}
+  ridge1.0e-2:               {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-2}}
+
+  # -- E: the same, class-conditional ---------------------------------
+  pinv_cc:                   {class: mahalamia, params: {covariance: pinv, class_conditional: true}}
+  ridge1.0e-8_cc:            {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-8, class_conditional: true}}
+  ridge1.0e-6_cc:            {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, class_conditional: true}}
+  ridge1.0e-4_cc:            {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-4, class_conditional: true}}
+  ridge1.0e-2_cc:            {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-2, class_conditional: true}}
+
+  # -- B: projection, dense near full rank ----------------------------
+  pca900:                    {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 900}}
+  pca850:                    {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 850}}
+  pca800:                    {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800}}
+  pca700:                    {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 700}}
+  pca600:                    {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 600}}
+  pca400:                    {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 400}}
+  pca200:                    {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 200}}
+  pca850_cc:                 {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 850, class_conditional: true}}
+  pca800_cc:                 {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800, class_conditional: true}}
+  pca700_cc:                 {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 700, class_conditional: true}}
+  pca600_cc:                 {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 600, class_conditional: true}}
+  pca400_cc:                 {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 400, class_conditional: true}}
+  pca200_cc:                 {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 200, class_conditional: true}}
+  pca100_cc:                 {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 100, class_conditional: true}}
+  pca50_cc:                  {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 50, class_conditional: true}}
+  # per-class basis: does each class deserve its own directions?
+  pca100_ccpc:               {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 100, class_conditional: true, pca_per_class: true}}
+  pca50_ccpc:                {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 50, class_conditional: true, pca_per_class: true}}
+  pca20_ccpc:                {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 20, class_conditional: true, pca_per_class: true}}
+  # exact inverse, legal once k < n_syn -- PCA as conditioning, no ridge
+  pca800_exact:              {class: mahalamia, params: {covariance: exact, n_components: 800}}
+  pca600_exact:              {class: mahalamia, params: {covariance: exact, n_components: 600}}
+  pca400_exact:              {class: mahalamia, params: {covariance: exact, n_components: 400}}
+
+  # -- C: spectral band, keeping the trailing directions --------------
+  drop5:                     {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, drop_leading: 5}}
+  drop20:                    {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, drop_leading: 20}}
+  drop50:                    {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, drop_leading: 50}}
+  drop100:                   {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, drop_leading: 100}}
+  drop200:                   {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, drop_leading: 200}}
+  drop5_cc:                  {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, drop_leading: 5, class_conditional: true}}
+  drop20_cc:                 {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, drop_leading: 20, class_conditional: true}}
+  drop50_cc:                 {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, drop_leading: 50, class_conditional: true}}
+
+  # -- D: gene scaling ------------------------------------------------
+  std:                       {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, standardize: true}}
+  std_cc:                    {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, standardize: true, class_conditional: true}}
+  std_pca800:                {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, standardize: true, n_components: 800}}
+
+  # -- COMBINED only: whose covariance defines the directions? ------
+  # The ratio d_aux/d_syn assumes both distances live in one geometry;
+  # the default fits the basis on the synthetic set alone.
+  basis_reference:           {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800, pca_basis: reference}}
+  basis_reference_cc:        {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800, pca_basis: reference, class_conditional: true}}
+  basis_pooled:              {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800, pca_basis: pooled}}
+  basis_pooled_cc:           {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800, pca_basis: pooled, class_conditional: true}}

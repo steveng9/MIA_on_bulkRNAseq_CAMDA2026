@@ -133,3 +133,69 @@ rows.
 
 6. **Stratified vs joint** — is per-class marginal attack something MAMA-MIA
    already handles, or a new variant?
+
+---
+
+## 4. The budget is being spent under the wrong composition theorem
+
+Measured on BRCA split 1 at the grid's configuration (ε=10, δ=1e-5, N=871,
+`n_1way=978, n_2way=0, joint_mode=True`, so 978 one-way plus 978 gene×label
+marginals).  From the fitter's own log:
+
+```
+[pgm_fitter] 1-way: 978 marginals, eps_per=0.0034, sigma=1435.8
+[pgm_fitter] 2-way: 978 marginals, eps_per=0.0069, sigma= 707.2
+```
+
+`PrivatePGMFitter._build_measurements` splits the budget **linearly** across
+marginals -- `eps_per = frac * epsilon / len(cliques)` -- and then calibrates each
+one independently with the classical Gaussian-mechanism bound
+`sigma = sqrt(2 ln(1.25/delta)) / eps_per`.  That is basic sequential
+composition.
+
+For 1956 independent Gaussian measurements it is the wrong theorem.  Each
+Gaussian release at L2-sensitivity 1 satisfies rho = 1/(2 sigma^2)-zCDP, zCDP
+composes **additively**, and the total converts back through
+`eps = rho + 2 sqrt(rho ln(1/delta))`.  Solving for eps=10, delta=1e-5 gives
+rho = 1.550, so 1956 marginals can each carry
+
+    sigma = sqrt(k / (2 rho)) = sqrt(1956 / 3.10) = 25.1
+
+against the 1436 and 707 the code uses.  **The same formal (ε=10, δ=1e-5)
+guarantee permits 28-57x less noise.**  The scaling is the whole story: sigma
+grows as sqrt(k) under zCDP and as k under basic composition, so the penalty
+compounds precisely because this generator measures so many marginals.
+
+How bad is 1436 in context?  A one-way marginal over 4 bins on 871 rows has
+cell counts near 218.  The injected noise is **7x the signal**, and its standard
+deviation is 1.6x the size of the entire training set.  Under zCDP it would be
+0.12x the signal.
+
+Three consequences:
+
+1. **The DP-PGM column is uninformative as it stands.**  Both the fidelity
+   numbers (macro-F1 0.185 against a real ceiling of 0.811 even after the
+   gene-order fix, discriminator AUC 1.000) and the attack numbers (all four
+   attacks at 0.50) are measurements of noise, not of privacy.  MAMA-MIA reading
+   chance against marginals that are 7x noise is the expected result and says
+   nothing about MAMA-MIA.
+
+2. **This is very likely last year's CAMDA winner's accounting too**, since
+   `joint_mode=True` exists to reproduce that structure.  If so it is a finding
+   about the challenge baseline, not just about our fork.
+
+3. **It is not our call to change.**  Privacy accounting is the one thing in
+   this repo where a plausible-looking edit can silently invalidate the
+   guarantee being claimed.  The change should be an explicit
+   `composition="basic" | "zcdp"` option with both arms reported, reviewed by
+   Steven before anything built on it goes in the paper -- not a silent default
+   flip.
+
+### Question 7 for Steven
+
+Do you want the zCDP re-accounting done, and if so do we report DP-PGM at both
+accountings?  My read is that we have to: the honest version of "DP-PGM resists
+all four attacks" is "DP-PGM as configured in the challenge adds 7x more noise
+than its own epsilon requires, and at that noise level nothing survives to
+attack -- including utility."  Re-accounted, it becomes a real generator with a
+real attack surface and the privacy/utility trade-off becomes the finding.
