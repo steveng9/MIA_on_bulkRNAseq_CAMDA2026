@@ -675,7 +675,7 @@ DP-PGM stays at 0.496–0.506 AUC in all 1988 runs across both cohorts — but s
 
 ---
 
-## 7. DP-PGM's flat row was two defects, not a privacy result
+## 7. DP-PGM's flat row was three defects, not a privacy result
 
 Every DP-PGM cell in every table above sits at 0.488–0.506.  The abstract read
 that as the generator being private.  Two defects, one ours and one upstream,
@@ -785,7 +785,7 @@ cells.
 trade-off exists only because σ scales linearly in the number of marginals.
 That is what 7b removes.
 
-### 7c-ii. Re-accounted, the trade-off disappears rather than moving
+### 7c-ii. Re-accounted, the whole frontier lifts (single split; see 7c-iii)
 
 Same cohort, same split, same seed, same ε and δ, same 978 genes — only the
 composition theorem differs (`scripts/pgm_composition_compare.py`,
@@ -804,19 +804,77 @@ composition theorem differs (`scripts/pgm_composition_compare.py`,
 The `basic` arm reproduces 7c's first row exactly, so the two are directly
 comparable.
 
-**zCDP at full gene coverage beats every basic configuration on both axes
-simultaneously.**  Its W1 (0.511) is better than the best W1 any basic config
-achieved (0.727, at the setting whose utility was 0.185), and its utility
-(0.553) is second only to the n₁=50 degenerate case that models 5% of the
-genome and fills the other 95% with a constant.  Three times the utility at
-better per-gene fidelity, for an identical formal guarantee.  The trade-off in
-7c was an artefact of the accounting, not a property of the generator.
+**Correction to the numbers above.**  That table is a single split (split 1),
+which is how it was first reported; split 1 happens to be a low one for `basic`.
+The five-split means at this configuration are utility ratio 0.286±0.067
+(`basic`) against 0.743±0.086 (`zCDP`).  The conclusion is unchanged — roughly
+2.6× the utility at better per-gene fidelity — but the single-split figures
+should not be quoted, and 7c-iii supersedes them.
 
-**It is still not a good generator.**  The discriminator remains at AUC 1.000 —
-real and synthetic are perfectly separable — and utility is at 68% of the
-real-data ceiling, not at it.  What changed is that DP-PGM now has enough signal
-in it to be worth attacking, which is the precondition for the DP-PGM column
-meaning anything.
+**A claim made here was too strong.**  The first version of this finding said
+the fidelity/coverage trade-off "disappears."  It does not; 7c-iii shows it
+persists.  What changes is that the whole frontier lifts far enough that full
+gene coverage becomes affordable.
+
+### 7c-iii. The full grid: zCDP dominates, and `n_bins` becomes a live axis
+
+11 configurations × {basic, zCDP} × 5 splits, BRCA, ε=10, δ=1e-5
+(`scripts/pgm_grid.py`, `results/pgm_sweep.csv`; 101 fits, 3547 s wall on 16
+workers).  Mean ± sd over splits.
+
+Utility, as a fraction of the real-data ceiling (higher is better):
+
+| configuration | basic | **zCDP** |
+|---|---|---|
+| n₁=50, k=4, joint | 0.674±0.097 | **0.961±0.030** |
+| n₁=100, k=4, joint | 0.562±0.039 | **0.927±0.014** |
+| n₁=200, k=4, joint | 0.434±0.060 | **0.840±0.065** |
+| n₁=400, k=4, joint | 0.293±0.101 | **0.818±0.053** |
+| n₁=100/50, k=4, strat | 0.398±0.057 | **0.800±0.076** |
+| n₁=978, k=4, joint | 0.286±0.067 | **0.743±0.086** |
+| n₁=978, k=8, joint | 0.256±0.047 | **0.712±0.050** |
+| n₁=978, k=2, joint | 0.289±0.068 | **0.693±0.078** |
+
+Per-gene Wasserstein distance, in training SDs (lower is better):
+
+| configuration | basic | **zCDP** |
+|---|---|---|
+| n₁=978, k=8, joint | 0.498±0.005 | **0.257±0.003** |
+| n₁=978, k=4, joint | 0.725±0.004 | **0.505±0.005** |
+| n₁=978, k=2, joint | 1.230±0.011 | **1.116±0.011** |
+| n₁=400, k=4, joint | 1.682±0.008 | **1.576±0.009** |
+| n₁=50, k=4, joint | 2.213±0.032 | 2.221±0.033 |
+
+Three things this establishes.
+
+**(a) zCDP wins every cell on every metric**, and one configuration wins
+outright.  `n₁=978, k=8, joint, zCDP` **Pareto-dominates every `basic`
+configuration**: its utility (0.712) exceeds the best utility `basic` reaches
+anywhere (0.674, at n₁=50), and its W1 (0.257) beats the best W1 `basic` reaches
+anywhere (0.498, at n₁=978 k=8).  No amount of tuning under the old accounting
+reaches that point.  It is the recommended setting.
+
+**(b) The trade-off persists, but the frontier lifts.**  Utility still peaks at
+n₁=50 (0.961) precisely where fidelity is worst (W1 2.221) — that configuration
+models 5% of the genome and fills the other 95% with a constant, which no
+accounting can repair.  What zCDP buys is that full coverage is no longer
+unaffordable: 71% of the ceiling *and* the best per-gene fidelity in the study,
+at once.
+
+**(c) `n_bins` is newly worth tuning.**  Under `basic`, k = 2/4/8 were
+indistinguishable at full coverage (utility 0.256–0.289) because noise dominated
+the bin structure entirely.  Under zCDP, k=8 halves W1 relative to k=4 (0.257
+against 0.505) for about four points of utility.  That axis only became visible
+once σ fell from 1436 to 29.  `corr_mae` is flatter — most 978/200 configs land
+at 0.141–0.152 under zCDP against 0.19–0.21 under basic — with the largest
+single swing at n₁=400, from 0.251 (the worst in the grid) to 0.126 (the best).
+
+**It is still not a good generator.**  Discriminator AUC is 1.000 nearly
+everywhere; the only cells that dip are the three highest-fidelity zCDP configs
+(n₁=978 k=8, n₁=400 k=4, n₁=978 k=4), all at 0.999±0.001.  Real and synthetic
+remain essentially perfectly separable.  What changed is that DP-PGM now has
+enough signal in it to be worth attacking, which is the precondition for the
+DP-PGM column meaning anything.
 
 ### 7d. What the re-accounting does not fix
 
@@ -847,6 +905,56 @@ evidence of it, because the experiment could not have distinguished the two.
 The attack grid needs re-running against the corrected generator before the
 DP-PGM column means anything, and the useful result is a privacy/utility curve
 over ε rather than a single flat row.
+
+---
+
+### 7f. A third defect: the sensitivity and the row count disagreed
+
+Found on re-verifying the accounting end to end, after 7b was already fixed.
+
+The noise scale assumed **L2 sensitivity 1**, which is the sensitivity of a
+marginal count vector under *add/remove* neighbours (one patient inserted or
+deleted moves exactly one cell by 1).  That is the convention MST and AIM use.
+But the fitter also passed **the exact training-set row count** to
+`FactoredInference`, and under add/remove the row count is itself sensitive —
+two neighbouring datasets have different sizes, so releasing n exactly
+distinguishes them with certainty.  Stratified mode did it twice, additionally
+sizing each class's synthetic sample from the exact per-class counts, which
+releases the class histogram.
+
+The alternative convention does not rescue it.  Under *replace* neighbours n is
+public and safe to release, but one patient changing moves one cell down and
+another up, so Δ₂ = √2 and **every σ must grow by √2** (ρ costs 2×).  The
+implementation had neither guarantee: Δ₂ = 1 noise with a bounded-DP release of
+n.
+
+The fix costs nothing.  `mbi` will estimate the total itself from measurements
+already paid for, as the minimum-variance unbiased combination of the noisy
+1-way marginals (each of which sums to n).  At 978 marginals and σ = 28.8, the
+estimate of n = 871 has sd **1.84, or 0.21%**.  We now pass `total=None` and let
+it, exactly as MST does; stratified mode allocates from the submodels' noisy
+totals.  `neighboring="replace"` is available for anyone who wants the bounded-DP
+reading and will pay the √2.
+
+Note that parallel composition over the per-class subsets in stratified mode —
+which is what lets each class spend the *full* ρ — is also only valid under
+add/remove.  Under replace a changed patient can move between classes and touch
+two submodels, so their budgets would compose sequentially.  A third reason the
+default is add/remove.
+
+**And a defect in the legacy arm, left unfixed deliberately.**
+`composition="basic"` uses δ = 1e-5 for *each* of the 1956 marginals without
+dividing by k.  Basic composition adds δ as well as ε, so its σ really
+corresponds to (10, **0.0196**)-DP, not (10, 1e-5) — δ under-reported by 1956×.
+A correct basic accounting would use δ/k and be a further **1.28×** noisier.  We
+have not changed it, because `basic` exists only to reproduce pre-2026-09-20
+results.  But it means every comparison against `basic` in 7c-ii and 7c-iii
+slightly **flatters** it: the honest zCDP advantage is a little larger than
+measured.  The paper must describe `basic` as "the original implementation,"
+never as "basic composition correctly applied."
+
+Full derivation, in plain English and from first principles, in
+`docs/ZCDP_ACCOUNTING.md`.
 
 ---
 

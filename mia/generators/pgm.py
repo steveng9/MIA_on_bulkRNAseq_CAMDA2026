@@ -72,6 +72,12 @@ class PGMGenerator(Generator):
     #: 2026-09-20.
     composition: str = "zcdp"
 
+    #: "add_remove" (default, unbounded DP, L2 sensitivity 1, matches MST) or
+    #: "replace" (bounded DP, sensitivity sqrt(2), so sqrt(2)x the noise but the
+    #: row count is public).  Under "add_remove" the fitted model's row count is
+    #: estimated from the noisy marginals rather than released exactly.
+    neighboring: str = "add_remove"
+
     name = "pgm"
 
     def __post_init__(self):
@@ -92,6 +98,7 @@ class PGMGenerator(Generator):
             n_4way=self.n_4way, budget_weights=tuple(self.budget_weights),
             pgm_iters=self.pgm_iters, joint_mode=self.joint_mode,
             random_seed=self.seed, composition=self.composition,
+            neighboring=self.neighboring,
         )
         # The upstream generator takes string labels; integers round-trip fine.
         self._gen.fit(X, y.astype(str), gene_names=self._gene_names)
