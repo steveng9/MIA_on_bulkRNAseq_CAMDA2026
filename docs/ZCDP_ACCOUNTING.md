@@ -378,10 +378,10 @@ weights 0.33 / 0.67 over 1-way / 2-way, add/remove neighbours (Δ₂ = 1).
 ```
 rho_total = cdp_rho(10, 1e-5)                     = 1.7827
 
-1-way:  k = 978,  frac = 0.33,  rho = 0.5883
-        sigma = 1 * sqrt(978 / (2 * 0.5883 * 1.7827))  = 28.83
-2-way:  k = 978,  frac = 0.67,  rho = 1.1944
-        sigma = 1 * sqrt(978 / (2 * 1.1944 * 1.7827))  = 20.23
+1-way:  k = 978,  frac = 0.33,  rho_order = 0.33 * 1.7827 = 0.5883
+        sigma = 1 * sqrt(978 / (2 * 0.5883))           = 28.83
+2-way:  k = 978,  frac = 0.67,  rho_order = 0.67 * 1.7827 = 1.1944
+        sigma = 1 * sqrt(978 / (2 * 1.1944))           = 20.23
 
 check:  978 * 1/(2*28.83^2) + 978 * 1/(2*20.23^2)
      =  0.5883 + 1.1944  =  1.7827  =  rho_total          ✓ exactly spent
