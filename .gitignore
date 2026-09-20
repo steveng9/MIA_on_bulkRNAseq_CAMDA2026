@@ -16,5 +16,7 @@ mia_output/
 
 # CatBoost writes a training log beside the working directory on every fit.
 catboost_info/
-results/index.csv.lock
-results/index.csv.tmp
+# Lock and staging files for the concurrent result writers (mia/csvlock.py).
+results/*.lock
+results/*.tmp
+results/*.tmp.*

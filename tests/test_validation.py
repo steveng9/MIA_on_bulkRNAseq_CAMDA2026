@@ -188,3 +188,53 @@ def test_index_survives_concurrent_writers(tmp_path, monkeypatch):
     raw = (tmp_path / "index.csv").read_bytes()
     assert b"\x00" not in raw
     assert len(R.load_index()) == 100
+
+
+def test_csvlock_append_survives_parallel_writers(tmp_path, monkeypatch):
+    """16 processes appending at once must not tear the file.
+
+    This is the failure that corrupted results/index.csv: an unlocked
+    read-modify-write, interleaved, leaves NUL bytes behind and every later
+    reader dies with `_csv.Error: line contains NUL`.  The parallel PGM grid
+    has 16 writers on one CSV, so it needs the same guarantee.
+    """
+    import multiprocessing as mp
+
+    from mia import csvlock
+
+    out = tmp_path / "grid.csv"
+    key = ["worker", "job"]
+
+    def worker(wid):
+        for j in range(25):
+            csvlock.append_row(out, {"worker": wid, "job": j, "value": wid * 100 + j},
+                               key=key)
+
+    procs = [mp.Process(target=worker, args=(w,)) for w in range(16)]
+    for p in procs:
+        p.start()
+    for p in procs:
+        p.join(120)
+
+    assert all(p.exitcode == 0 for p in procs)
+    assert b"\x00" not in out.read_bytes()
+
+    import pandas as pd
+    df = pd.read_csv(out)
+    assert len(df) == 16 * 25
+    assert len(df.drop_duplicates(subset=key)) == 16 * 25
+    # every row intact, not just the right count
+    assert (df["value"] == df["worker"] * 100 + df["job"]).all()
+
+
+def test_csvlock_leaves_target_untouched_when_body_raises(tmp_path):
+    from mia import csvlock
+
+    out = tmp_path / "x.csv"
+    out.write_text("a,b\n1,2\n")
+    with pytest.raises(RuntimeError):
+        with csvlock.atomic_update(out) as tmp:
+            tmp.write_text("garbage")
+            raise RuntimeError("boom")
+    assert out.read_text() == "a,b\n1,2\n"
+    assert not list(tmp_path.glob("*.tmp.*"))
