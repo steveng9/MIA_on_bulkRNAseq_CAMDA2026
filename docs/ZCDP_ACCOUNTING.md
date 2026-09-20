@@ -399,7 +399,49 @@ And if we had chosen `replace` instead, every σ above would be √2 larger
 
 ---
 
-## 11. Where to check this
+## 11. Auditing it empirically
+
+Everything above is a *prediction about the code*, so it is worth measuring
+rather than trusting. §3 says the privacy loss of the entire release is exactly
+`Z ~ N(ρ, 2ρ)`. That is directly testable:
+
+1. Build the real measurements on D, and on a **worst-case neighbour** D′.
+2. Draw actual releases from the mechanism run on D.
+3. Score each release under both D and D′ and take the log ratio — that *is* Z.
+4. Check its mean against ρ_spent and its variance against 2·ρ_spent.
+
+This is a much stronger check than re-deriving the σ formula, because it uses
+the *actual* marginal difference between D and D′ rather than an assumed
+sensitivity. If Δ₂ were wrong, the measured mean would miss ρ_spent, and no
+amount of internally-consistent arithmetic elsewhere would catch it.
+
+Measured over 20 000 releases, 6 genes × 4 bins, 400 rows, ε = 3, δ = 1e-5,
+6 one-way + 5 two-way marginals:
+
+| neighbour | σ (1-way) | ρ budgeted | Z mean (measured) | Z variance | vs 2ρ |
+|---|---|---|---|---|---|
+| add/remove | 5.783 | 0.22425 | **0.22407 ± 0.00473** | 0.44814 | 0.9992 |
+| replace | 8.179 | 0.22425 | **0.21996 ± 0.00475** | 0.45122 | 1.0061 |
+
+Both land within one standard error of the budget, and both variances match
+2ρ to well under 1%. The mechanism spends exactly what it claims, under either
+convention, and the √2 in the `replace` σ is doing precisely the work it should.
+
+**One trap worth recording.** The first version of this audit changed a single
+gene's value to build the `replace` neighbour, and measured a loss of 0.040
+against a budget of 0.224 — an apparent 5× over-charge. The implementation was
+fine; the *test* was. Changing one gene only perturbs the cliques containing
+that gene (2 of 11 here), so it is nowhere near the worst case. A replace
+neighbour must move **every** attribute for every clique to see the full √2.
+An audit that is not worst-case will happily report that your mechanism is
+conservative when it is not.
+
+`test_measured_privacy_loss_matches_the_predicted_normal` runs a 6000-trial
+version of this on each convention.
+
+---
+
+## 12. Where to check this
 
 | Claim | Checked by |
 |---|---|
@@ -410,6 +452,7 @@ And if we had chosen `replace` instead, every σ above would be √2 larger
 | replace costs exactly √2 the noise | `test_replace_costs_sqrt2_more_noise_than_add_remove` |
 | ρ spent = ρ budgeted, both conventions | `test_both_neighboring_relations_spend_exactly_rho_total` |
 | add/remove never releases exact n | `test_add_remove_never_releases_the_exact_row_count` |
+| **measured** privacy loss = N(ρ, 2ρ), both conventions | `test_measured_privacy_loss_matches_the_predicted_normal` |
 
 MST's own code, for comparison
 (`snsynth/mst/mst.py`): `rho = cdp_rho(eps, delta)`, `sigma = sqrt(3/(2*rho))`,
