@@ -79,8 +79,40 @@ class PGMGenerator(Generator):
         return self
 
     def sample(self, n: int) -> tuple:
+        """Draw `n` rows, restored to the cohort's canonical gene order.
+
+        The upstream generator selects genes by variance and returns its matrix
+        in *that* order, naming the columns through `selected_gene_names` -- its
+        own runner writes the CSV with exactly those labels.  This adapter used
+        to drop the labels and hand the matrix back as though column j were gene
+        j, which silently transposed every gene's distribution onto another
+        gene.  Global moments survive that (the multiset of columns is
+        unchanged), so it was invisible to any check that did not look per gene:
+        mean per-gene Wasserstein distance was 2.9 training SDs, downstream
+        macro-F1 was 0.09 against a real ceiling of 0.81, and a real-vs-synthetic
+        discriminator scored AUC 1.000.  Every DP-PGM result recorded before
+        2026-09-20 is affected.
+
+        When `n_1way` is smaller than the gene count the model never saw the
+        remaining genes, so there is nothing to place in those columns.  They
+        are filled with the median of the synthetic matrix -- a constant derived
+        from released data, so it adds no leak -- and the utility metrics take
+        the hit, which is the honest accounting: those genes were not released.
+        """
         X, y = self._gen.generate(n)
-        return np.asarray(X, dtype=np.float32), np.asarray(y).astype(np.int64)
+        X = np.asarray(X, dtype=np.float32)
+
+        selected = list(self._gen.selected_gene_names)
+        if selected == self._gene_names:
+            out = X
+        else:
+            pos = {g: j for j, g in enumerate(self._gene_names)}
+            out = np.full((len(X), len(self._gene_names)), np.median(X),
+                          dtype=np.float32)
+            for j, gene in enumerate(selected):
+                out[:, pos[gene]] = X[:, j]
+
+        return out, np.asarray(y).astype(np.int64)
 
     def save(self, path: Path) -> None:
         import pickle
