@@ -1,0 +1,56 @@
+{
+  "run_id": "BRCA__mahalamia__pgm@epsilon=300__s4__2e668480",
+  "timestamp": "2026-09-21T21:10:00+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "pgm@epsilon=300",
+  "split": 4,
+  "tag": "aux",
+  "experiment": "pgm_eps_sweep",
+  "variant": "mahalamia",
+  "notes": "epsilon=300",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "pinv",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "ed58f5997447aa00",
+    "params": {
+      "seed": 4423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 300,
+      "delta": 1e-05,
+      "n_bins": 4,
+      "n_1way": 978,
+      "n_2way": 0,
+      "n_3way": 0,
+      "n_4way": 0,
+      "budget_weights": [
+        0.33,
+        0.67,
+        0.0,
+        0.0
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove"
+    },
+    "seed": 4423,
+    "source": "trained"
+  }
+}

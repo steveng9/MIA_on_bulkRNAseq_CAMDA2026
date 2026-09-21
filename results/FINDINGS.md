@@ -1108,3 +1108,93 @@ The docstring asserted "Rank-preserving, so AUC is untouched," which is true onl
 for positive input, and the first version of this finding reported that ratio
 space beat log space "decisively" on the strength of it. The function now takes
 `log_transform` and raises on non-positive input rather than silently clamping.
+
+## 10. The binning leak, measured; and the two DP-safe fixes
+
+**Every DP-PGM number before this section, including all of §9, used the legacy
+`quantile` binning.** Its bin edges are percentiles of the private training
+split and spend no budget, so those releases are not ε-DP end to end. Targets
+built that way now carry `"binning": "quantile"` in `meta.json` (backfilled
+2026-09-21); `results/pgm_eps_sweep.csv` has a `binning` column.
+
+Two fixes, both in `~/private-pgm-rnaseq-camda2026/src/discretization.py`:
+
+* `binning=uniform`: equal-width bins on the fixed range [0, 24] (log2
+  expression), which reads no data and spends nothing.
+* `binning=dp_quantile`: equal-depth edges from a Gaussian-noised histogram on a
+  public 48-cell grid, spending 10% of ρ. The marginals get the other 90%.
+  Tests check that the whole pipeline spends exactly ρ_total.
+
+Data: 5 splits per cell. Attack AUC is the best of five fixed log-score arms
+(log; 1-way; class-centred; 1-way class-centred; 2-way class-centred), taking
+each arm's mean first. "Bound" is Φ(√ρ), the highest AUC *any* test can reach
+if the release really is ρ-zCDP. The aux-edge rows are `results/pgm_eps_sweep.csv`.
+The gen-edge rows are `results/pgm_aligned_edges.csv` (`scripts/pgm_aligned_edges.py`).
+
+| cohort | binning | ε | bound | attack, aux edges | attack, gen edges | utility ratio | W1 |
+|---|---|---|---|---|---|---|---|
+| BRCA | quantile (legacy) | 0.1 | 0.508 | **0.554** ±.013 | 0.551 | 0.30 | 0.70 |
+| BRCA | quantile (legacy) | 0.3 | 0.523 | **0.620** ±.014 | 0.524 | 0.28 | 0.79 |
+| BRCA | quantile (legacy) | 1 | 0.569 | **0.606** ±.014 | 0.543 | 0.41 | 0.66 |
+| BRCA | quantile (legacy) | 10 | 0.909 | 0.671 | 0.718 | 0.76 | 0.51 |
+| BRCA | uniform k=4 | 0.3 | 0.523 | 0.502 | 0.510 ±.010 | 0.19 | 6.34 |
+| BRCA | uniform k=16 | 0.3 | 0.523 | 0.504 | 0.515 ±.011 | 0.19 | 7.09 |
+| BRCA | dp_quantile | 0.3 | 0.523 | 0.505 | 0.502 | 0.19 | 6.32 |
+| BRCA | uniform k=4 | 10 | 0.909 | 0.503 | 0.568 | 0.63 | 3.60 |
+| BRCA | uniform k=16 | 10 | 0.909 | 0.528 | 0.562 | 0.65 | 1.81 |
+| BRCA | dp_quantile | 10 | 0.909 | 0.507 | **0.604** | 0.70 | 2.30 |
+| COMBINED | quantile (legacy) | 0.3 | 0.523 | **0.547** ±.006 | 0.517 | 0.24 | 0.74 |
+| COMBINED | quantile (legacy) | 10 | 0.909 | 0.586 | 0.632 | 0.93 | 0.62 |
+| COMBINED | uniform k=4 | 0.3 | 0.523 | 0.502 | 0.503 | 0.13 | 3.75 |
+| COMBINED | uniform k=16 | 0.3 | 0.523 | 0.504 | 0.507 | 0.10 | 3.93 |
+| COMBINED | dp_quantile | 0.3 | 0.523 | 0.503 | 0.504 | 0.12 | 3.61 |
+| COMBINED | uniform k=4 | 10 | 0.909 | 0.501 | 0.515 | 0.76 | 2.78 |
+| COMBINED | uniform k=16 | 10 | 0.909 | 0.505 | 0.523 | 0.80 | 1.22 |
+| COMBINED | dp_quantile | 10 | 0.909 | 0.509 | **0.560** | 0.90 | 2.51 |
+
+### 10a. The legacy release breaks its own guarantee, and the leak is the edges
+
+Under legacy binning the attack beats the ε bound at ε ≤ 1 on BRCA, by about
+7 SE at ε=0.3, and at ε=0.3 on COMBINED. That is impossible for a ρ-zCDP
+release, so something outside the accounting is leaking, and two things
+identify it as the edges:
+
+* On BRCA the aux-edge attack is **flat from ε=0.3 to ε=3** (0.62, 0.61, 0.63).
+  The marginal noise changes by 10× over that range and the attack does not
+  notice.
+* Binning with the target's own edges instead *removes* most of the excess at
+  low ε (BRCA ε=0.3: 0.620 → 0.524). The aux-edge attack wins because its
+  cells are misaligned with the private percentiles. The synthetic mass in each
+  auxiliary cell encodes where the member-dependent edges fell, and that is
+  membership signal. MAMA-MIA was exploiting the binning leak without being
+  designed to.
+
+### 10b. With either fix, nothing exceeds the bound
+
+At ε=0.3 every arm on both cohorts, with either edge choice, is at or below
+0.515 against a bound of 0.523. That is consistent with an end-to-end DP
+release, and it is what the legacy runs failed.
+
+### 10c. Attacks must bin with the generator's cells
+
+Against the fixed releases, aux-quantile edges understate the risk badly. At
+ε=10 on BRCA dp_quantile they give 0.507, while the generator's own edges give
+0.604. Both edge sets are legitimately the attacker's: uniform edges are a
+public configuration, and dp_quantile edges are a DP output that can be read
+off the release. **Report gen-edge numbers for fixed binning.** For legacy
+binning, the gen-edge column is an oracle, since those edges are private.
+
+### 10d. The price
+
+At ε=10 the fixes cost utility. BRCA utility ratio falls from 0.76 to 0.70
+(dp_quantile) or 0.63–0.65 (uniform); COMBINED from 0.93 to 0.90 or 0.76–0.80.
+Per-gene W1 rises 3–7×, because uniform cells on [0, 24] are wide and
+dithering within them smears the values. dp_quantile at 10% of ρ is the best
+of the three at ε=10 on both cohorts. At ε=0.3 its edges carry about σ=1200
+of noise per grid cell and are effectively random, so it ties uniform. The
+discriminator AUC is 1.00 for every variant, legacy included.
+
+The corrected DP-PGM column of §9 (MAMA-MIA 0.604 / 0.530) is therefore
+partly a binning result. Against a DP-safe release at ε=10, the best measured
+attack is **0.604 (BRCA) / 0.560 (COMBINED)**, with dp_quantile and aligned
+edges. The shipped MAMA-MIA, with aux edges, is at chance.

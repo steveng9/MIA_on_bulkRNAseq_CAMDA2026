@@ -60,17 +60,43 @@ def family_sigma(n_cliques: int, weight_idx: int, eps: float, delta: float,
     return math.sqrt(n_cliques / (2.0 * w * rho))
 
 
+def generator_edges(dataset: str, generator: str, split: int) -> np.ndarray:
+    """The target's own interior bin edges, in the cohort's gene order.
+
+    Shape (n_genes, n_bins-1), the layout `digitize` takes.  Under `uniform`
+    binning these are a public configuration and under `dp_quantile` a DP
+    release, so an attacker may use them.  Under the legacy `quantile` binning
+    they are the private percentiles -- an oracle, not an attack.
+    """
+    from mia import paths
+    from mia.generators.pgm import PGMGenerator
+    gen = PGMGenerator().load(paths.target_dir(dataset, generator, split)
+                              / "generator.pt")._gen
+    names = [f"gene_{i}" for i in range(len(D.gene_names(dataset)))]
+    pos = {g: j for j, g in enumerate(names)}
+    out = np.empty((len(names), gen._discretizer.n_bins - 1))
+    for j, gene in enumerate(gen.selected_gene_names):
+        out[pos[gene]] = gen._discretizer._edges[j][1:-1]
+    return out
+
+
 def arms_for_split(dataset: str, split: int, n_bins: int, eps: float, delta: float,
-                   generator: str = "pgm"):
-    """Every aggregation arm's score vector for one split."""
+                   generator: str = "pgm", edges: str = "aux"):
+    """Every aggregation arm's score vector for one split.
+
+    `edges="aux"` bins at quantiles of the auxiliary pool (the shipped attack);
+    `edges="generator"` bins with the target's own cells (`generator_edges`).
+    """
     ncl = D.n_classes(dataset)
     Xr = D.load_expression(dataset).values.astype(np.float64)
     yr = D.encode_subtypes(dataset, D.load_subtypes(dataset).values)
     tg = T.load_target(dataset, generator, split)
     Xs, ys = tg["X"].astype(np.float64), tg["y_int"]
 
-    # Bin edges from the auxiliary pool only -- never the target's training half.
-    edges = quantile_bin_edges(Xr, n_bins)
+    if edges == "generator":
+        edges = generator_edges(dataset, generator, split)
+    else:   # auxiliary pool only -- never the target's training half
+        edges = quantile_bin_edges(Xr, n_bins)
     br, bs = digitize(Xr, edges, n_bins), digitize(Xs, edges, n_bins)
     g = np.arange(br.shape[1])
     lab = yr[:, None]

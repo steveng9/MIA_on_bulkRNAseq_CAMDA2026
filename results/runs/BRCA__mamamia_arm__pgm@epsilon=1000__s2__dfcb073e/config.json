@@ -1,0 +1,47 @@
+{
+  "run_id": "BRCA__mamamia_arm__pgm@epsilon=1000__s2__dfcb073e",
+  "timestamp": "2026-09-21T21:16:23+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia_arm",
+  "generator": "pgm@epsilon=1000",
+  "split": 2,
+  "tag": "ratio_1_way_only",
+  "experiment": "pgm_eps_sweep",
+  "variant": "ratio, 1-way only",
+  "notes": "epsilon=1000",
+  "params": {
+    "attack": "mamamia_arm",
+    "arm": "ratio, 1-way only",
+    "n_bins": 4,
+    "epsilon": 1000,
+    "delta": 1e-05
+  },
+  "target": {
+    "fingerprint": "557f6b81cd1a60ff",
+    "params": {
+      "seed": 2423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 1000,
+      "delta": 1e-05,
+      "n_bins": 4,
+      "n_1way": 978,
+      "n_2way": 0,
+      "n_3way": 0,
+      "n_4way": 0,
+      "budget_weights": [
+        0.33,
+        0.67,
+        0.0,
+        0.0
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove"
+    },
+    "seed": 2423,
+    "source": "trained"
+  }
+}
