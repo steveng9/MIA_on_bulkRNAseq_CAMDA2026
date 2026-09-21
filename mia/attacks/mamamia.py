@@ -26,6 +26,27 @@ from the auxiliary pool.  The bin count should match the generator's own
 discretisation: attacking at a finer resolution than DP-PGM modelled just adds
 noise, since the generator never saw the finer structure.
 
+Aggregation
+-----------
+`aggregation="ratio"` takes the mean of p_syn/p_aux, as first written.  A ratio
+is bounded below by 0 and unbounded above, so that mean is dominated by cells
+where p_aux happens to be small -- precisely the cells whose ratio is least
+reliable.  `"log"` sums log-ratios instead, which is the Neyman-Pearson
+statistic for "was this record in the set that produced p_syn".  `"log_ivw"`
+additionally weights each marginal family by inverse noise variance, which the
+adversary can compute from published (epsilon, delta, budget weights).
+
+Focal points
+------------
+For this generator the targeted marginals need no selection step.  The cohorts
+carry exactly 978 genes and the release is configured with n_1way=978, so
+"top 978 by variance" is every gene; with n_2way=0 and label marginals on, the
+clique set is 978 one-way plus 978 gene x label, fixed by public configuration
+and independent of the data.  Shadow models exist in MAMA-MIA to discover which
+marginals a nondeterministic selector chose (MST, PrivBayes, GSD); here there is
+nothing to discover.  That stops being true at n_1way < 978, where the variance
+ranking becomes a genuine data-dependent choice.
+
 Reference: Golob et al., "Privacy Vulnerabilities in Marginals-based Synthetic
 Data" (MAMA-MIA).  This is a from-scratch reimplementation for expression data;
 the original targets categorical tabular generators (MST, PrivBayes, GSD, RAP).
@@ -33,6 +54,7 @@ the original targets categorical tabular generators (MST, PrivBayes, GSD, RAP).
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 import numpy as np
@@ -93,6 +115,19 @@ class MAMAMIA(Attack):
     use_subtype_marginal: bool = True
     calibrate: bool = True
 
+    #: How per-marginal evidence is combined.
+    #:   "ratio" -- mean of p_syn/p_aux, the original formulation
+    #:   "log"   -- mean of log(p_syn/p_aux), the Neyman-Pearson statistic
+    #:   "log_ivw" -- log-ratios weighted by inverse noise variance (below)
+    aggregation: str = "ratio"
+
+    #: Known release parameters, used only by "log_ivw".  Under Kerckhoffs the
+    #: adversary knows these, so it can compute each marginal family's sigma
+    #: exactly and weight families by 1/(sigma^2 + sampling variance).
+    dp_epsilon: float | None = None
+    dp_delta: float = 1e-5
+    dp_budget_weights: tuple = (0.33, 0.67)
+
     name = "mamamia"
 
     def tag(self) -> str:
@@ -101,7 +136,35 @@ class MAMAMIA(Attack):
             parts.append("1w")
         if self.use_twoway:
             parts.append("2w")
+        if self.aggregation != "ratio":
+            parts.append(self.aggregation)
         return "_".join(parts)
+
+    def _family_sigma(self, n_cliques: int, weight_idx: int) -> float:
+        """sigma for one marginal family under the generator's zCDP accounting.
+
+        Mirrors PrivatePGMFitter._sigma_zcdp at L2 sensitivity 1 (add/remove
+        neighbours).  Duplicated rather than imported because the adversary is
+        not supposed to reach into the generator -- it reconstructs sigma from
+        published parameters, which is exactly the point.
+        """
+        L = math.log(1.0 / self.dp_delta)
+        try:
+            from snsynth.utils import cdp_rho
+            rho = float(cdp_rho(self.dp_epsilon, self.dp_delta))
+        except Exception:
+            rho = (-math.sqrt(L) + math.sqrt(L + self.dp_epsilon)) ** 2
+        w = self.dp_budget_weights[weight_idx] / sum(self.dp_budget_weights)
+        return math.sqrt(n_cliques / (2.0 * w * rho))
+
+    def _combine(self, p_syn, p_aux):
+        """Per-cell evidence, in whichever space `aggregation` asks for."""
+        if self.aggregation not in ("ratio", "log", "log_ivw"):
+            raise ValueError(
+                f"aggregation must be 'ratio', 'log' or 'log_ivw', "
+                f"got {self.aggregation!r}")
+        r = np.maximum(p_syn, EPS) / np.maximum(p_aux, EPS)
+        return r if self.aggregation == "ratio" else np.log(r)
 
     def score(self, dataset: str, generator: str, split: int) -> np.ndarray:
         n_classes = D.n_classes(dataset)
@@ -127,38 +190,57 @@ class MAMAMIA(Attack):
 
         n_real, n_genes = bins_real.shape
         total = np.zeros(n_real, dtype=np.float64)
-        n_used = 0
+        n_used = 0.0
+        n_syn = len(bins_syn)
+
+        # Inverse-variance weights.  The member's contribution to any cell is
+        # +1 count; the noise against it is Gaussian DP noise (sigma, absolute)
+        # plus multinomial sampling.  For independent estimates the optimal
+        # combination weights by inverse variance, and the adversary can
+        # compute both terms from published parameters.
+        ivw = self.aggregation == "log_ivw" and self.dp_epsilon is not None
+        w1 = w2 = 1.0
 
         if self.use_oneway:
             p_syn = _oneway_probs(bins_syn, self.n_bins)
             p_aux = _oneway_probs(bins_aux, self.n_bins)
             gene_idx = np.arange(n_genes)
-            # ratios[i, j] = p_syn[j, bin of sample i in gene j] / p_aux[...]
-            ratios = (np.maximum(p_syn[gene_idx, bins_real], EPS)
-                      / np.maximum(p_aux[gene_idx, bins_real], EPS))
-            total += ratios.sum(axis=1)
-            n_used += n_genes
+            # ev[i, j] = evidence from gene j at sample i's bin
+            ev = self._combine(p_syn[gene_idx, bins_real], p_aux[gene_idx, bins_real])
+            if ivw:
+                p = 1.0 / self.n_bins          # quantile bins: every cell is 1/k
+                w1 = 1.0 / (self._family_sigma(n_genes, 0) ** 2
+                            + n_syn * p * (1 - p))
+            total += w1 * ev.sum(axis=1)
+            n_used += w1 * n_genes
 
         if self.use_twoway:
             q_syn = _twoway_probs(bins_syn, y_syn, self.n_bins, n_classes)
             q_aux = _twoway_probs(bins_aux, y_aux, self.n_bins, n_classes)
             gene_idx = np.arange(n_genes)
             lab = y_real[:, None]
-            ratios = (np.maximum(q_syn[gene_idx, bins_real, lab], EPS)
-                      / np.maximum(q_aux[gene_idx, bins_real, lab], EPS))
-            total += ratios.sum(axis=1)
-            n_used += n_genes
+            ev = self._combine(q_syn[gene_idx, bins_real, lab],
+                               q_aux[gene_idx, bins_real, lab])
+            if ivw:
+                pc = np.bincount(y_aux, minlength=n_classes) / max(len(y_aux), 1)
+                p = (pc / self.n_bins).mean()
+                w2 = 1.0 / (self._family_sigma(n_genes, 1) ** 2
+                            + n_syn * p * (1 - p))
+            total += w2 * ev.sum(axis=1)
+            n_used += w2 * n_genes
 
         if self.use_subtype_marginal:
             p_syn_s = np.bincount(y_syn, minlength=n_classes) / max(len(y_syn), 1)
             p_aux_s = np.bincount(y_aux, minlength=n_classes) / max(len(y_aux), 1)
-            total += (np.maximum(p_syn_s[y_real], EPS)
-                      / np.maximum(p_aux_s[y_real], EPS))
+            total += self._combine(p_syn_s[y_real], p_aux_s[y_real])
             n_used += 1
 
-        raw = total / max(n_used, 1)
+        raw = total / max(n_used, 1e-12)
         raw = np.nan_to_num(raw, nan=float(np.nanmedian(raw)))
-        return sigmoid_calibrate(raw) if self.calibrate else raw
+        if not self.calibrate:
+            return raw
+        # "log"/"log_ivw" already produce signed, log-space scores.
+        return sigmoid_calibrate(raw, log_transform=self.aggregation == "ratio")
 
 
 register(MAMAMIA)

@@ -115,16 +115,32 @@ def nearest_psd(cov: np.ndarray) -> np.ndarray:
 
 
 def sigmoid_calibrate(raw: np.ndarray, confidence: float = 1.0,
-                      center_pct: float = 20.0) -> np.ndarray:
+                      center_pct: float = 20.0,
+                      log_transform: bool = True) -> np.ndarray:
     """Map raw scores onto (0, 1) without changing their order.
 
-    Log, z-score, then a logistic centred at the `center_pct` percentile, which
-    is where the member/non-member boundary sits under the challenge's 80/20
-    split.  Rank-preserving, so AUC is untouched; it only makes the scores
-    readable as probabilities and comparable across targets.
+    Optionally log, then z-score, then a logistic centred at the `center_pct`
+    percentile, which is where the member/non-member boundary sits under the
+    challenge's 80/20 split.  Rank-preserving, so AUC is untouched; it only
+    makes the scores readable as probabilities and comparable across targets.
+
+    `log_transform` must be False for scores that are ALREADY in log space, or
+    otherwise signed.  The log step clamps at 1e-300, so a negative score would
+    be squashed onto the same value as every other negative score -- turning
+    the ranking into one giant tie and collapsing AUC toward 0.5.  That is not
+    hypothetical: it silently cost MAMA-MIA's log-ratio arm 12 points of AUC on
+    BRCA (0.625 measured directly, 0.508 through this function) before the
+    parameter existed.
     """
     raw = np.asarray(raw, dtype=float)
-    z = stats.zscore(np.log(np.maximum(raw, 1e-300)))
+    if log_transform:
+        if np.any(raw <= 0):
+            raise ValueError(
+                "sigmoid_calibrate(log_transform=True) needs strictly positive "
+                "scores; got values <= 0.  Pass log_transform=False if the "
+                "scores are already in log space.")
+        raw = np.log(raw)
+    z = stats.zscore(raw)
     return 1.0 / (1.0 + np.exp(-confidence * (z - np.percentile(z, center_pct))))
 
 

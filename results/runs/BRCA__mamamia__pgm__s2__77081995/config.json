@@ -1,10 +1,10 @@
 {
-  "run_id": "BRCA__mamamia__pgm__s1__77081995",
-  "timestamp": "2026-09-20T22:02:58+00:00",
+  "run_id": "BRCA__mamamia__pgm__s2__77081995",
+  "timestamp": "2026-09-20T22:02:59+00:00",
   "dataset": "BRCA",
   "attack": "mamamia",
   "generator": "pgm",
-  "split": 1,
+  "split": 2,
   "tag": "k4_1w_2w",
   "experiment": "grid_brca",
   "variant": "mamamia",

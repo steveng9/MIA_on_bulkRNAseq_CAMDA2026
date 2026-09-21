@@ -107,9 +107,18 @@ def build_target(
         except NotImplementedError:
             pass
 
+    # `params` records only what the caller overrode, so a target built on a
+    # default that later changes is indistinguishable from one built before.
+    # That bit us with the DP-PGM accounting fixes, where the same config file
+    # produced materially different generators either side of 2026-09-20, so
+    # record the generator's full resolved state alongside it.
+    resolved = {k: v for k, v in asdict(gen).items()
+                if not k.startswith("_") and isinstance(v, (int, float, str, bool,
+                                                            tuple, list, type(None)))}
     f["meta"].write_text(json.dumps({
         "dataset": dataset, "generator": generator, "split": split,
-        "params": params, "seed": seed, "source": "trained",
+        "params": params, "resolved_params": resolved,
+        "seed": seed, "source": "trained",
         "n_synthetic": int(len(X_syn)), "n_train": int(len(X_train)),
     }, indent=2, default=str))
     print(f"  [target] wrote {f['X']}  shape={X_syn.shape}", flush=True)

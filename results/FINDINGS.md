@@ -990,3 +990,121 @@ python scripts/run_experiment.py configs/experiments/tune_statistical.yaml
 python scripts/analyse_quantile_leak.py --dataset BRCA
 python scripts/sanity_check.py --dataset BRCA
 ```
+
+---
+
+## 9. DP-PGM at ε=10 is not at chance, and MAMA-MIA is what sees it
+
+Everything here is against the **corrected** generator (all three defects in §7
+fixed): zCDP composition, add/remove sensitivity with an estimated row count,
+canonical gene order. Targets rebuilt 2026-09-20; every DP-PGM number recorded
+before that date is superseded.
+
+### 9a. The flat row was a ceiling, and it lifted
+
+A member contributes exactly **+1 count** to each marginal cell they occupy.
+Two noise layers stand against it: the Gaussian DP noise (σ, in absolute counts)
+and multinomial sampling of `n_syn` synthetic rows. So the per-cell SNR is
+`1/sqrt(σ² + n_syn·p(1−p))`, and over k roughly independent cells the separation
+is `√k` times that. Treating PGM inference as lossless gives a **ceiling** on any
+marginals-based attack:
+
+| cohort | n | d (1-way) | d (2-way) | d total | **AUC ceiling** |
+|---|---|---|---|---|---|
+| BRCA | 871 | 0.992 | 1.437 | 1.746 | **0.892** |
+| COMBINED | 3458 | 0.813 | 1.401 | 1.620 | **0.874** |
+
+Under the *old* accounting (σ = 1435.8) the same calculation gives a ceiling of
+**0.514**. So the flat DP-PGM row was not a weak attack and not evidence of
+privacy — **no attack could have exceeded 0.514**, and MAMA-MIA measured 0.50.
+The experiment could not have distinguished a private generator from a broken
+one, which is exactly what §7e warned.
+
+### 9b. Measured, before and after
+
+Unmodified MAMA-MIA and MahalaMIA, five splits, ε=10, δ=1e-5:
+
+| cohort | attack | before (n runs) | **after** |
+|---|---|---|---|
+| BRCA | mamamia | 0.4959±0.0088 (27) | **0.6041±0.0117** |
+| BRCA | mahalamia | 0.5002±0.0114 (242) | 0.5037±0.0128 |
+| COMBINED | mamamia | 0.4995±0.0050 (20) | **0.5297±0.0042** |
+| COMBINED | mahalamia | 0.5000±0.0040 (255) | 0.5048±0.0044 |
+
+**The effect is specific to the marginal attack.** MahalaMIA — the strongest
+attack on every other generator — stays at chance on both cohorts. That is the
+cleanest evidence we have that the signal genuinely lives in the released
+marginals rather than in gene-space geometry, and it is a point worth making in
+the paper: attack and mechanism have to match.
+
+### 9c. Aggregation is worth more than anything else we changed
+
+`scripts/mamamia_aggregation.py`, `results/mamamia_aggregation.csv`. Focal-point
+selection is not a free parameter here: the cohorts carry exactly 978 genes and
+the release sets `n_1way=978`, so "top 978 by variance" is *every* gene, and
+with `n_2way=0` the clique set (978 one-way + 978 gene×label) is fixed by public
+configuration. Every arm below targets the same known marginals.
+
+| arm | BRCA AUC | BRCA T@1%FPR | COMBINED AUC |
+|---|---|---|---|
+| ratio (shipped) | 0.6042±0.0117 | 0.0161 | 0.5297±0.0042 |
+| log | 0.6252±0.0096 | 0.0202 | 0.5312±0.0060 |
+| log, inverse-variance | 0.6121±0.0116 | 0.0202 | 0.5292±0.0061 |
+| log, 1-way only | 0.6437±0.0150 | 0.0484 | 0.5721±0.0062 |
+| log, 1-way only, class-centred | 0.6663±0.0095 | **0.0503** | **0.5864±0.0052** |
+| **log, class-centred** | **0.6706±0.0214** | 0.0402 | 0.5407±0.0032 |
+
+Three findings, two of which contradict predictions made earlier in this file.
+
+**(i) Log space beats ratio space**, by 2.1 points on BRCA and 6.6 points of
+TPR@10%FPR. The mean of `p_syn/p_aux` is dominated by cells where `p_aux` is
+small — the least reliable ones — while the sum of log-ratios is the
+Neyman–Pearson statistic. This is the one prediction that held.
+
+**(ii) Inverse-variance weighting HURTS** (0.6121 against 0.6252 unweighted),
+contradicting the proposal in `docs/PGM_ATTACK_SURFACE.md` §6.3(ii). It
+up-weights the gene×label family 2.2×, because that family gets 67% of the
+budget and so carries lower σ. But σ is not what limits that family — see (iii).
+**The quieter marginals are the less useful ones.** Noise-optimal weighting is
+not signal-optimal.
+
+**(iii) The gene×label family is a net negative, and the reason is subtype
+confounding.** One-way marginals alone beat both families combined on *both*
+cohorts (BRCA 0.6437 vs 0.6252; COMBINED 0.5721 vs 0.5312 — a 4-point loss from
+adding them). Their internal correlation is low (mean |r| 0.045–0.089), so
+redundancy is not the explanation. Subtype is: a candidate's 2-way score depends
+on their label, and label predicts *class*, not *membership*, so the family adds
+a within-class constant that dilutes the signal. Centring each score within
+subtype confirms it — the 2-way family gains the most (BRCA 0.5992 → 0.6389),
+the 1-way family gains less (0.6437 → 0.6663), and on BRCA the combination
+finally beats 1-way alone (0.6706). On COMBINED, with 12 classes, even centred
+the 2-way family never pays for itself (0.5864 for centred 1-way alone).
+
+This is the same mechanism as finding 6d, where class-conditional scoring took
+COMBINED/MVN to AUC 1.000: subtype is a confounder in every attack that scores
+a mixed cohort, and removing it is nearly free.
+
+Net: **0.604 → 0.671 on BRCA and 0.530 → 0.586 on COMBINED, from aggregation
+alone** — no change to which marginals are targeted, no shadow models, no
+recovery of the generator's bin edges. Against the 9a ceilings (0.892, 0.874)
+there is still substantial headroom.
+
+**Threat-model note.** Class-centring uses each candidate's subtype, which is
+published with the challenge data, but it also uses *other candidates' scores*
+— it is a transductive operation over the scored pool. That is consistent with
+how the challenge is evaluated (the whole pool is scored at once) and with what
+`sigmoid_calibrate` already does, but it should be stated rather than assumed.
+
+### 9d. A calibration bug that cost 12 points
+
+Worth recording because it nearly inverted the headline of 9c. `sigmoid_calibrate`
+in `mia/attacks/mahalamia.py` began `np.log(np.maximum(raw, 1e-300))`, which
+assumes strictly positive scores — true for ratio-space scores. Log-ratio scores
+are *negative*, so every one of them was clamped to `1e-300`, collapsing the
+entire ranking into one tie. The log arm measured **0.508** through that path
+against **0.625** computed directly.
+
+The docstring asserted "Rank-preserving, so AUC is untouched," which is true only
+for positive input, and the first version of this finding reported that ratio
+space beat log space "decisively" on the strength of it. The function now takes
+`log_transform` and raises on non-positive input rather than silently clamping.
