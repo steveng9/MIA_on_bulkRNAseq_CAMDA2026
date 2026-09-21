@@ -1,0 +1,47 @@
+{
+  "run_id": "COMBINED__mamamia_arm__pgm@epsilon=0.3__s3__810541d6",
+  "timestamp": "2026-09-21T18:57:53+00:00",
+  "dataset": "COMBINED",
+  "attack": "mamamia_arm",
+  "generator": "pgm@epsilon=0.3",
+  "split": 3,
+  "tag": "log_inverse_variance",
+  "experiment": "pgm_eps_sweep",
+  "variant": "log, inverse-variance",
+  "notes": "epsilon=0.3",
+  "params": {
+    "attack": "mamamia_arm",
+    "arm": "log, inverse-variance",
+    "n_bins": 4,
+    "epsilon": 0.3,
+    "delta": 1e-05
+  },
+  "target": {
+    "fingerprint": "cfc6df28516a9753",
+    "params": {
+      "seed": 3423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 0.3,
+      "delta": 1e-05,
+      "n_bins": 4,
+      "n_1way": 978,
+      "n_2way": 0,
+      "n_3way": 0,
+      "n_4way": 0,
+      "budget_weights": [
+        0.33,
+        0.67,
+        0.0,
+        0.0
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove"
+    },
+    "seed": 3423,
+    "source": "trained"
+  }
+}
