@@ -589,8 +589,22 @@ class MeLoMIA(Attack):
     def _ensure_proxy_features(self, dataset: str, generator: str, split: int) -> tuple:
         """Train a proxy on the released synthetic data and read features from it."""
         out = self._proxy_features_path(dataset, generator, split)
+        fp = TG.fingerprint(dataset, generator, split)
         if out.exists():
             d = np.load(out, allow_pickle=True)
+            # Keyed on the target's name, so check it is still the same data.
+            # Caches written before fingerprints existed are trusted only if
+            # they are newer than the target they were computed from.
+            cached_fp = str(d["target_fingerprint"]) if "target_fingerprint" in d else None
+            tgt_mtime = TG.load_target(dataset, generator, split)["paths"]["X"].stat().st_mtime
+            stale = (cached_fp != fp) if cached_fp else out.stat().st_mtime < tgt_mtime
+            if stale:
+                self._say(f"  [melomia] proxy cache for {generator}/split_{split} "
+                          "is from a different target; rebuilding")
+                d = None
+        else:
+            d = None
+        if d is not None:
             losses = d["losses"]
             if self.reference_calibration and "ref_losses" in d:
                 losses = F.calibrate_against_reference(losses, d["ref_losses"])
@@ -607,7 +621,7 @@ class MeLoMIA(Attack):
 
         X_real = D.load_expression(dataset).values.astype(np.float32)
         losses, extra = be.extract(gen, X_real)
-        payload = {"losses": losses}
+        payload = {"losses": losses, "target_fingerprint": fp}
         if extra is not None:
             payload["extra"] = extra
 

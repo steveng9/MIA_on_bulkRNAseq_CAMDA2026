@@ -72,12 +72,16 @@ class Attack(ABC):
         metrics = M.evaluate(y, scores)
 
         if save:
+            # Record what was attacked, not only its name: a target rebuilt in
+            # place keeps its name, and only the fingerprint tells them apart.
+            from .. import targets as T
+            target = T.target_record(dataset, generator, split)
             R.save_run(
                 dataset=dataset, attack=self.params().get("attack", self.name),
                 generator=generator, split=split,
                 params=self.params(), sample_ids=ids, scores=scores, y_member=y,
                 metrics=metrics, tag=self.tag(), experiment=experiment,
-                variant=variant, notes=notes,
+                variant=variant, notes=notes, target=target,
             )
         return metrics
 

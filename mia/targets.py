@@ -14,7 +14,9 @@ white-box comparison, where the target weights must be ours).
 
 from __future__ import annotations
 
+import hashlib
 import json
+import zlib
 from dataclasses import asdict
 from pathlib import Path
 
@@ -26,6 +28,63 @@ from . import generators as G
 from . import paths
 
 GENERATORS = ("mvn", "cvae", "nd", "pgm")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Target identity
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# A target is named `<generator>` (canonical parameters, `default_params`) or
+# `<generator>@<k>=<v>,<k>=<v>` (a variant).  The variant string *is* the
+# parameter override, so a directory name says exactly what produced it, and
+# the name flows unchanged through every attack: run ids, the index's
+# `generator` column and MeLoMIA's proxy cache all key on it.  Filtering the
+# index on `generator == "pgm"` therefore still selects only canonical targets.
+
+def split_name(generator: str) -> tuple[str, dict]:
+    """`"pgm@epsilon=0.1,n_bins=8"` -> `("pgm", {"epsilon": 0.1, "n_bins": 8})`."""
+    import yaml
+    base, _, variant = generator.partition("@")
+    overrides = {}
+    for item in filter(None, variant.split(",")):
+        k, _, v = item.partition("=")
+        overrides[k] = yaml.safe_load(v)
+    return base, overrides
+
+
+def variant_name(generator: str, dataset: str, overrides: dict | None) -> str:
+    """Canonical target name for `generator` with `overrides` applied.
+
+    Overrides equal to the default are dropped, so the canonical target keeps
+    its plain name (`pgm@epsilon=10` is `pgm`) and is reused, not rebuilt.
+    """
+    defaults = default_params(generator, dataset)
+    diff = {k: v for k, v in (overrides or {}).items() if defaults.get(k) != v}
+    if not diff:
+        return generator
+    return generator + "@" + ",".join(f"{k}={diff[k]}" for k in sorted(diff))
+
+
+def fingerprint(dataset: str, generator: str, split: int) -> str:
+    """Content hash of a target's released data.
+
+    Anything cached from a target must be keyed on this, not on the name: the
+    DP-PGM targets were rebuilt in place on 2026-09-20 under the same name, and
+    a name-keyed cache would go on serving features of the old generator.
+    """
+    f = _files(dataset, generator, split)
+    h = hashlib.sha1()
+    for key in ("X", "y"):
+        h.update(f[key].read_bytes())
+    return h.hexdigest()[:16]
+
+
+def target_record(dataset: str, generator: str, split: int) -> dict:
+    """What a run should record about the target it attacked."""
+    meta = json.loads(_files(dataset, generator, split)["meta"].read_text())
+    return {"fingerprint": fingerprint(dataset, generator, split),
+            "params": meta.get("resolved_params", meta.get("params")),
+            "seed": meta.get("seed"), "source": meta.get("source")}
 
 
 def _files(dataset: str, generator: str, split: int) -> dict:
@@ -83,13 +142,22 @@ def build_target(
 
     if generator == "nd" and not retrain_nd:
         return _import_published_nd(dataset, split)
+    if generator.startswith("nd@") and not retrain_nd:
+        raise ValueError(f"{generator}: an ND variant has no published data; "
+                         "pass retrain_nd=True")
 
-    params = {**default_params(generator, dataset), **(params or {})}
+    base, overrides = split_name(generator)
+    params = {**default_params(base, dataset), **(params or {}), **overrides}
     X_train, y_train, member_ids = D.training_subset(dataset, split)
     n_classes = D.n_classes(dataset)
 
-    seed = 1000 * split + hash(generator) % 1000
-    gen = G.build(generator, seed=seed, device=device, **params)
+    # Seeded from the base generator, so every variant of one split shares its
+    # randomness and a sweep's curve is not also a curve over seeds.  (This
+    # used Python's `hash()`, which is salted per process: seeds of targets
+    # built before 2026-09-21 are recorded in their meta.json but were not
+    # reproducible from the code.)
+    seed = 1000 * split + zlib.crc32(base.encode()) % 1000
+    gen = G.build(base, seed=seed, device=device, **params)
 
     print(f"  [target] fitting {generator} on {dataset} split {split} "
           f"({X_train.shape[0]} members)", flush=True)
@@ -116,7 +184,7 @@ def build_target(
                 if not k.startswith("_") and isinstance(v, (int, float, str, bool,
                                                             tuple, list, type(None)))}
     f["meta"].write_text(json.dumps({
-        "dataset": dataset, "generator": generator, "split": split,
+        "dataset": dataset, "generator": base, "target": generator, "split": split,
         "params": params, "resolved_params": resolved,
         "seed": seed, "source": "trained",
         "n_synthetic": int(len(X_syn)), "n_train": int(len(X_train)),

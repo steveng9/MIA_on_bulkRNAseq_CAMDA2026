@@ -60,12 +60,13 @@ def family_sigma(n_cliques: int, weight_idx: int, eps: float, delta: float,
     return math.sqrt(n_cliques / (2.0 * w * rho))
 
 
-def arms_for_split(dataset: str, split: int, n_bins: int, eps: float, delta: float):
+def arms_for_split(dataset: str, split: int, n_bins: int, eps: float, delta: float,
+                   generator: str = "pgm"):
     """Every aggregation arm's score vector for one split."""
     ncl = D.n_classes(dataset)
     Xr = D.load_expression(dataset).values.astype(np.float64)
     yr = D.encode_subtypes(dataset, D.load_subtypes(dataset).values)
-    tg = T.load_target(dataset, "pgm", split)
+    tg = T.load_target(dataset, generator, split)
     Xs, ys = tg["X"].astype(np.float64), tg["y_int"]
 
     # Bin edges from the auxiliary pool only -- never the target's training half.

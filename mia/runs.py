@@ -71,6 +71,7 @@ def save_run(
     experiment: str = "",
     variant: str = "",
     notes: str = "",
+    target: dict | None = None,
 ) -> Path:
     """Persist one attack evaluation and index it.  Returns the run directory."""
     run_id = make_run_id(dataset, attack, generator, split, params)
@@ -89,6 +90,7 @@ def save_run(
         "variant": variant or attack,
         "notes": notes,
         "params": params,
+        "target": target,
     }
     (out / "config.json").write_text(json.dumps(record, indent=2, default=str))
     (out / "metrics.json").write_text(json.dumps(metrics, indent=2))

@@ -50,7 +50,7 @@ class Experiment:
             for split in self.splits:
                 TG.build_target(
                     self.dataset, gen, split,
-                    params=self.target_params.get(gen),
+                    params=self.target_params.get(gen.partition("@")[0]),
                     device=self.device, force=force, retrain_nd=self.retrain_nd,
                 )
 

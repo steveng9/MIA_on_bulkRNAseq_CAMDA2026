@@ -52,8 +52,15 @@ def ensure(*paths: Path) -> None:
 
 
 def target_dir(dataset: str, generator: str, split: int) -> Path:
-    """Where one target synthetic dataset lives."""
-    return TARGETS_DIR / dataset / generator / f"split_{split}"
+    """Where one target synthetic dataset lives.
+
+    `generator` may carry a variant, `pgm@epsilon=0.1`, naming the parameters
+    that differ from the defaults; each variant gets its own directory so a
+    sweep never overwrites the canonical target.  See `targets.variant_name`.
+    """
+    base, _, variant = generator.partition("@")
+    root = TARGETS_DIR / dataset / base
+    return (root / variant if variant else root) / f"split_{split}"
 
 
 def attack_cache(attack: str, dataset: str, tag: str = "default") -> Path:
