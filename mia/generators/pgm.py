@@ -24,10 +24,11 @@ sigma 29 against sigma 1436, a 50x reduction at an identical (eps, delta).
 `composition="basic"` keeps the original linear split so earlier results
 reproduce.
 
-Neither setting makes the reported epsilon an end-to-end guarantee: marginal
-selection ranks genes by the variance of the private data and discretisation
-takes bin edges from its percentiles, and both spend zero budget.  MST spends a
-full rho/3 on selection alone.  See docs/PGM_ATTACK_SURFACE.md.
+With the default `binning="quantile"` the reported epsilon is not end to end:
+discretisation takes bin edges from percentiles of the private data and spends
+zero budget (and at n_1way < 978, so does marginal selection).  `binning=
+"uniform"` or `"dp_quantile"` closes the discretisation gap.  See
+docs/PGM_ATTACK_SURFACE.md.
 """
 
 from __future__ import annotations
@@ -78,6 +79,16 @@ class PGMGenerator(Generator):
     #: estimated from the noisy marginals rather than released exactly.
     neighboring: str = "add_remove"
 
+    #: How bin edges are chosen.  "quantile" (default, reproduces every earlier
+    #: target) takes private percentiles and spends no budget, so epsilon does
+    #: not cover it.  "uniform" is equal width over the public `bin_range` and
+    #: costs nothing; "dp_quantile" is equal depth from a noisy histogram and
+    #: spends `binning_budget` of rho, the marginals getting the rest.
+    binning: str = "quantile"
+    bin_range: tuple = (0.0, 24.0)
+    binning_budget: float = 0.1
+    bin_grid: int = 48
+
     name = "pgm"
 
     def __post_init__(self):
@@ -98,7 +109,9 @@ class PGMGenerator(Generator):
             n_4way=self.n_4way, budget_weights=tuple(self.budget_weights),
             pgm_iters=self.pgm_iters, joint_mode=self.joint_mode,
             random_seed=self.seed, composition=self.composition,
-            neighboring=self.neighboring,
+            neighboring=self.neighboring, binning=self.binning,
+            bin_range=tuple(self.bin_range), binning_budget=self.binning_budget,
+            bin_grid=self.bin_grid,
         )
         # The upstream generator takes string labels; integers round-trip fine.
         self._gen.fit(X, y.astype(str), gene_names=self._gene_names)

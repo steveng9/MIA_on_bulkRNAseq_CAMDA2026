@@ -104,7 +104,7 @@ def slug(s: str) -> str:
 def run_one(job: dict):
     """Build, measure and attack one target.  Returns (label, row, error)."""
     ds, eps, split = job["dataset"], job["epsilon"], job["split"]
-    name = T.variant_name("pgm", ds, {"epsilon": eps})
+    name = T.variant_name("pgm", ds, {"epsilon": eps, **job["overrides"]})
     label = f"{ds}/{name}/s{split}"
     t0 = time.time()
     try:
@@ -124,6 +124,15 @@ def run_one(job: dict):
                          X[~m], y[~m], X[m], y[m])
         row.update(ceiling(ds, eps, rp.get("delta", 1e-5), rp["n_bins"],
                            len(tg["X"])))
+        # What epsilon itself guarantees for ANY attack: a composition of
+        # Gaussian mechanisms at total rho is mu-GDP with mu = sqrt(2 rho), and
+        # no test beats AUC Phi(mu / sqrt 2).  Only binding if the whole
+        # pipeline is inside the accounting (binning != "quantile").
+        from mia.generators.pgm import _import_upstream
+        _import_upstream()
+        from pgm_fitter import rho_from_eps_delta
+        row["dp_bound_auc"] = float(norm.cdf(math.sqrt(
+            rho_from_eps_delta(eps, rp.get("delta", 1e-5)))))
 
         # ── attacks ───────────────────────────────────────────────────────
         aucs = {}
@@ -152,6 +161,7 @@ def run_one(job: dict):
             aucs[arm] = met["auc"]
 
         row.update(dataset=ds, epsilon=eps, split=split, target=name,
+                   binning=rp.get("binning", "quantile"), n_bins=n_bins,
                    fingerprint=rec["fingerprint"], seed=rec["seed"],
                    composition=rp.get("composition"),
                    neighboring=rp.get("neighboring"),
@@ -170,15 +180,21 @@ def main():
     p.add_argument("--eps", nargs="+", type=float, default=DEFAULT_EPS)
     p.add_argument("--splits", nargs="+", type=int, default=[1, 2, 3, 4, 5])
     p.add_argument("--workers", type=int, default=10)
+    p.add_argument("--variants", nargs="+", default=[""],
+                   help='extra target overrides, one set per argument, e.g. '
+                        '"binning=uniform" "binning=uniform,n_bins=16"; '
+                        '"" is the canonical generator')
     args = p.parse_args()
+    variants = [T.split_name("pgm@" + v)[1] for v in args.variants]
 
-    # Uncached fits first so the cheap epsilon=10 jobs fill the tail.
-    jobs = [dict(dataset=d, epsilon=e, split=s)
-            for d in args.datasets for e in args.eps for s in args.splits]
-    jobs.sort(key=lambda j: T.exists(j["dataset"],
-                                     T.variant_name("pgm", j["dataset"],
-                                                    {"epsilon": j["epsilon"]}),
-                                     j["split"]))
+    # Uncached fits first so the cheap cached jobs fill the tail.
+    jobs = [dict(dataset=d, epsilon=e, split=s, overrides=o)
+            for o in variants for d in args.datasets
+            for e in args.eps for s in args.splits]
+    jobs.sort(key=lambda j: T.exists(
+        j["dataset"],
+        T.variant_name("pgm", j["dataset"], {"epsilon": j["epsilon"], **j["overrides"]}),
+        j["split"]))
 
     print(f"{len(jobs)} jobs on {args.workers} workers "
           f"({os.environ['OMP_NUM_THREADS']} BLAS threads each) -> {OUT}",
