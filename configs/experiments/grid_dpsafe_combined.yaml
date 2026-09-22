@@ -1,0 +1,48 @@
+# The DP-PGM column, rebuilt on binnings that are inside the epsilon.
+#
+# The legacy `quantile` binning spends no budget on its edges, and FINDINGS
+# section 10 measures the attack beating the epsilon bound because of it.  These
+# three releases are DP end to end: `uniform` (equal width over the public
+# range), `dp_uniform` (DP bounds, equal width -- smartnoise's BinTransformer)
+# and `dp_quantile` (DP equal depth, 10% of rho).
+name: grid_dpsafe_combined
+dataset: COMBINED
+notes: "DP-PGM at eps=10 under each DP-valid binning, 4 attacks, 5 splits"
+device: cuda
+
+generators: [pgm@binning=uniform, pgm@binning=dp_quantile, pgm@binning=dp_uniform]
+splits: [1, 2, 3, 4, 5]
+
+# Target hyperparameters that reproduce the challenge's released data.
+target_params:
+  mvn:
+    noise_level: 0.7          # the abstract's MVN column
+  pgm:
+    epsilon: 10.0             # DP-PGM (eps = 10)
+    n_bins: 4
+    pgm_iters: 1000
+    joint_mode: true
+
+attacks:
+  mahalamia:
+    class: mahalamia
+    params:
+      use_reference: true     # COMBINED ships an auxiliary non-member set
+  mamamia:
+    class: mamamia
+    params:
+      n_bins: 4               # match DP-PGM's own discretisation
+  melomia_nd:
+    class: melomia_nd
+    params:
+      n_shadows: 20           # the abstract used 5; see TODO item 2
+      n_noise: 600
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+  melomia_cvae:
+    class: melomia_cvae
+    params:
+      n_shadows: 20
+      n_noise: 50
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
