@@ -1353,3 +1353,76 @@ to choose is not a guarantee at all.
 Neither MeLoMIA row has an equivalent lever yet: both are at chance under all
 three binnings, and unlike MAMA-MIA there is no known reconstruction of them
 that looks at the discretisation at all.
+
+### 10h. Why every attack is at chance: the release carries almost no per-record information
+
+**This corrects §10g.** §10g read the all-chance grid as "the attacks failing, not
+ε binding". The second half holds; the first half is wrong for the equal-width
+binnings.
+
+**Fidelity against the other generators** (`scripts/fidelity_grid.py`, same
+`fidelity.evaluate` call as the ε sweep, 5 splits each):
+
+| BRCA / COMBINED | utility ratio | per-gene W1 | synthetic mean \|corr\| (real 0.17 / 0.18) | discriminator AUC |
+|---|---|---|---|---|
+| MVN | 0.88 / 0.99 | 0.24 / 0.18 | 0.15 / 0.15 | 0.96 / 0.98 |
+| CVAE | 0.96 / 0.96 | 0.18 / 0.19 | 0.18 / 0.23 | 0.91 / 0.99 |
+| ND | 0.91 / 0.98 | 0.20 / 0.12 | 0.26 / 0.21 | 0.96 / 0.99 |
+| DP-PGM dp_quantile, ε=10 | 0.70 / 0.90 | 2.30 / 2.51 | 0.04 / 0.04 | 1.00 / 1.00 |
+| DP-PGM uniform, ε=10 | 0.63 / 0.76 | 3.60 / 2.78 | 0.03 / 0.02 | 1.00 / 1.00 |
+| DP-PGM quantile (legacy), ε=10 | 0.76 / 0.93 | 0.51 / 0.62 | 0.05 / 0.06 | 1.00 / 1.00 |
+
+Label utility is respectable for `dp_quantile` on COMBINED and weak elsewhere.
+Distributional fidelity is poor everywhere: per-gene W1 is 10-20x worse than the
+other generators, and gene-gene correlation is essentially absent. That is by
+construction, since with `n_2way=0` the model is a star around the label, so genes
+are independent given the subtype. TSTR looks acceptable because subtype
+classification needs only a handful of marker genes, and the gene x label
+marginals encode exactly those. Membership needs per-record detail, which is the
+thing that has been removed.
+
+That explains two rows outright. MahalaMIA reads covariance geometry, and there
+is none. MeLoMIA fits a proxy to data with no joint structure, so there is no
+per-record signal for it to learn. Neither has anything to find at any ε.
+
+**The oracle test.** MAMA-MIA is the one attack aimed at the channel DP-PGM does
+release, so I asked what the strongest possible marginal attack gets: an
+adversary that knows every other training record exactly (the adversary DP is
+defined against), binning with the generator's own cells, 3 splits:
+
+| ε=1000 | oracle AUC | best black box | modal-cell share |
+|---|---|---|---|
+| BRCA uniform | **0.552** | 0.575 | 0.86 |
+| BRCA dp_uniform | **0.542** | 0.511 | 0.86 |
+| BRCA dp_quantile | **0.750** | 0.527 | 0.41 |
+| BRCA quantile (legacy) | 0.728 | 0.704 | 0.25 |
+| COMBINED uniform | **0.529** | 0.519 | 0.84 |
+| COMBINED dp_quantile | **0.632** | 0.512 | 0.39 |
+
+(The black-box uniform number sits slightly above the oracle because it is the
+best of nine arms and includes class-centring, while the oracle is a single
+statistic.)
+
+* **Under equal-width binning there is nothing to attack, even with no noise.**
+  Four equal-width cells over (0, 24) put 84-86% of every gene's values in a
+  single cell, so a record's cell membership says almost nothing about it. The
+  all-knowing adversary reaches 0.53-0.55 at ε=1000. The bottleneck is the
+  discretisation, not the budget, which is why ε=1000 changes nothing. Our
+  black-box attack already sits at that oracle, so there is no headroom left for
+  a better attack to find.
+* **Under `dp_quantile` there is real headroom, and it is the attack's.** The
+  oracle gets 0.750 / 0.632. Black box gets 0.527 / 0.512, and the gap is almost
+  entirely cell mismatch: the white-box attack reaches 0.654 / 0.576. Edge
+  recovery (task 18) is the lever.
+* **The analytical ceiling of §9a is not a usable ceiling.** It reads 0.9999 at
+  ε=1000, and the oracle that knows everything gets 0.73 on the most informative
+  binning. The formula assumes equal-depth cells (p = 1/n_bins, which uniform
+  binning violates badly) and treats 978 correlated genes as 978 independent
+  looks. It remains a valid upper bound, but it is loose by 0.25+ AUC, so it must
+  not be presented as "how much of the gap is the attack's to close". The oracle
+  AUC is the number to plot instead.
+
+The honest summary of the DP-PGM column: a DP-valid release at 4 equal-width bins
+is private mostly because it is uninformative, and it would be at every ε. The
+interesting privacy-utility trade-off is `n_bins` x binning strategy, not ε
+alone.
