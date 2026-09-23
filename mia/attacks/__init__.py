@@ -17,7 +17,8 @@ from knowing the generative mechanism.
 from .base import REGISTRY, Attack, build, register  # noqa: F401
 from .mahalamia import MahalaMIA  # noqa: F401
 from .mamamia import MAMAMIA  # noqa: F401
+from .mamamia_v2 import MAMAMIAv2  # noqa: F401
 from .melomia import MeLoMIACVAE, MeLoMIAND  # noqa: F401
 
 __all__ = ["Attack", "build", "register", "REGISTRY",
-           "MahalaMIA", "MAMAMIA", "MeLoMIAND", "MeLoMIACVAE"]
+           "MahalaMIA", "MAMAMIA", "MAMAMIAv2", "MeLoMIAND", "MeLoMIACVAE"]

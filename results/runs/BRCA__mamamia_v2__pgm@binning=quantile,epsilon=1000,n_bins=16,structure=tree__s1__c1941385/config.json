@@ -1,0 +1,67 @@
+{
+  "run_id": "BRCA__mamamia_v2__pgm@binning=quantile,epsilon=1000,n_bins=16,structure=tree__s1__c1941385",
+  "timestamp": "2026-09-23T21:31:41+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia_v2",
+  "generator": "pgm@binning=quantile,epsilon=1000,n_bins=16,structure=tree",
+  "split": 1,
+  "tag": "cl-public_ed-known_cc",
+  "experiment": "mamamia_v2",
+  "variant": "quantile16/tree|public/known",
+  "notes": "white-box quantile16/tree epsilon=1000",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mamamia_v2",
+    "cliques": "public",
+    "edges": "known",
+    "families": [
+      "1way",
+      "gl",
+      "tree"
+    ],
+    "class_centre": true,
+    "alpha": 0.5,
+    "calibrate": true,
+    "attack": "mamamia_v2",
+    "arm": "all_cc"
+  },
+  "target": {
+    "fingerprint": "ed51420774672f11",
+    "params": {
+      "seed": 1423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 1000,
+      "delta": 1e-05,
+      "n_bins": 16,
+      "n_1way": 978,
+      "n_2way": 0,
+      "n_3way": 0,
+      "n_4way": 0,
+      "budget_weights": [
+        0.33,
+        0.67,
+        0.0,
+        0.0
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove",
+      "binning": "quantile",
+      "bin_range": [
+        0.0,
+        24.0
+      ],
+      "binning_budget": 0.1,
+      "bin_grid": 48,
+      "edge_estimator": "clip",
+      "structure": "tree",
+      "select_budget": 0.3
+    },
+    "seed": 1423,
+    "source": "trained"
+  }
+}

@@ -1489,3 +1489,73 @@ MahalaMIA vulnerability. MahalaMIA reads a covariance learned from n < p rows,
 which MVN (full covariance), CVAE and ND all fit. A PGM of ~3k low-order
 marginals has nothing of that size to memorise, whatever ε is. Full table
 (both cohorts, ε ∈ {10, 1000}, 3 splits) to follow when the sweep finishes.
+
+### 10j. MAMA-MIA v2: against the fixed DP-PGM at ε=1000, black-box MAMA-MIA reaches 0.998 (BRCA) and 0.84 (COMBINED)
+
+*2026-09-23.  `mia/attacks/mamamia_v2.py`, `scripts/mamamia_v2_eval.py`,
+`results/mamamia_v2.csv` (one row per target × access path × arm).  ε=1000,
+split 1 for every config plus split 2 for a few; ε=10 and splits 2–3 follow
+as the structure sweep builds them.*
+
+**Naming.** v1 = the attack in the CAMDA-2026 extended abstract (`mamamia.py`).
+v2 = the full-paper attack.  Its rule (Steven): score exactly the tables the
+target measured, on the target's bins.  The attack has no table or bin
+configuration of its own.  Every row is labelled `access=black-box|white-box`:
+
+| path | tables | bins |
+|---|---|---|
+| black box | `public` star (1-way + gene×label, fixed by config); `recovered` tree = the generator's selection re-run with no noise on the release; `aux` tree = the same selection run with no noise on the aux (candidate) pool | `recovered` = the generator's binning re-run with no noise on the release; `aux` = v1's pool quantiles; the public grid for `uniform` |
+| white box (diagnostic) | `true` = the target's clique list | `known` = the target's fitted edges |
+
+**Star tables, black box, recovered bins, class-centred (AUC):**
+
+| binning | BRCA | COMBINED |
+|---|---|---|
+| dp_quantile K=4 | 0.687 | 0.540 |
+| dp_quantile K=8 | 0.837 | 0.578 |
+| dp_quantile K=16 | 0.945 | 0.657 |
+| dp_quantile K=32 | **0.998** | **0.794** |
+| dp_uniform K=16 | 0.881 | 0.620 |
+| uniform K=48 | 0.652 | 0.561 |
+
+MahalaMIA's best variant on the same targets is 0.51–0.53 (§10i), and v1 as
+shipped (K=4, ratio averaging) gets 0.67 on BRCA dp_quantile16/tree_label.
+Most of v1's gap is the bin count and class-centring: its own "log,
+class-centred" arm at K=16 already reaches 0.945 there.  Bins rebuilt from the
+release matter for dp_uniform (BRCA 0.881 vs 0.704 with pool quantiles).  The
+target's true bins add 0.01–0.07 on top.
+
+**Tree tables.**
+- They carry membership: given the true tree and bins (white box), the tree
+  tables alone reach 0.95–1.00 on BRCA and 0.85–0.97 on COMBINED.
+- Adding them to the star helps only on COMBINED (dp_quantile32 tree_label:
+  0.726 star → 0.841 with the aux-selected tree).  BRCA's star is already at
+  the ceiling.
+- **The gene–gene–label tree cannot be read off the release.**  Recovery by
+  re-selecting on the synthetic data finds 0–4% of its pairs.  Pooled, finer
+  (k_select 8/16) and Spearman scores all fail too.  The gene–gene tree
+  recovers well where its tables are populated (COMBINED 94–100%, BRCA 30–80%).
+- The cause is table size.  BRCA dp_quantile16 tree_label has 16×16×5 = 1,280
+  cells for 871 rows, about 0.7 per cell, against σ≈1.7.  The DP selection
+  picks genuinely co-expressed pairs (real |ρ| 0.52 vs 0.15 random; 46% overlap
+  with the max-|ρ| tree), but in the release those pairs fall to |ρ| 0.10.
+  Synthetic |ρ| separates tree pairs from the other 477k with AUC 0.79, far
+  too weak to pick 977 of them.
+- These tables leak membership while contributing almost no population
+  structure: the worst trade-off for the generator.
+- **Noiseless selection on the aux pool, the simplest form of MAMA-MIA
+  proper's shadow route, recovers 70–83% of either tree.**  Its AUC matches the
+  true tree's under the same bins (COMBINED dp_quantile32 tree_label: aux
+  0.828, true 0.842).
+  - Caveat: the aux pool is the candidate pool, which overlaps the members,
+    as v1's p_aux does.
+  - The remaining black/white gap is bin edges (0.842 → 0.952), which is task
+    18.
+
+**Implications.**
+1. A DP-valid PGM that matches CVAE/ND quality at ε=1000 is not safe against
+   the attack built for it, even though MahalaMIA sees nothing.
+2. The generator's fidelity knob (more bins) is the attack's knob.
+3. Large 3-way tables are poor value, which motivates generator sweep v2
+   (task 22): a label-only star, MST with the label as a node, and a sparse
+   k/l forest.

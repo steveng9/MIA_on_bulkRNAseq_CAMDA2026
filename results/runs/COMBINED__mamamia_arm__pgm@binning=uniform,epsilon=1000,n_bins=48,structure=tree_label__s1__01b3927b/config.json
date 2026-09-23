@@ -1,0 +1,58 @@
+{
+  "run_id": "COMBINED__mamamia_arm__pgm@binning=uniform,epsilon=1000,n_bins=48,structure=tree_label__s1__01b3927b",
+  "timestamp": "2026-09-23T19:42:19+00:00",
+  "dataset": "COMBINED",
+  "attack": "mamamia_arm",
+  "generator": "pgm@binning=uniform,epsilon=1000,n_bins=48,structure=tree_label",
+  "split": 1,
+  "tag": "log_2_way_only_aux",
+  "experiment": "pgm_structure_sweep",
+  "variant": "uniform48/tree_label|log, 2-way only",
+  "notes": "uniform48/tree_label epsilon=1000",
+  "params": {
+    "attack": "mamamia_arm",
+    "arm": "log, 2-way only",
+    "n_bins": 48,
+    "epsilon": 1000,
+    "delta": 1e-05,
+    "attack_edges": "aux"
+  },
+  "target": {
+    "fingerprint": "facde6a5e11dda13",
+    "params": {
+      "seed": 1423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 1000,
+      "delta": 1e-05,
+      "n_bins": 48,
+      "n_1way": 978,
+      "n_2way": 0,
+      "n_3way": 0,
+      "n_4way": 0,
+      "budget_weights": [
+        0.33,
+        0.67,
+        0.0,
+        0.0
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove",
+      "binning": "uniform",
+      "bin_range": [
+        0.0,
+        24.0
+      ],
+      "binning_budget": 0.1,
+      "bin_grid": 48,
+      "edge_estimator": "clip",
+      "structure": "tree_label",
+      "select_budget": 0.3
+    },
+    "seed": 1423,
+    "source": "trained"
+  }
+}
