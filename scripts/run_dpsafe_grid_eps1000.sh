@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+echo "BROKEN_DP_EDGES: this launcher built/attacked dp_* targets with the biased edge estimator; see results/BROKEN.md" >&2; exit 1
 # The 4-attack grid on DP-PGM at eps=1000: the three DP-valid binnings plus the
 # legacy binning as a reference.  GPU 0 only; GPU 1 stays free for other users.
 set -u

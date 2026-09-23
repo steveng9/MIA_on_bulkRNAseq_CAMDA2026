@@ -1201,6 +1201,8 @@ edges. The shipped MAMA-MIA, with aux edges, is at chance.
 
 ### 10e. The full ε curve, for all three DP-valid binnings
 
+> **⚠ BROKEN_DP_EDGES — every `dp_quantile` / `dp_uniform` number in this section was measured on targets with mis-estimated DP bin edges (bounds ≈ 2/22 instead of ≈ 9.5/13.5). They measure a bug, not DP. `uniform` and legacy `quantile` rows are unaffected. See §10i and results/BROKEN.md.**
+
 270 targets: 3 binnings x 9 epsilons x 2 cohorts x 5 splits, 4 bins throughout,
 `scripts/run_dp_safe_sweep.sh`, 0 failures. `uniform` is equal width over the
 public range; `dp_uniform` buys bounds then spaces edges evenly (smartnoise's
@@ -1244,6 +1246,8 @@ which is the 48-cell grid, not the budget: worth widening `bin_grid` before
 reading anything into that number.
 
 ### 10f. Attack success tracks how well the attacker's cells match the generator's
+
+> **⚠ BROKEN_DP_EDGES — every `dp_quantile` / `dp_uniform` number in this section was measured on targets with mis-estimated DP bin edges (bounds ≈ 2/22 instead of ≈ 9.5/13.5). They measure a bug, not DP. `uniform` and legacy `quantile` rows are unaffected. See §10i and results/BROKEN.md.**
 
 `scripts/pgm_attack_binning.py` scores every target under three edge choices and
 records `cell_agreement`, the share of candidate values the attacker's cells and
@@ -1315,6 +1319,8 @@ MeLoMIA CV AUC as an attack result" claim needs.
 
 ### 10g. Against a DP-safe release, every shipped attack is at chance
 
+> **⚠ BROKEN_DP_EDGES — every `dp_quantile` / `dp_uniform` number in this section was measured on targets with mis-estimated DP bin edges (bounds ≈ 2/22 instead of ≈ 9.5/13.5). They measure a bug, not DP. `uniform` and legacy `quantile` rows are unaffected. See §10i and results/BROKEN.md.**
+
 `configs/experiments/grid_dpsafe_{brca,combined}.yaml`, ε=10, 4 bins, 5 splits,
 120 runs, 0 failures. All 24 cells:
 
@@ -1355,6 +1361,8 @@ three binnings, and unlike MAMA-MIA there is no known reconstruction of them
 that looks at the discretisation at all.
 
 ### 10h. Why every attack is at chance: the release carries almost no per-record information
+
+> **⚠ BROKEN_DP_EDGES — every `dp_quantile` / `dp_uniform` number in this section was measured on targets with mis-estimated DP bin edges (bounds ≈ 2/22 instead of ≈ 9.5/13.5). They measure a bug, not DP. `uniform` and legacy `quantile` rows are unaffected. See §10i and results/BROKEN.md.**
 
 **This corrects §10g.** §10g read the all-chance grid as "the attacks failing, not
 ε binding". The second half holds; the first half is wrong for the equal-width

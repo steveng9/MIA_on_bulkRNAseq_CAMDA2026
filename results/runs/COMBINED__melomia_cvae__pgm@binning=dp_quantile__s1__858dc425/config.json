@@ -8,7 +8,7 @@
   "tag": "k20_n50",
   "experiment": "grid_dpsafe_combined",
   "variant": "melomia_cvae",
-  "notes": "DP-PGM at eps=10 under each DP-valid binning, 4 attacks, 5 splits",
+  "notes": "BROKEN_DP_EDGES; DP-PGM at eps=10 under each DP-valid binning, 4 attacks, 5 splits",
   "params": {
     "seed": 42,
     "device": "cuda",

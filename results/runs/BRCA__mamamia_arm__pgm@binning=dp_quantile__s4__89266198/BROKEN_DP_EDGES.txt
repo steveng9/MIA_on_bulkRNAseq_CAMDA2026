@@ -1,0 +1,3 @@
+BROKEN_DP_EDGES: dp_* bin edges read with the biased 'clip' estimator (bounds ~2/22 instead of ~9.5/13.5); see results/BROKEN.md
+
+Do not use. See results/BROKEN.md and FINDINGS 10i.

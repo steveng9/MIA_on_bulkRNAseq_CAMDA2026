@@ -1,14 +1,14 @@
 {
   "run_id": "BRCA__mahalamia__cvae__s2__bd3831de",
-  "timestamp": "2026-09-20T18:34:06+00:00",
+  "timestamp": "2026-09-23T17:50:43+00:00",
   "dataset": "BRCA",
   "attack": "mahalamia",
   "generator": "cvae",
   "split": 2,
   "tag": "aux_cc",
-  "experiment": "mahala_geometry_brca",
-  "variant": "pinv_cc",
-  "notes": "MahalaMIA geometry: conditioning x projection x band x scaling x class",
+  "experiment": "pgm_structure_sweep",
+  "variant": "cvae|pinv_cc",
+  "notes": "reference for pgm_structure_sweep",
   "params": {
     "seed": 42,
     "device": "cpu",
@@ -24,5 +24,22 @@
     "pca_per_class": false,
     "calibrate": true,
     "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "80b04875d6de6732",
+    "params": {
+      "preprocess": "standard",
+      "optimizer": "adam",
+      "scheduler": "none",
+      "lr": 0.001,
+      "batch_size": 64,
+      "num_iters": 10000,
+      "z_dim": 128,
+      "beta": 0.001,
+      "condition_type": "embedding",
+      "early_stopping": false
+    },
+    "seed": 2908,
+    "source": "trained"
   }
 }

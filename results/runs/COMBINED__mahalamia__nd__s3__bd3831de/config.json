@@ -1,14 +1,14 @@
 {
   "run_id": "COMBINED__mahalamia__nd__s3__bd3831de",
-  "timestamp": "2026-09-20T18:36:14+00:00",
+  "timestamp": "2026-09-23T17:52:38+00:00",
   "dataset": "COMBINED",
   "attack": "mahalamia",
   "generator": "nd",
   "split": 3,
   "tag": "aux_cc",
-  "experiment": "mahala_geometry_combined",
-  "variant": "pinv_cc",
-  "notes": "MahalaMIA geometry: conditioning x projection x band x scaling x class",
+  "experiment": "pgm_structure_sweep",
+  "variant": "nd|pinv_cc",
+  "notes": "reference for pgm_structure_sweep",
   "params": {
     "seed": 42,
     "device": "cpu",
@@ -24,5 +24,15 @@
     "pca_per_class": false,
     "calibrate": true,
     "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "5d7cf3cc7f615bc9",
+    "params": {
+      "epochs": 200,
+      "dp_noise_multiplier": 1e-05,
+      "smote_upsample_to": 3000
+    },
+    "seed": null,
+    "source": "published-blue-team"
   }
 }

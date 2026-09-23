@@ -1,3 +1,6 @@
+# BROKEN_DP_EDGES: the dp_* targets here were built with the biased edge
+# estimator (results/BROKEN.md); load_target now refuses them.  Kept only as
+# a record.  Do not rerun; use edge_estimator=threshold variants instead.
 # The DP-safe grid at eps=1000: does anything rise above chance once the noise
 # is negligible?  The legacy `quantile` target rides along as a reference.
 #

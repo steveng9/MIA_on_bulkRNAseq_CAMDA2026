@@ -8,7 +8,7 @@
   "tag": "log_class_centred",
   "experiment": "pgm_eps_sweep",
   "variant": "log, class-centred",
-  "notes": "epsilon=30",
+  "notes": "BROKEN_DP_EDGES; epsilon=30",
   "params": {
     "attack": "mamamia_arm",
     "arm": "log, class-centred",

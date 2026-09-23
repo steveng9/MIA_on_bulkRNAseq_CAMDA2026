@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+echo "BROKEN_DP_EDGES: this launcher built/attacked dp_* targets with the biased edge estimator; see results/BROKEN.md" >&2; exit 1
 # The 4-attack DP-PGM column on the DP-valid binnings, on GPU 0.
 # Waits for the CPU sweep to build the eps=10 targets, and for the COMBINED
 # synth-shadow arm to release the GPU.

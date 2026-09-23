@@ -8,7 +8,7 @@
   "tag": "k4_1w_2w",
   "experiment": "pgm_eps_sweep",
   "variant": "mamamia",
-  "notes": "epsilon=300",
+  "notes": "BROKEN_DP_EDGES; epsilon=300",
   "params": {
     "seed": 42,
     "device": "cpu",

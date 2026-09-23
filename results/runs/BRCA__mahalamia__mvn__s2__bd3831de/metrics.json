@@ -2,13 +2,13 @@
   "n": 1089,
   "n_members": 871,
   "prevalence": 0.7998163452708907,
-  "auc": 0.9862385321100917,
-  "aupr": 0.9809958621796411,
-  "accuracy_at_median": 0.6942148760330579,
-  "tpr_at_fpr_0.001": 0.0,
-  "tpr_at_fpr_0.01": 0.0,
+  "auc": 1.0,
+  "aupr": 1.0,
+  "accuracy_at_median": 0.699724517906336,
+  "tpr_at_fpr_0.001": 1.0,
+  "tpr_at_fpr_0.01": 1.0,
   "tpr_at_fpr_0.05": 1.0,
   "tpr_at_fpr_0.1": 1.0,
   "tpr_at_fpr_0.2": 1.0,
-  "precision_at_5pct": 0.9454545454545454
+  "precision_at_5pct": 1.0
 }

@@ -8,7 +8,7 @@
   "tag": "ratio_shipped",
   "experiment": "pgm_eps_sweep",
   "variant": "ratio (shipped)",
-  "notes": "epsilon=0.3",
+  "notes": "BROKEN_DP_EDGES; epsilon=0.3",
   "params": {
     "attack": "mamamia_arm",
     "arm": "ratio (shipped)",

@@ -8,7 +8,7 @@
   "tag": "log_1_way_only",
   "experiment": "pgm_eps_sweep",
   "variant": "log, 1-way only",
-  "notes": "epsilon=100",
+  "notes": "BROKEN_DP_EDGES; epsilon=100",
   "params": {
     "attack": "mamamia_arm",
     "arm": "log, 1-way only",

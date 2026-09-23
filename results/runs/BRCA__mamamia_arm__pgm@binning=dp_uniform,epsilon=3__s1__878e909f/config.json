@@ -8,7 +8,7 @@
   "tag": "log_inverse_variance",
   "experiment": "pgm_eps_sweep",
   "variant": "log, inverse-variance",
-  "notes": "epsilon=3",
+  "notes": "BROKEN_DP_EDGES; epsilon=3",
   "params": {
     "attack": "mamamia_arm",
     "arm": "log, inverse-variance",

@@ -145,9 +145,19 @@ def _append_index(record: dict, metrics: dict) -> None:
 
 
 def load_index() -> pd.DataFrame:
+    """The run index, plus a computed `status` column.
+
+    `status` is "BROKEN_DP_EDGES" for runs against a known-broken target (see
+    `targets.broken_reason`) and "ok" otherwise.  It is computed rather than
+    stored so it can never go stale; filter on it.
+    """
     if not paths.INDEX_CSV.exists():
-        return pd.DataFrame(columns=INDEX_COLUMNS)
-    return pd.read_csv(paths.INDEX_CSV)
+        return pd.DataFrame(columns=INDEX_COLUMNS + ["status"])
+    df = pd.read_csv(paths.INDEX_CSV)
+    from .targets import broken_reason
+    df["status"] = ["BROKEN_DP_EDGES" if broken_reason(g) else "ok"
+                    for g in df["generator"].astype(str)]
+    return df
 
 
 def load_run(run_id: str) -> dict:

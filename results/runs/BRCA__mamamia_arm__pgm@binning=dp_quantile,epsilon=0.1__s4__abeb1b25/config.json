@@ -8,7 +8,7 @@
   "tag": "log",
   "experiment": "pgm_eps_sweep",
   "variant": "log",
-  "notes": "epsilon=0.1",
+  "notes": "BROKEN_DP_EDGES; epsilon=0.1",
   "params": {
     "attack": "mamamia_arm",
     "arm": "log",

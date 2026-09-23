@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+echo "BROKEN_DP_EDGES: this launcher built/attacked dp_* targets with the biased edge estimator; see results/BROKEN.md" >&2; exit 1
 # The epsilon curve for every DP-valid binning, then the attack-binning study.
 #
 # 3 binnings x 9 epsilons x 2 cohorts x 5 splits = 270 targets (20 already

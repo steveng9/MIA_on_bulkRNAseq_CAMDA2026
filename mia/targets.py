@@ -65,6 +65,37 @@ def variant_name(generator: str, dataset: str, overrides: dict | None) -> str:
     return generator + "@" + ",".join(f"{k}={diff[k]}" for k in sorted(diff))
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Known-broken targets
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# DP-PGM targets built with binning=dp_quantile / dp_uniform BEFORE generator
+# commit cd5d1d5 (2026-09-23) read their DP bin edges with a biased estimator
+# (negative noisy cells clipped, empty cells keep their positive noise), so the
+# per-gene bounds sat near the ends of (0, 24) even at eps=1000 -- median 2.0 /
+# 22.0 against a true 9.5 / 13.5.  The DP accounting of those targets is correct,
+# but the data is effectively 4 equal bins over (2, 22) and useless as a DP-PGM
+# release.  They are recognisable by name: `binning=dp_*` without
+# `edge_estimator=threshold` (the generator default is still "clip", for
+# reproducibility).  See results/BROKEN.md and FINDINGS 10i.
+
+BROKEN_DP_EDGES = "BROKEN_DP_EDGES"
+
+
+class BrokenTargetError(RuntimeError):
+    pass
+
+
+def broken_reason(generator: str) -> str | None:
+    """Why `generator` (a target name) must not be used, or None if it is fine."""
+    base, over = split_name(str(generator))
+    if (base == "pgm" and str(over.get("binning", "")).startswith("dp_")
+            and over.get("edge_estimator", "clip") != "threshold"):
+        return (f"{BROKEN_DP_EDGES}: dp_* bin edges read with the biased 'clip' "
+                "estimator (bounds ~2/22 instead of ~9.5/13.5); see results/BROKEN.md")
+    return None
+
+
 def fingerprint(dataset: str, generator: str, split: int) -> str:
     """Content hash of a target's released data.
 
@@ -133,8 +164,14 @@ def build_target(
     force: bool = False,
     save_model: bool = True,
     retrain_nd: bool = False,
+    allow_broken: bool = False,
 ) -> Path:
     """Train one target generator and write its synthetic dataset.  Idempotent."""
+    reason = broken_reason(generator)
+    if reason and not allow_broken:
+        raise BrokenTargetError(f"refusing to build or reuse {dataset}/{generator}/"
+                                f"split_{split}: {reason}. Add "
+                                "edge_estimator=threshold.")
     f = _files(dataset, generator, split)
     if exists(dataset, generator, split) and not force:
         print(f"  [target] {dataset}/{generator}/split_{split} cached", flush=True)
@@ -227,8 +264,15 @@ def _import_published_nd(dataset: str, split: int) -> Path:
 # Loading
 # ─────────────────────────────────────────────────────────────────────────────
 
-def load_target(dataset: str, generator: str, split: int) -> dict:
-    """Return {X (n, 978) float32, y_str, y_int, meta} for one target."""
+def load_target(dataset: str, generator: str, split: int,
+                allow_broken: bool = False) -> dict:
+    """Return {X (n, 978) float32, y_str, y_int, meta} for one target.
+
+    Refuses known-broken targets (see `broken_reason`) unless `allow_broken`.
+    """
+    reason = broken_reason(generator)
+    if reason and not allow_broken:
+        raise BrokenTargetError(f"{dataset}/{generator}/split_{split}: {reason}")
     f = _files(dataset, generator, split)
     if not exists(dataset, generator, split):
         raise FileNotFoundError(

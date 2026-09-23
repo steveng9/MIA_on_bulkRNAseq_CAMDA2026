@@ -1,0 +1,38 @@
+{
+  "run_id": "COMBINED__mahalamia__nd__s2__dbd0bde0",
+  "timestamp": "2026-09-23T17:52:11+00:00",
+  "dataset": "COMBINED",
+  "attack": "mahalamia",
+  "generator": "nd",
+  "split": 2,
+  "tag": "aux_ledoit_wolf_cc",
+  "experiment": "pgm_structure_sweep",
+  "variant": "nd|ledoit_cc",
+  "notes": "reference for pgm_structure_sweep",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ledoit_wolf",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": true,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "96d94b93720208ea",
+    "params": {
+      "epochs": 200,
+      "dp_noise_multiplier": 1e-05,
+      "smote_upsample_to": 3000
+    },
+    "seed": null,
+    "source": "published-blue-team"
+  }
+}

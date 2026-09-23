@@ -1,14 +1,14 @@
 {
   "run_id": "COMBINED__mahalamia__cvae__s3__50c4329a",
-  "timestamp": "2026-09-20T18:33:52+00:00",
+  "timestamp": "2026-09-23T17:51:39+00:00",
   "dataset": "COMBINED",
   "attack": "mahalamia",
   "generator": "cvae",
   "split": 3,
   "tag": "aux_ridge1e-08",
-  "experiment": "mahala_geometry_combined",
-  "variant": "ridge1.0e-8",
-  "notes": "MahalaMIA geometry: conditioning x projection x band x scaling x class",
+  "experiment": "pgm_structure_sweep",
+  "variant": "cvae|ridge1.0e-8",
+  "notes": "reference for pgm_structure_sweep",
   "params": {
     "seed": 42,
     "device": "cpu",
@@ -24,5 +24,22 @@
     "pca_per_class": false,
     "calibrate": true,
     "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "0e71ff88b50ee25a",
+    "params": {
+      "preprocess": "standard",
+      "optimizer": "adam",
+      "scheduler": "none",
+      "lr": 0.001,
+      "batch_size": 64,
+      "num_iters": 10000,
+      "z_dim": 128,
+      "beta": 0.001,
+      "condition_type": "embedding",
+      "early_stopping": false
+    },
+    "seed": 3583,
+    "source": "trained"
   }
 }

@@ -1,0 +1,36 @@
+{
+  "run_id": "BRCA__mahalamia__mvn__s1__dbd0bde0",
+  "timestamp": "2026-09-23T17:50:33+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "mvn",
+  "split": 1,
+  "tag": "aux_ledoit_wolf_cc",
+  "experiment": "pgm_structure_sweep",
+  "variant": "mvn|ledoit_cc",
+  "notes": "reference for pgm_structure_sweep",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ledoit_wolf",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": true,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "e2c665ece9c0033e",
+    "params": {
+      "noise_level": 0.7
+    },
+    "seed": 1080,
+    "source": "trained"
+  }
+}

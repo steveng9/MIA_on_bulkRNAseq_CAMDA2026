@@ -1,14 +1,14 @@
 {
   "run_id": "COMBINED__mahalamia__mvn__s2__5b5a45d3",
-  "timestamp": "2026-09-20T18:33:34+00:00",
+  "timestamp": "2026-09-23T17:50:53+00:00",
   "dataset": "COMBINED",
   "attack": "mahalamia",
   "generator": "mvn",
   "split": 2,
   "tag": "aux_ledoit_wolf",
-  "experiment": "mahala_geometry_combined",
-  "variant": "ledoit",
-  "notes": "MahalaMIA geometry: conditioning x projection x band x scaling x class",
+  "experiment": "pgm_structure_sweep",
+  "variant": "mvn|ledoit",
+  "notes": "reference for pgm_structure_sweep",
   "params": {
     "seed": 42,
     "device": "cpu",
@@ -24,5 +24,13 @@
     "pca_per_class": false,
     "calibrate": true,
     "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "1cc169391e821734",
+    "params": {
+      "noise_level": 0.7
+    },
+    "seed": 2967,
+    "source": "trained"
   }
 }
