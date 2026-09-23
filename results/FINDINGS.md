@@ -1426,3 +1426,58 @@ The honest summary of the DP-PGM column: a DP-valid release at 4 equal-width bin
 is private mostly because it is uninformative, and it would be at every ε. The
 interesting privacy-utility trade-off is `n_bins` x binning strategy, not ε
 alone.
+
+### 10i. CORRECTION to 10e–10h: the DP edges were mis-estimated, and fixing them changes the quality but not MahalaMIA
+
+**10h's explanation was my own implementation bug, not a property of DP.** The
+`dp_quantile` / `dp_uniform` edges were read off a noisy per-gene histogram
+with negative cells clipped to zero. Every *empty* cell kept its positive
+noise, and a gene occupies ~8 of the 48 cells, so ~40 cells carried
+~16σ of phantom mass. Even at ε=1000 (σ=2.5) the 0.5%/99.5% bounds landed at
+the ends of the grid: median **2.0 / 22.0 against a true 9.5 / 13.5** (BRCA,
+split 1). Every dp_* target in 10e–10h was effectively 4 equal bins over (2, 22),
+which is why the modal-cell share was 0.86 and even the oracle stayed near
+chance. The DP accounting was correct throughout; only the estimator was
+poor. The 10e "no DP-valid binning exceeds Φ(√ρ)" result still stands.
+
+Fix (generator commit cd5d1d5): `edge_estimator="threshold"` drops cells
+below σ·Φ⁻¹(1 − 0.05/48), the rule smartnoise's `approx_bounds` applies, and
+interpolates within cells. It is post-processing of the same release, so the
+cost is identical. Bounds now land within 0.14 (BRCA) / 0.08 (COMBINED) at
+ε=1000, and within ~1 unit at ε=10. The default stays `"clip"`, so old targets
+reproduce.
+
+**The same commit adds DP gene–gene structure**, MST's recipe on top of last
+year's star: an exponential-mechanism spanning tree of (gene, gene) pairs
+(`structure="tree"`) or (gene, gene, label) triples (`"tree_label"`),
+select_budget 0.3·ρ, equal σ per clique. On BRCA the DP-chosen tree scores
+0.97 (ε=10) and 1.00 (ε=1000) of the best tree. On its own 977 edges the tree
+reproduces correlation well: |ρ_s| real 0.475 vs synthetic 0.329, pattern
+r=0.991 (COMBINED dp_quantile8, ε=1000). But it doesn't propagate to random
+pairs (real 0.148 vs synthetic 0.056).
+
+**First results of the sweep** (`scripts/pgm_structure_sweep.py`,
+`configs/experiments/pgm_structure_sweep.yaml`, → `results/pgm_structure_sweep.csv`;
+COMBINED split 1, ε=1000):
+
+| config | utility | W1 | corr MAE | best MahalaMIA | MAMA-MIA |
+|---|---|---|---|---|---|
+| dp_quantile K=8, star | 0.944 | 0.082 | 0.130 | 0.516 | 0.538 |
+| dp_quantile K=16, star | 0.947 | 0.034 | 0.128 | 0.513 | 0.539 |
+| dp_quantile K=32, star | 0.950 | 0.021 | 0.127 | 0.515 | 0.539 |
+| dp_uniform K=16, star | 0.904 | 0.051 | 0.151 | 0.518 | 0.523 |
+| uniform K=48 (public), star | 0.818 | 1.054 | 0.166 | 0.507 | 0.519 |
+| dp_quantile K=8, tree | 0.906 | 0.082 | 0.111 | 0.522 | 0.542 |
+| dp_quantile K=8, tree_label | 0.923 | 0.082 | 0.122 | 0.516 | 0.544 |
+| dp_quantile K=16, tree | 0.922 | 0.038 | 0.116 | 0.520 | 0.547 |
+| quantile K=16 (non-DP ref), star | 0.947 | 0.127 | 0.125 | 0.517 | 0.542 |
+| *CVAE / ND / MVN (fidelity_grid, 5 splits)* | *0.96 / 0.98 / 0.99* | *0.19 / 0.12 / 0.18* | | *0.84 / 0.82 / 1.00* | |
+
+(MahalaMIA references: best of the same 10 variants on splits 1–3, from
+`--references`.) **At ε=1000 the DP-safe release now matches CVAE/ND on label
+utility and beats them on per-gene W1, yet MahalaMIA stays at 0.51–0.52**,
+including against the non-DP binning. The quality metrics here don't predict
+MahalaMIA vulnerability. MahalaMIA reads a covariance learned from n < p rows,
+which MVN (full covariance), CVAE and ND all fit. A PGM of ~3k low-order
+marginals has nothing of that size to memorise, whatever ε is. Full table
+(both cohorts, ε ∈ {10, 1000}, 3 splits) to follow when the sweep finishes.
