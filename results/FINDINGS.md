@@ -1312,3 +1312,44 @@ picks the weaker design. The synth arm's CV remains the roughly honest one
 
 That is now a two-cohort result, which is what the paper's "never quote a
 MeLoMIA CV AUC as an attack result" claim needs.
+
+### 10g. Against a DP-safe release, every shipped attack is at chance
+
+`configs/experiments/grid_dpsafe_{brca,combined}.yaml`, ε=10, 4 bins, 5 splits,
+120 runs, 0 failures. All 24 cells:
+
+| AUC, ε=10 | uniform | dp_uniform | dp_quantile |
+|---|---|---|---|
+| BRCA MahalaMIA | 0.508 ±.018 | 0.498 | 0.509 |
+| BRCA MAMA-MIA (shipped) | 0.501 | 0.499 | 0.507 |
+| BRCA MeLoMIA-ND | 0.504 | 0.503 | 0.498 |
+| BRCA MeLoMIA-CVAE | 0.512 | 0.502 | 0.499 |
+| COMBINED MahalaMIA | 0.500 | 0.500 | 0.501 |
+| COMBINED MAMA-MIA (shipped) | 0.501 | 0.500 | 0.508 |
+| COMBINED MeLoMIA-ND | 0.504 | 0.500 | 0.500 |
+| COMBINED MeLoMIA-CVAE | 0.501 | 0.497 | 0.501 |
+
+Nothing reaches 0.512. Every cell is within about 1 SE of chance, against a
+bound of 0.909 that leaves enormous headroom -- so this is the attacks failing,
+not ε binding.
+
+**Put beside §10f, this is the whole DP-PGM story.** Three numbers for the same
+release (BRCA, `uniform`, ε=10):
+
+| attack | AUC |
+|---|---|
+| MAMA-MIA as shipped (ratio aggregation, its own quantile cells) | 0.501 |
+| log-ratio aggregation, class-centred, same cells | 0.521 |
+| the same, binned on the generator's public cell geometry | **0.568** |
+
+The gap between the first and last row is entirely the attack's construction:
+identical target, identical released rows, identical budget. What the shipped
+attack reads as "DP-PGM is private at ε=10" is mostly its own aggregation and
+its own binning. That is the same lesson as the legacy-binning leak, pointed the
+other way: a null result from one attack configuration is not a privacy
+guarantee, and a guarantee that only holds for the cells the attacker happened
+to choose is not a guarantee at all.
+
+Neither MeLoMIA row has an equivalent lever yet: both are at chance under all
+three binnings, and unlike MAMA-MIA there is no known reconstruction of them
+that looks at the discretisation at all.

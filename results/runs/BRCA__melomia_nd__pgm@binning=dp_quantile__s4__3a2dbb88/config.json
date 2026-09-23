@@ -1,0 +1,79 @@
+{
+  "run_id": "BRCA__melomia_nd__pgm@binning=dp_quantile__s4__3a2dbb88",
+  "timestamp": "2026-09-23T06:40:44+00:00",
+  "dataset": "BRCA",
+  "attack": "melomia_nd",
+  "generator": "pgm@binning=dp_quantile",
+  "split": 4,
+  "tag": "k30_n600",
+  "experiment": "grid_dpsafe_brca",
+  "variant": "melomia_nd",
+  "notes": "DP-PGM at eps=10 under each DP-valid binning, 4 attacks, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "melomia_nd",
+    "backend": "nd",
+    "base_generator": null,
+    "n_shadows": 30,
+    "shadow_ratio": 0.8,
+    "shadow_seed": 90000,
+    "n_noise": 600,
+    "sweep_points": null,
+    "backend_params": {},
+    "classifiers": [
+      "xgb",
+      "rf",
+      "lgbm",
+      "cat",
+      "mlp"
+    ],
+    "optuna_enabled": true,
+    "optuna_trials": 60,
+    "cv_folds": 4,
+    "ensemble_temperature": 0.05,
+    "ensemble_min_auc": 0.55,
+    "internal_proxy_selection": false,
+    "synth_shadow": true,
+    "reference_calibration": true,
+    "keep_base_shadows": false,
+    "keep_proxies": false,
+    "label": "",
+    "attack": "melomia_nd"
+  },
+  "target": {
+    "fingerprint": "e234bb27337ec5cb",
+    "params": {
+      "seed": 4423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "n_bins": 4,
+      "n_1way": 978,
+      "n_2way": 0,
+      "n_3way": 0,
+      "n_4way": 0,
+      "budget_weights": [
+        0.33,
+        0.67,
+        0.0,
+        0.0
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove",
+      "binning": "dp_quantile",
+      "bin_range": [
+        0.0,
+        24.0
+      ],
+      "binning_budget": 0.1,
+      "bin_grid": 48
+    },
+    "seed": 4423,
+    "source": "trained"
+  }
+}
