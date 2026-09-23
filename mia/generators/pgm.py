@@ -88,6 +88,20 @@ class PGMGenerator(Generator):
     bin_range: tuple = (0.0, 24.0)
     binning_budget: float = 0.1
     bin_grid: int = 48
+    #: How the dp_* strategies read edges off their noisy histogram: "clip"
+    #: (legacy, every target built before 2026-09-23; biased by the positive
+    #: noise of empty cells, so bounds land near the ends of `bin_range` even at
+    #: eps=1000) or "threshold" (drop cells under a noise threshold, as
+    #: smartnoise's approx_bounds does; interpolate within cells).
+    edge_estimator: str = "clip"
+
+    #: Gene-gene structure.  "hierarchical" (default) is the upstream selector,
+    #: which with n_2way=0 is the star of last year's winner.  "tree" adds a
+    #: spanning tree of (gene, gene) marginals and "tree_label" of (gene, gene,
+    #: label) marginals, selected by the exponential mechanism as in MST, at
+    #: `select_budget` of rho.  Both need joint_mode and zcdp.
+    structure: str = "hierarchical"
+    select_budget: float = 0.3
 
     name = "pgm"
 
@@ -111,7 +125,8 @@ class PGMGenerator(Generator):
             random_seed=self.seed, composition=self.composition,
             neighboring=self.neighboring, binning=self.binning,
             bin_range=tuple(self.bin_range), binning_budget=self.binning_budget,
-            bin_grid=self.bin_grid,
+            bin_grid=self.bin_grid, edge_estimator=self.edge_estimator,
+            structure=self.structure, select_budget=self.select_budget,
         )
         # The upstream generator takes string labels; integers round-trip fine.
         self._gen.fit(X, y.astype(str), gene_names=self._gene_names)
