@@ -1198,3 +1198,78 @@ The corrected DP-PGM column of §9 (MAMA-MIA 0.604 / 0.530) is therefore
 partly a binning result. Against a DP-safe release at ε=10, the best measured
 attack is **0.604 (BRCA) / 0.560 (COMBINED)**, with dp_quantile and aligned
 edges. The shipped MAMA-MIA, with aux edges, is at chance.
+
+### 10e. The full ε curve, for all three DP-valid binnings
+
+270 targets: 3 binnings x 9 epsilons x 2 cohorts x 5 splits, 4 bins throughout,
+`scripts/run_dp_safe_sweep.sh`, 0 failures. `uniform` is equal width over the
+public range; `dp_uniform` buys bounds then spaces edges evenly (smartnoise's
+`BinTransformer`); `dp_quantile` buys equal-depth edges. All three spend
+10% of ρ or nothing; the legacy `quantile` row is the unbudgeted one.
+
+**Nothing DP-valid ever beats the bound.** Over all 54 (cohort, binning, ε)
+cells and all three attacker edge choices, the largest excess is +0.4 SE, which
+is noise. Under `quantile` the excess is real and survives a single pre-chosen
+arm rather than the best of nine:
+
+| cohort | ε | arm | attack edges | AUC | bound | excess |
+|---|---|---|---|---|---|---|
+| BRCA | 0.3 | log, class-centred | aux | 0.6199 ±.0069 | 0.523 | +14.0 SE |
+| BRCA | 1 | log, class-centred | aux | 0.6056 ±.0068 | 0.569 | +5.3 SE |
+| BRCA | 0.1 | log, class-centred | uniform | 0.5433 ±.0093 | 0.508 | +3.7 SE |
+| COMBINED | 0.3 | log, class-centred | aux | 0.5462 ±.0048 | 0.523 | +4.9 SE |
+
+At ε=0.1 the legacy release exceeds the bound under *all three* edge choices,
+including the two that never look at the generator, so this is not an artifact
+of the attacker borrowing quantile cells.
+
+**Utility (TSTR ratio, 5 splits).** `dp_quantile` is the best DP-valid option
+and at ε≥10 it nearly matches the unbudgeted legacy binning:
+
+| cohort | ε | quantile (legacy) | dp_quantile | dp_uniform | uniform |
+|---|---|---|---|---|---|
+| BRCA | 1 | 0.41 | 0.19 | 0.18 | 0.17 |
+| BRCA | 10 | 0.76 | **0.70** | 0.70 | 0.63 |
+| BRCA | 1000 | 0.84 | **0.82** | 0.69 | 0.70 |
+| COMBINED | 1 | 0.62 | 0.57 | 0.60 | 0.61 |
+| COMBINED | 10 | 0.93 | **0.90** | 0.75 | 0.76 |
+| COMBINED | 1000 | 0.94 | **0.92** | 0.80 | 0.75 |
+
+So the leak bought almost nothing: closing it costs 3 points of utility ratio at
+ε=10 on either cohort, as long as the replacement is `dp_quantile`. The
+equal-width options plateau near 0.75, because 4 cells over a range as wide as
+(0, 24) cannot resolve a gene no matter how much budget the marginals get.
+Per-gene W1 stays near 2.5 for every DP-valid binning against 0.6 for legacy,
+which is the 48-cell grid, not the budget: worth widening `bin_grid` before
+reading anything into that number.
+
+### 10f. Attack success tracks how well the attacker's cells match the generator's
+
+`scripts/pgm_attack_binning.py` scores every target under three edge choices and
+records `cell_agreement`, the share of candidate values the attacker's cells and
+the generator's cells place in the same bin. AUC follows agreement closely, and
+the pattern is different for each binning (ε=10, best arm):
+
+| binning | best black box | white box | agreement, best black box |
+|---|---|---|---|
+| uniform | 0.568 / 0.519 | 0.568 / 0.519 | **1.00** |
+| dp_uniform | 0.516 / 0.507 | 0.560 / 0.520 | 0.90 / 0.88 |
+| dp_quantile | 0.521 / 0.511 | 0.604 / 0.560 | 0.57 / 0.36 |
+| quantile (legacy) | 0.680 / 0.586 | 0.721 / 0.632 | 0.98 / 0.99 (aux) |
+
+Three consequences:
+
+* **Fixed-range equal-width hides nothing and costs nothing to attack.** Its
+  cells are public, so the black-box adversary reproduces them exactly and the
+  white-box row is identical. What it leaks, it leaks to everyone.
+* **`dp_quantile` currently looks safest in black box and is not.** Its
+  black-box AUC is near chance (0.521 / 0.511) only because its cells are
+  data-dependent and the attacker cannot guess them. The white-box row shows
+  0.604 / 0.560 sitting there for anyone who recovers the edges from the
+  released rows, which is post-processing of a DP release and costs no budget.
+  Quoting its black-box number as the risk would be the same mistake as the
+  binning leak itself, in the other direction. See task 18.
+* **Agreement moves with ε in opposite directions**, which is a good sanity
+  check: as ε grows, `dp_quantile`'s noisy edges converge on the true quantiles,
+  so agreement with the *auxiliary* quantile cells rises (0.29 to 0.63) while
+  agreement with fixed-width cells falls (0.65 to 0.31).

@@ -1,6 +1,6 @@
 {
   "run_id": "COMBINED__mamamia__pgm@binning=uniform__s1__c4197d2d",
-  "timestamp": "2026-09-21T21:39:54+00:00",
+  "timestamp": "2026-09-23T01:39:17+00:00",
   "dataset": "COMBINED",
   "attack": "mamamia",
   "generator": "pgm@binning=uniform",
@@ -8,7 +8,7 @@
   "tag": "k4_1w_2w",
   "experiment": "pgm_eps_sweep",
   "variant": "mamamia",
-  "notes": "epsilon=10.0",
+  "notes": "epsilon=10",
   "params": {
     "seed": 42,
     "device": "cpu",

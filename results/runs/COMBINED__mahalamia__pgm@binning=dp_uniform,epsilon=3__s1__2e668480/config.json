@@ -1,0 +1,63 @@
+{
+  "run_id": "COMBINED__mahalamia__pgm@binning=dp_uniform,epsilon=3__s1__2e668480",
+  "timestamp": "2026-09-22T23:37:59+00:00",
+  "dataset": "COMBINED",
+  "attack": "mahalamia",
+  "generator": "pgm@binning=dp_uniform,epsilon=3",
+  "split": 1,
+  "tag": "aux",
+  "experiment": "pgm_eps_sweep",
+  "variant": "mahalamia",
+  "notes": "epsilon=3",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "pinv",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "65936f693a9194a0",
+    "params": {
+      "seed": 1423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 3,
+      "delta": 1e-05,
+      "n_bins": 4,
+      "n_1way": 978,
+      "n_2way": 0,
+      "n_3way": 0,
+      "n_4way": 0,
+      "budget_weights": [
+        0.33,
+        0.67,
+        0.0,
+        0.0
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove",
+      "binning": "dp_uniform",
+      "bin_range": [
+        0.0,
+        24.0
+      ],
+      "binning_budget": 0.1,
+      "bin_grid": 48
+    },
+    "seed": 1423,
+    "source": "trained"
+  }
+}

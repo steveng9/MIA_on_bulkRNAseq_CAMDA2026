@@ -1,6 +1,6 @@
 {
   "run_id": "COMBINED__mahalamia__pgm@binning=uniform__s1__2e668480",
-  "timestamp": "2026-09-21T21:39:53+00:00",
+  "timestamp": "2026-09-23T01:39:16+00:00",
   "dataset": "COMBINED",
   "attack": "mahalamia",
   "generator": "pgm@binning=uniform",
@@ -8,7 +8,7 @@
   "tag": "aux",
   "experiment": "pgm_eps_sweep",
   "variant": "mahalamia",
-  "notes": "epsilon=10.0",
+  "notes": "epsilon=10",
   "params": {
     "seed": 42,
     "device": "cpu",

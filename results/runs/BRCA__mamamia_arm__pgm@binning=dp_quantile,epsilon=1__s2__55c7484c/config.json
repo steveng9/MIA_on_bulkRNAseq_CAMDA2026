@@ -1,0 +1,54 @@
+{
+  "run_id": "BRCA__mamamia_arm__pgm@binning=dp_quantile,epsilon=1__s2__55c7484c",
+  "timestamp": "2026-09-22T22:34:07+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia_arm",
+  "generator": "pgm@binning=dp_quantile,epsilon=1",
+  "split": 2,
+  "tag": "log_2_way_only_class_centred",
+  "experiment": "pgm_eps_sweep",
+  "variant": "log, 2-way only, class-centred",
+  "notes": "epsilon=1",
+  "params": {
+    "attack": "mamamia_arm",
+    "arm": "log, 2-way only, class-centred",
+    "n_bins": 4,
+    "epsilon": 1,
+    "delta": 1e-05
+  },
+  "target": {
+    "fingerprint": "5786ba85f5761bff",
+    "params": {
+      "seed": 2423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 1,
+      "delta": 1e-05,
+      "n_bins": 4,
+      "n_1way": 978,
+      "n_2way": 0,
+      "n_3way": 0,
+      "n_4way": 0,
+      "budget_weights": [
+        0.33,
+        0.67,
+        0.0,
+        0.0
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove",
+      "binning": "dp_quantile",
+      "bin_range": [
+        0.0,
+        24.0
+      ],
+      "binning_budget": 0.1,
+      "bin_grid": 48
+    },
+    "seed": 2423,
+    "source": "trained"
+  }
+}
