@@ -1273,3 +1273,42 @@ Three consequences:
   check: as ε grows, `dp_quantile`'s noisy edges converge on the true quantiles,
   so agreement with the *auxiliary* quantile cells rises (0.29 to 0.63) while
   agreement with fixed-width cells falls (0.65 to 0.31).
+
+### The COMBINED arm: the ablation holds, and the CV inversion is worse
+
+Matched to the BRCA arm in every respect (15 shadows, same noise draws, 40
+Optuna trials); `configs/experiments/ablation_synth_shadow_combined.yaml`,
+experiment `ablation_synth_shadow_combined`, 5 splits, 0 failures.
+
+| AUC | vs CVAE | vs ND |
+|---|---|---|
+| MeLoMIA-ND, real shadows | 0.520 | 0.582 |
+| MeLoMIA-ND, synth-shadows | **0.595** | **0.645** |
+| MeLoMIA-CVAE, real shadows | 0.606 | 0.516 |
+| MeLoMIA-CVAE, synth-shadows | **0.722** | **0.523** |
+
+Synth-shadows win all four cells here too, so the design choice carries across a
+cohort 4x larger. The margins are not uniform, and the pattern is generator-
+specific rather than a simple function of cohort size:
+
+* CVAE diagonal **+0.116 ±0.008** (15 SE) -- as large as BRCA's +0.108.
+* ND diagonal **+0.063 ±0.040** (1.6 SE) -- less than half of BRCA's +0.161, and
+  not separable from zero on 5 splits. If we want to claim the method pays on
+  the ND diagonal at this cohort size, that cell needs more splits.
+
+**The cross-validation inversion reproduces, and is starker than on BRCA:**
+
+| | CV AUC (best classifier) | deployed, diagonal |
+|---|---|---|
+| real-data shadows | 0.772 (ND) / **0.9999** (CVAE) | 0.582 / 0.606 |
+| synth-shadows | 0.630 (ND) / 0.713 (CVAE) | 0.645 / 0.722 |
+
+The CVAE real-shadow arm cross-validates at 0.9999 with TPR@10%FPR = 1.000 and
+deploys at 0.606 -- a gap of 0.39 AUC, against 0.32 on BRCA. Four of the five
+classifiers hit 0.9999, which is the self-memorisation signature from the BRCA
+arm rather than a tuning artifact. On both cohorts, and both probe families, CV
+picks the weaker design. The synth arm's CV remains the roughly honest one
+(0.713 vs 0.722 deployed on the CVAE diagonal, 0.630 vs 0.645 on ND).
+
+That is now a two-cohort result, which is what the paper's "never quote a
+MeLoMIA CV AUC as an attack result" claim needs.
