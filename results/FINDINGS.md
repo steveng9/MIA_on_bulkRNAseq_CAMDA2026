@@ -1601,3 +1601,36 @@ COMBINED, ε=10, dp_quantile16, averaged over l:
 Choosing which tables to keep moves quality by a few points at most; the
 structural ceiling of a low-order PGM on 978 genes is the limit.  MAMA-MIA v2 on
 these targets is running (`results/mamamia_v2.csv`, config `k*_l*`).
+
+**MAMA-MIA v2 on the forests.**  Best black-box AUC, averaged over l; in this
+table k is the number of genes tied to the subtype:
+
+| | k=10 | k=200 | k=978 |
+|---|---|---|---|
+| BRCA ε=10 (16 / 32 bins) | 0.58 / 0.58 | 0.58 / 0.58 | 0.59 / 0.59 |
+| BRCA ε=1000 | 0.89 / 0.93 | 0.91 / 0.96 | 0.94 / 0.995 |
+| COMBINED ε=10 | 0.55 / 0.56 | 0.57 / 0.58 | 0.63 / 0.67 |
+| COMBINED ε=1000 | 0.74 / 0.80 | 0.75 / 0.82 | 0.65 / 0.76 |
+
+- **White box** (true tables and true edges) reaches 1.00 at ε=1000 and
+  0.74–0.78 at ε=10.  Everything stays under the DP bound, 0.89 at ε=10.  The
+  black/white gap is again the exact bin edges.
+- **Held-out shadows** find 58–83% of the chosen (gene, label) tables.
+- **Caveat:** "best black-box" is a maximum over several black-box paths, so it
+  is optimistic.  The paper should fix one path in advance.
+
+**PQRS retry** (`configs/experiments/pgm_pqrs_retry.yaml`; non-DP Spearman
+selection; zCDP, joint mode, dp_quantile 8 bins):
+
+- **(n_2way, n_3way, n_4way) = (50, 15, 5)** fits, but is no better than the
+  star.
+  - COMBINED ε=10: utility 0.88, correlation MAE 0.139.
+  - ε=1000: 0.92 and 0.134.
+  - Discriminator 1.00; MahalaMIA ≤ 0.54.
+- **(200, 50, 10)** cannot be fitted: the overlapping 3/4-way cliques
+  triangulate into junction-tree cliques of 15–16 genes, which need 160 TiB to
+  3 PiB.  The 16-bin half was not run for the same reason, and to spare the
+  shared disk.
+- **So the old negative result was not only the accounting.**  Higher-order
+  tables do not add quality here.  Where they are many, private-pgm cannot fit
+  them at all.

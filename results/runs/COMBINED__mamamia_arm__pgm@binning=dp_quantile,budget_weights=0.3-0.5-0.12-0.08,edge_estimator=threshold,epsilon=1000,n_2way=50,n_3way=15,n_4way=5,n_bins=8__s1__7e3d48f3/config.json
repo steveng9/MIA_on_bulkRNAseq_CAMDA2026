@@ -1,0 +1,60 @@
+{
+  "run_id": "COMBINED__mamamia_arm__pgm@binning=dp_quantile,budget_weights=0.3-0.5-0.12-0.08,edge_estimator=threshold,epsilon=1000,n_2way=50,n_3way=15,n_4way=5,n_bins=8__s1__7e3d48f3",
+  "timestamp": "2026-09-24T15:28:01+00:00",
+  "dataset": "COMBINED",
+  "attack": "mamamia_arm",
+  "generator": "pgm@binning=dp_quantile,budget_weights=0.3-0.5-0.12-0.08,edge_estimator=threshold,epsilon=1000,n_2way=50,n_3way=15,n_4way=5,n_bins=8",
+  "split": 1,
+  "tag": "log_1_way_only_aux",
+  "experiment": "pgm_pqrs_retry",
+  "variant": "dp_quantile8/pqrs_50_15_5|log, 1-way only",
+  "notes": "dp_quantile8/pqrs_50_15_5 epsilon=1000",
+  "params": {
+    "attack": "mamamia_arm",
+    "arm": "log, 1-way only",
+    "n_bins": 8,
+    "epsilon": 1000,
+    "delta": 1e-05,
+    "attack_edges": "aux"
+  },
+  "target": {
+    "fingerprint": "967248faece97576",
+    "params": {
+      "seed": 1423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 1000,
+      "delta": 1e-05,
+      "n_bins": 8,
+      "n_1way": 978,
+      "n_2way": 50,
+      "n_3way": 15,
+      "n_4way": 5,
+      "budget_weights": [
+        0.3,
+        0.5,
+        0.12,
+        0.08
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove",
+      "binning": "dp_quantile",
+      "bin_range": [
+        0.0,
+        24.0
+      ],
+      "binning_budget": 0.1,
+      "bin_grid": 48,
+      "edge_estimator": "threshold",
+      "structure": "hierarchical",
+      "select_budget": 0.3,
+      "k_label": 978,
+      "l_pairs": 0
+    },
+    "seed": 1423,
+    "source": "trained"
+  }
+}
