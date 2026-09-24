@@ -63,7 +63,7 @@ EXPERIMENT = "mamamia_v2"
 KEY = ["dataset", "target", "split", "fingerprint", "cliques", "edges", "arm"]
 PATHS = [("public", "aux"), ("public", "recovered"), ("recovered", "aux"),
          ("recovered", "recovered"), ("aux", "aux"), ("aux", "recovered"),
-         ("shadow", "recovered"),
+         ("shadow", "recovered"), ("public", "grid"), ("shadow", "grid"),
          ("public", "known"), ("true", "known"), ("true", "recovered")]
 
 

@@ -209,6 +209,8 @@ def run_one(job: dict):
                    binning=rp.get("binning"), n_bins=n_bins,
                    structure=rp.get("structure", "hierarchical"),
                    k_label=rp.get("k_label"), l_pairs=rp.get("l_pairs"),
+                   with_1way=rp.get("with_1way"), max_degree=rp.get("max_degree"),
+                   max_component=rp.get("max_component"),
                    edge_estimator=rp.get("edge_estimator", "clip"),
                    fingerprint=rec["fingerprint"], seed=rec["seed"],
                    fit_seconds=round(t_fit, 1), seconds=round(time.time() - t0, 1),

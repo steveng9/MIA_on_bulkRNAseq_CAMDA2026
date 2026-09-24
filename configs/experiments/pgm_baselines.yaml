@@ -1,0 +1,30 @@
+# DP-PGM floor (2026-09-24): a 1-way table per gene plus the label marginal,
+# nothing else (forest with k=0, l=0): genes independent of each other and of
+# the label.  The baseline every table-selection method should beat.  Same
+# settings as pgm_forest_sweep / pgm_hairy_star.
+name: pgm_baselines
+datasets: [BRCA, COMBINED]
+epsilons: [10, 1000]
+first_epsilon: 10
+splits: [1]
+
+base: {joint_mode: true, n_1way: 978, n_2way: 0, pgm_iters: 1000}
+
+binnings:
+  dp_quantile16: {binning: dp_quantile, edge_estimator: threshold, n_bins: 16}
+  dp_quantile32: {binning: dp_quantile, edge_estimator: threshold, n_bins: 32}
+
+structures:
+  one_way: {structure: forest, k_label: 0, l_pairs: 0}
+
+mahalamia:
+  pinv:           {covariance: pinv}
+  ledoit:         {covariance: ledoit_wolf}
+  ridge1.0e-8:    {covariance: ridge, ridge_alpha: 1.0e-8}
+  pca850:         {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 850}
+  pca800:         {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800}
+  pinv_cc:        {covariance: pinv, class_conditional: true}
+  ledoit_cc:      {covariance: ledoit_wolf, class_conditional: true}
+  ridge1.0e-8_cc: {covariance: ridge, ridge_alpha: 1.0e-8, class_conditional: true}
+  pca850_cc:      {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 850, class_conditional: true}
+  pca800_cc:      {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800, class_conditional: true}

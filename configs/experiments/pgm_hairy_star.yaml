@@ -1,0 +1,55 @@
+# DP-PGM "star with hairs" (Steven, 2026-09-24).  Driven by
+#   python scripts/pgm_structure_sweep.py --config configs/experiments/pgm_hairy_star.yaml
+#
+# structure=hairy_star, all under one rho-zCDP budget:
+#   1. the label marginal;
+#   2. l_pairs (gene, gene) tables chosen as a forest (MST's Kruskal selection,
+#      truncated after l rounds; plain gene-gene dependence);
+#   3. one (gene, label) table per connected component of that forest, from its
+#      most label-dependent gene (exponential mechanism; singletons need none);
+#   4. optionally (with_1way) a 1-way table for every gene.
+# Result: l + (G - l) = G edges on G + 1 nodes, a spanning tree with the label
+# as hub.  l = 0 without 1-ways is the label-only star (= forest k978_l0, a
+# built-in cross-check).  l = 977 is a gene MST with one label edge.
+#
+# Same settings as pgm_forest_sweep.yaml (bins, eps, split, binning_budget 0.1,
+# select_budget 0.3), so the two sweeps compare row for row.  DP end to end.
+name: pgm_hairy_star
+datasets: [BRCA, COMBINED]
+epsilons: [10, 1000]
+first_epsilon: 10
+splits: [1]
+
+base: {joint_mode: true, n_1way: 978, n_2way: 0, pgm_iters: 1000}
+
+binnings:
+  dp_quantile16: {binning: dp_quantile, edge_estimator: threshold, n_bins: 16}
+  dp_quantile32: {binning: dp_quantile, edge_estimator: threshold, n_bins: 32}
+
+structures:
+  hairy_l0:         {structure: hairy_star, l_pairs: 0}
+  hairy_l20:        {structure: hairy_star, l_pairs: 20}
+  hairy_l50:        {structure: hairy_star, l_pairs: 50}
+  hairy_l100:       {structure: hairy_star, l_pairs: 100}
+  hairy_l200:       {structure: hairy_star, l_pairs: 200}
+  hairy_l400:       {structure: hairy_star, l_pairs: 400}
+  hairy_l977:       {structure: hairy_star, l_pairs: 977}
+  hairy_l0_1way:    {structure: hairy_star, l_pairs: 0, with_1way: true}
+  hairy_l20_1way:   {structure: hairy_star, l_pairs: 20, with_1way: true}
+  hairy_l50_1way:   {structure: hairy_star, l_pairs: 50, with_1way: true}
+  hairy_l100_1way:  {structure: hairy_star, l_pairs: 100, with_1way: true}
+  hairy_l200_1way:  {structure: hairy_star, l_pairs: 200, with_1way: true}
+  hairy_l400_1way:  {structure: hairy_star, l_pairs: 400, with_1way: true}
+  hairy_l977_1way:  {structure: hairy_star, l_pairs: 977, with_1way: true}
+
+mahalamia:
+  pinv:           {covariance: pinv}
+  ledoit:         {covariance: ledoit_wolf}
+  ridge1.0e-8:    {covariance: ridge, ridge_alpha: 1.0e-8}
+  pca850:         {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 850}
+  pca800:         {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800}
+  pinv_cc:        {covariance: pinv, class_conditional: true}
+  ledoit_cc:      {covariance: ledoit_wolf, class_conditional: true}
+  ridge1.0e-8_cc: {covariance: ridge, ridge_alpha: 1.0e-8, class_conditional: true}
+  pca850_cc:      {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 850, class_conditional: true}
+  pca800_cc:      {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800, class_conditional: true}

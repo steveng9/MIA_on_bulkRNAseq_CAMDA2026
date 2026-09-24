@@ -41,8 +41,8 @@ cliques
     "true"      white box, a DIAGNOSTIC: the target's actual clique list, read
                 from generator.pt.  Never a headline number.
 
-For structure=forest (k_label, l_pairs) even the (gene, label) tables and the
-1-way tables are data-dependent, so "recovered", "aux" and "shadow" re-run the
+For structure=forest (k_label, l_pairs) and hairy_star (l_pairs, with_1way)
+even the (gene, label) tables and the 1-way tables are data-dependent, so "recovered", "aux" and "shadow" re-run the
 whole selection, and "public" falls back to guessing the full star.
 
 edges
@@ -61,6 +61,18 @@ edges
                 bins in a cell have nearly equal density and their edges barely
                 show as steps.  What that construction does give: inside a
                 grid cell the edges form an exact arithmetic progression.
+    "grid"      black box, dp_quantile only (Steven, 2026-09-24): fit that
+                construction directly (`grid_edges`).  The generator's edges
+                are F^-1(targets) for a CDF F that is linear inside each public
+                grid cell, so the unknowns are F's values at the ~8 grid knots
+                the gene occupies, not K-1 free edges.  They are fitted by
+                coordinate search to maximise the release's likelihood, with
+                bin masses shrunk toward 1/K (the bins are equal-depth by
+                design; unshrunk, the fit wraps narrow bins round chance
+                clusters exactly as "steps" does).  The shrinkage is picked per
+                target by held-out likelihood on the release.  Assumes only the
+                generator's published defaults: grid `bin_range` / `bin_grid`,
+                tails 0.005, and n_bins, which every black-box path assumes.
     "known"     white box, a DIAGNOSTIC: the target's fitted edges.
     "aux"       v1's choice: equal-frequency edges over the candidate pool.
     For `binning=uniform` the grid is public, so every choice uses it and the
@@ -112,6 +124,9 @@ def _gene_pos(dataset: str) -> dict:
     return {f"gene_{i}": i for i in range(len(D.gene_names(dataset)))}
 
 
+_GRID_CACHE: dict = {}      # grid_edges takes minutes; paths of one target share it
+
+
 def recover_edges(Xs: np.ndarray, params: dict, kind: str, X_pool: np.ndarray,
                   dataset: str, generator: str, split: int) -> np.ndarray:
     """Interior bin edges, shape (n_genes, n_bins-1), for the requested access."""
@@ -134,6 +149,15 @@ def recover_edges(Xs: np.ndarray, params: dict, kind: str, X_pool: np.ndarray,
         return out
     if kind == "steps":
         return step_edges(Xs, K)
+    if kind == "grid" and binning == "dp_quantile":
+        key = (dataset, generator, split)
+        if key not in _GRID_CACHE:
+            lo, hi = params.get("bin_range", (0.0, 24.0))
+            _GRID_CACHE[key] = grid_edges(Xs, K, float(lo), float(hi),
+                                          int(params.get("bin_grid", 48)))
+        return _GRID_CACHE[key]
+    if kind == "grid":
+        kind = "recovered"            # no grid construction to exploit
     if kind != "recovered":
         raise ValueError(f"unknown edges {kind!r}")
     if binning in ("quantile", "dp_quantile"):
@@ -215,6 +239,123 @@ def step_edges(Xs: np.ndarray, K: int, n_cand: int = 300) -> np.ndarray:
     return np.stack([_step_edges_1d(Xs[:, g], K, n_cand) for g in range(Xs.shape[1])])
 
 
+def _knot_edges(F: np.ndarray, grid: np.ndarray, targets: np.ndarray) -> np.ndarray:
+    """The generator's edge reader (`Discretizer._read_edges_threshold`): the
+    `targets` quantiles of the CDF with values F at the grid knots, linear
+    inside each cell.  Outer edges included."""
+    p = np.diff(F)
+    idx = np.clip(np.searchsorted(F[1:], targets, side="left"), 0, len(p) - 1)
+    frac = np.where(p[idx] > 0, (targets - F[idx]) / np.maximum(p[idx], 1e-300), 0.5)
+    step = grid[1] - grid[0]
+    e = grid[idx] + np.clip(frac, 0.0, 1.0) * step
+    for b in range(1, len(e)):
+        e[b] = max(e[b], e[b - 1] + 1e-3 * step)
+    return e
+
+
+def _grid_ll(e: np.ndarray, xs: np.ndarray, shrink: float) -> float:
+    """Log-likelihood of sorted values `xs` under the histogram on edges `e`,
+    bin masses the counts shrunk toward 1/K by `shrink` * n/K pseudo-rows
+    (inf: masses exactly 1/K).  Values outside the edges are heavily
+    penalised: the release is dithered inside [e_0, e_K]."""
+    K = len(e) - 1
+    c = np.diff(np.searchsorted(xs, e, side="left"))
+    n = len(xs)
+    if np.isfinite(shrink):
+        a = shrink * n / K
+        m = (c + a) / (n + K * a)
+    else:
+        m = np.full(K, 1.0 / K)
+    w = np.maximum(np.diff(e), 1e-9)
+    return float((c * np.log(m / w)).sum() - 1e3 * (n - c.sum()))
+
+
+def _grid_edges_1d(x: np.ndarray, K: int, lo: float, hi: float, cells: int,
+                   shrink: float, tail: float = 0.005, n_pts: int = 41,
+                   sweeps: int = 4) -> np.ndarray:
+    """Edges (outer included) for one gene: fit F at the grid knots.
+
+    Starts from the release's own grid histogram, then sweeps the knots of
+    the occupied cells, trying `n_pts` values for each between its
+    neighbours.  The first and last knots are held to F <= tail and
+    F >= 1 - tail, since the outer edges are the tail quantiles.
+    """
+    grid = np.linspace(lo, hi, cells + 1)
+    targets = np.concatenate([[tail], np.arange(1, K) / K, [1.0 - tail]])
+    xs = np.sort(x)
+    cell = np.clip(np.digitize(xs, grid[1:-1]), 0, cells - 1)
+    h = np.bincount(cell, minlength=cells).astype(float)
+    F = np.concatenate([[0.0], np.cumsum(h) / h.sum()])
+    c0, c1 = int(cell[0]), int(cell[-1])
+    best = _grid_ll(_knot_edges(F, grid, targets), xs, shrink)
+    for _ in range(sweeps):
+        moved = False
+        for k in range(c0, c1 + 2):
+            a = F[k - 1] if k > 0 else 0.0
+            b = F[k + 1] if k < cells else 1.0
+            if k == c0:
+                a, b = 0.0, min(tail, b)
+            if k == c1 + 1:
+                a, b = max(1.0 - tail, a), 1.0
+            if b <= a:
+                continue
+            old = F[k]
+            cand = np.linspace(a, b, n_pts)
+            vals = np.empty(n_pts)
+            for i, v in enumerate(cand):
+                F[k] = v
+                vals[i] = _grid_ll(_knot_edges(F, grid, targets), xs, shrink)
+            i = int(np.argmax(vals))
+            if vals[i] > best + 1e-9:
+                best, F[k], moved = vals[i], cand[i], True
+            else:
+                F[k] = old
+        if not moved:
+            break
+    return _knot_edges(F, grid, targets)
+
+
+GRID_SHRINK = (0.1, 0.25, 0.5, 1.0, 2.0, 4.0, np.inf)
+
+
+def _grid_heldout(x: np.ndarray, K: int, lo: float, hi: float, cells: int,
+                  shrink: float, seed: int) -> float:
+    """Per-row held-out log-likelihood: fit on a random half of the release,
+    score the other half (masses from the fitting half, pseudo-count 0.5)."""
+    m = np.random.default_rng(seed).random(len(x)) < 0.5
+    e = _grid_edges_1d(x[m], K, lo, hi, cells, shrink)
+    e[0], e[-1] = min(e[0], x.min()), max(e[-1], x.max())
+    c = np.diff(np.searchsorted(np.sort(x[m]), e))
+    mass = (c + 0.5) / (c.sum() + 0.5 * K)
+    ct = np.diff(np.searchsorted(np.sort(x[~m]), e))
+    return float((ct * np.log(mass / np.diff(e))).sum() / max(ct.sum(), 1))
+
+
+def grid_edges(Xs: np.ndarray, K: int, lo: float = 0.0, hi: float = 24.0,
+               cells: int = 48, shrink: float | None = None, n_cv_genes: int = 48,
+               n_jobs: int = -1) -> np.ndarray:
+    """`_grid_edges_1d` for every gene.  Shape (n_genes, K-1).
+
+    `shrink=None` picks it from `GRID_SHRINK` by held-out likelihood over
+    `n_cv_genes` genes (two random halvings each).  Measured 2026-09-24 on
+    dp_quantile16 split 1, this picked the shrinkage with the lowest edge
+    error on all four targets (BRCA/COMBINED x eps 10/1000): light at eps=10,
+    where the model's bin masses stray from 1/K, and none of the freedom at
+    eps=1000.
+    """
+    from joblib import Parallel, delayed
+    par = Parallel(n_jobs=n_jobs)
+    if shrink is None:
+        G = np.random.default_rng(0).choice(Xs.shape[1], min(n_cv_genes, Xs.shape[1]),
+                                            replace=False)
+        ho = [np.mean(par(delayed(_grid_heldout)(Xs[:, g], K, lo, hi, cells, a, s)
+                          for g in G for s in (0, 1))) for a in GRID_SHRINK]
+        shrink = GRID_SHRINK[int(np.argmax(ho))]
+    E = par(delayed(_grid_edges_1d)(Xs[:, g], K, lo, hi, cells, shrink)
+            for g in range(Xs.shape[1]))
+    return np.stack([e[1:-1] for e in E])
+
+
 def _upstream_selection():
     from mia.generators.pgm import _import_upstream
     _import_upstream()
@@ -256,6 +397,24 @@ def select_cliques(params: dict, B: np.ndarray, y: np.ndarray, K: int,
         return {"one": allg, "gl": allg,
                 "pairs": recover_tree(B, y, K, n_classes, structure == "tree_label"),
                 "pair_label": structure == "tree_label"}
+    if structure == "hairy_star":
+        ms = _upstream_selection()
+        l = min(int(params.get("l_pairs", 0)), G - 1)
+        mc = params.get("max_component")
+        mc = None if mc is None else int(mc)
+        if mc is not None:
+            l = min(l, G - -(-G // mc))
+        lab = np.bincount(y, minlength=n_classes).astype(float)
+        pairs = []
+        if l > 0:
+            ref = np.tile(lab[None, None, :] / K, (G, K, 1))
+            pairs, _ = ms.dp_select_tree(B, y, ref, rho=1e12, rng=np.random.default_rng(0),
+                                         with_label=False, n_edges=l, max_component=mc)
+            pairs = [tuple(sorted(p)) for p in pairs]
+        hubs, _ = ms.dp_choose_hubs(B, y, lab, ms.forest_components(G, pairs), K,
+                                    rho=1e12, rng=np.random.default_rng(0))
+        return {"one": allg if params.get("with_1way", False) else [],
+                "gl": sorted(hubs), "pairs": pairs, "pair_label": False}
     if structure != "forest":
         raise ValueError(f"no selection model for structure={structure!r}")
     ms = _upstream_selection()

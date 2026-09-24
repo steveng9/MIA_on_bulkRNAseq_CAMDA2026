@@ -107,6 +107,17 @@ class PGMGenerator(Generator):
     select_budget: float = 0.3
     k_label: int = 978
     l_pairs: int = 0
+    #: "hairy_star" (Steven, 2026-09-24): `l_pairs` DP-chosen gene pairs as a
+    #: forest, then one (gene, label) table per component, from its most
+    #: label-dependent gene -- a spanning tree over genes + label, the star with
+    #: l "hairs".  `with_1way` adds a 1-way table for every gene.
+    with_1way: bool = False
+    #: hairy_star: cap on a hair's component size (2 = disjoint gene pairs).
+    max_component: int | None = None
+    #: Upstream option for "hierarchical": caps how many (gene, gene) tables any
+    #: one gene joins, so dense co-expression modules cannot triangulate into
+    #: junction-tree cliques of 15+ genes (PQRS (200, 50, 10) needed PiB).
+    max_degree: int | None = None
 
     name = "pgm"
 
@@ -133,6 +144,8 @@ class PGMGenerator(Generator):
             bin_grid=self.bin_grid, edge_estimator=self.edge_estimator,
             structure=self.structure, select_budget=self.select_budget,
             k_label=self.k_label, l_pairs=self.l_pairs,
+            max_degree=self.max_degree, with_1way=self.with_1way,
+            max_component=self.max_component,
         )
         # The upstream generator takes string labels; integers round-trip fine.
         self._gen.fit(X, y.astype(str), gene_names=self._gene_names)

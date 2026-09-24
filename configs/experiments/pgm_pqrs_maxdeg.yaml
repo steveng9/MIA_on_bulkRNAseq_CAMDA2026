@@ -1,0 +1,28 @@
+# PQRS retry, part 2 (Steven, 2026-09-24): the upstream selector's own
+# `max_degree` cap, which bounds how many (gene, gene) tables one gene joins.
+# Without it (200, 50, 10) triangulates into 16-gene junction-tree cliques
+# (PiB); with it, measured by building the junction tree without fitting:
+#   8 bins,  (200,50,10): max_degree 2 -> 0.2 GiB BRCA; 3 -> 1.4 GiB BRCA
+#   16 bins, (50,15,5):   max_degree 2 -> 0.1 GiB BRCA
+# Same caveats as pgm_pqrs_retry.yaml: selection is non-DP (a reference).
+name: pgm_pqrs_maxdeg
+datasets: [BRCA, COMBINED]
+epsilons: [10, 1000]
+first_epsilon: 10
+splits: [1]
+
+base: {joint_mode: true, n_1way: 978, pgm_iters: 1000}
+
+binnings:
+  dp_quantile8:  {binning: dp_quantile, edge_estimator: threshold, n_bins: 8}
+
+structures:
+  pqrs_200_50_10_md2: {n_2way: 200, n_3way: 50, n_4way: 10, max_degree: 2, budget_weights: [0.30, 0.50, 0.12, 0.08]}
+  pqrs_200_50_10_md3: {n_2way: 200, n_3way: 50, n_4way: 10, max_degree: 3, budget_weights: [0.30, 0.50, 0.12, 0.08]}
+
+mahalamia:
+  pinv:           {covariance: pinv}
+  ledoit:         {covariance: ledoit_wolf}
+  pca800:         {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800}
+  pinv_cc:        {covariance: pinv, class_conditional: true}
+  ledoit_cc:      {covariance: ledoit_wolf, class_conditional: true}
