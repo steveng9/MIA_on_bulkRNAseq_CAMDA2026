@@ -48,8 +48,19 @@ def split_name(generator: str) -> tuple[str, dict]:
     overrides = {}
     for item in filter(None, variant.split(",")):
         k, _, v = item.partition("=")
-        overrides[k] = yaml.safe_load(v)
+        overrides[k] = _parse_list(v) or yaml.safe_load(v)
     return base, overrides
+
+
+def _parse_list(v: str):
+    """`variant_name` writes lists as a-b-c; read them back (1e-05 stays a number)."""
+    parts = v.split("-")
+    if len(parts) < 2:
+        return None
+    try:
+        return [float(x) for x in parts]
+    except ValueError:
+        return None
 
 
 def variant_name(generator: str, dataset: str, overrides: dict | None) -> str:

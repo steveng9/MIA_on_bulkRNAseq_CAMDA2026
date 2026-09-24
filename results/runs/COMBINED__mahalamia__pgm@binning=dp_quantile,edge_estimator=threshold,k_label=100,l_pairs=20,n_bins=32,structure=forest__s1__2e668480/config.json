@@ -1,0 +1,68 @@
+{
+  "run_id": "COMBINED__mahalamia__pgm@binning=dp_quantile,edge_estimator=threshold,k_label=100,l_pairs=20,n_bins=32,structure=forest__s1__2e668480",
+  "timestamp": "2026-09-24T08:06:15+00:00",
+  "dataset": "COMBINED",
+  "attack": "mahalamia",
+  "generator": "pgm@binning=dp_quantile,edge_estimator=threshold,k_label=100,l_pairs=20,n_bins=32,structure=forest",
+  "split": 1,
+  "tag": "aux",
+  "experiment": "pgm_forest_sweep",
+  "variant": "dp_quantile32/k100_l20|pinv",
+  "notes": "dp_quantile32/k100_l20 epsilon=10",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "pinv",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "b855aaad534cf327",
+    "params": {
+      "seed": 1423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 10,
+      "delta": 1e-05,
+      "n_bins": 32,
+      "n_1way": 978,
+      "n_2way": 0,
+      "n_3way": 0,
+      "n_4way": 0,
+      "budget_weights": [
+        0.33,
+        0.67,
+        0.0,
+        0.0
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove",
+      "binning": "dp_quantile",
+      "bin_range": [
+        0.0,
+        24.0
+      ],
+      "binning_budget": 0.1,
+      "bin_grid": 48,
+      "edge_estimator": "threshold",
+      "structure": "forest",
+      "select_budget": 0.3,
+      "k_label": 100,
+      "l_pairs": 20
+    },
+    "seed": 1423,
+    "source": "trained"
+  }
+}

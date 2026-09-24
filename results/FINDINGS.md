@@ -1559,3 +1559,45 @@ target's true bins add 0.01–0.07 on top.
 3. Large 3-way tables are poor value, which motivates generator sweep v2
    (task 22): a label-only star, MST with the label as a node, and a sparse
    k/l forest.
+
+### 10k. The k/l forest (Steven's sparse table selection) does not beat last year's star
+
+*2026-09-24.  `configs/experiments/pgm_forest_sweep.yaml`,
+`results/pgm_forest_sweep.csv`.  288 DP-valid targets: k (genes given a
+(gene, label) table) × l (gene–gene pairs, a DP forest) × dp_quantile 16/32 ×
+ε 10/1000 × both cohorts, split 1.  Genes covered by neither get a 1-way table.*
+
+**Everything that matters is k, the number of genes tied to the subtype.**
+
+COMBINED, ε=10, dp_quantile16, averaged over l:
+
+| k | utility | correlation MAE | per-gene W1 |
+|---|---|---|---|
+| 10 | 0.71 | 0.178 | 0.102 |
+| 200 | 0.85 | 0.152 | 0.107 |
+| 978 | 0.90 | 0.122 | 0.126 |
+| star (reference) | 0.91 | 0.130 | 0.103 |
+
+- **Gene–gene pairs barely help.** Going from l=0 to l=400 moves correlation
+  MAE by ≤ 0.01 and slightly worsens W1, because more tables means more noise
+  per table.  In this data most co-expression is explained by subtype.
+- **Dropping the 1-way tables** (k=978, l=0, the label-only star) behaves
+  exactly as the budget arithmetic predicted:
+  - W1 gets worse, 0.103 → 0.121, because each gene's distribution is now a
+    sum of noisy per-class cells;
+  - correlation improves slightly, 0.130 → 0.126, because each (gene, label)
+    table gets less noise.
+- **The same holds at ε=1000 and on BRCA.**  BRCA's single-split utility is
+  noisy (±0.05), so its grid shows no reliable winner.
+- **Every forest is still trivially separable from real data**: discriminator
+  AUC 0.99–1.00, as for the star and the tree.  MahalaMIA's best variant stays
+  ≤ 0.54.
+- **The PCA/UMAP plots** (`results/figures/fidelity_{pca,umap}_s1.png`) show
+  why.  Every DP-PGM collapses to tight clusters around the class centres, even
+  at ε=1000.  Low-order tables at n ≈ 870–3,500 cannot express the continuous
+  within-subtype co-expression that CVAE and ND reproduce.
+
+**Implication.** The table-selection lever is exhausted for 2-way tables.
+Choosing which tables to keep moves quality by a few points at most; the
+structural ceiling of a low-order PGM on 978 genes is the limit.  MAMA-MIA v2 on
+these targets is running (`results/mamamia_v2.csv`, config `k*_l*`).
