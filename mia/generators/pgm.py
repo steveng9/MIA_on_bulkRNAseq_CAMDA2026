@@ -99,9 +99,14 @@ class PGMGenerator(Generator):
     #: which with n_2way=0 is the star of last year's winner.  "tree" adds a
     #: spanning tree of (gene, gene) marginals and "tree_label" of (gene, gene,
     #: label) marginals, selected by the exponential mechanism as in MST, at
-    #: `select_budget` of rho.  Both need joint_mode and zcdp.
+    #: `select_budget` of rho.  Both need joint_mode and zcdp.  "forest"
+    #: (Steven, 2026-09-24) keeps only `k_label` DP-chosen (gene, label)
+    #: tables, `l_pairs` DP-chosen (gene, gene) tables forming a forest, and a
+    #: 1-way table for every gene neither covers.
     structure: str = "hierarchical"
     select_budget: float = 0.3
+    k_label: int = 978
+    l_pairs: int = 0
 
     name = "pgm"
 
@@ -127,6 +132,7 @@ class PGMGenerator(Generator):
             bin_range=tuple(self.bin_range), binning_budget=self.binning_budget,
             bin_grid=self.bin_grid, edge_estimator=self.edge_estimator,
             structure=self.structure, select_budget=self.select_budget,
+            k_label=self.k_label, l_pairs=self.l_pairs,
         )
         # The upstream generator takes string labels; integers round-trip fine.
         self._gen.fit(X, y.astype(str), gene_names=self._gene_names)

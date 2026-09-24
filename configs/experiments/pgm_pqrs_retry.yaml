@@ -1,0 +1,35 @@
+# Steven's hierarchical 1/2/3/4-way ("PQRS") selection, retried under the fixed
+# accounting (2026-09-24).  Driven by
+#   python scripts/pgm_structure_sweep.py --config configs/experiments/pgm_pqrs_retry.yaml
+#
+# Originally (private-pgm-rnaseq-camda2026/outfiles/*_PQRS_*) this ran with basic
+# composition, stratified per-class models and private-percentile bins: at eps=100
+# every 1-way table had sigma=68 against 32-449 rows per class, so the 3/4-way
+# tables were pure noise.  Here: joint mode, zCDP, add/remove, DP edges.
+#
+# NOT DP END TO END: the hierarchical selector ranks gene pairs/triples/quads by
+# Spearman on the private data with no budget.  A labelled REFERENCE for "would
+# higher-order tables help if selection were free", not a paper configuration.
+# (gene, label) tables sit in the 2-way family, so its weight is kept large.
+name: pgm_pqrs_retry
+datasets: [BRCA, COMBINED]
+epsilons: [10, 1000]
+first_epsilon: 10
+splits: [1]
+
+base: {joint_mode: true, n_1way: 978, pgm_iters: 1000}
+
+binnings:
+  dp_quantile8:  {binning: dp_quantile, edge_estimator: threshold, n_bins: 8}
+  dp_quantile16: {binning: dp_quantile, edge_estimator: threshold, n_bins: 16}
+
+structures:
+  pqrs_50_15_5:   {n_2way: 50, n_3way: 15, n_4way: 5, budget_weights: [0.30, 0.50, 0.12, 0.08]}
+  pqrs_200_50_10: {n_2way: 200, n_3way: 50, n_4way: 10, budget_weights: [0.30, 0.50, 0.12, 0.08]}
+
+mahalamia:
+  pinv:           {covariance: pinv}
+  ledoit:         {covariance: ledoit_wolf}
+  pca800:         {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800}
+  pinv_cc:        {covariance: pinv, class_conditional: true}
+  ledoit_cc:      {covariance: ledoit_wolf, class_conditional: true}

@@ -62,7 +62,10 @@ def variant_name(generator: str, dataset: str, overrides: dict | None) -> str:
     diff = {k: v for k, v in (overrides or {}).items() if defaults.get(k) != v}
     if not diff:
         return generator
-    return generator + "@" + ",".join(f"{k}={diff[k]}" for k in sorted(diff))
+    def fmt(v):
+        # lists/tuples as a-b-c: no spaces or brackets in directory names
+        return "-".join(str(x) for x in v) if isinstance(v, (list, tuple)) else v
+    return generator + "@" + ",".join(f"{k}={fmt(diff[k])}" for k in sorted(diff))
 
 
 # ─────────────────────────────────────────────────────────────────────────────

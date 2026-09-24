@@ -42,3 +42,14 @@ which now refuse to run).
   `results/pgm_structure_sweep.csv`.
 
 **Replacement:** `scripts/pgm_structure_sweep.py` (FINDINGS §10i).
+
+## Disk pruning (2026-09-24)
+
+To free disk on the shared machine, `synthetic_data.csv` and `generator.pt` were
+deleted from all 180 BROKEN_DP_EDGES target directories (3.9 GB).  Each keeps
+`meta.json` (params, seed, status), `synthetic_labels.csv` and its
+`BROKEN_DP_EDGES.txt` marker (which now records the deletion).  Every result
+derived from them stays in `results/` with its fingerprint.  They can be rebuilt,
+if ever needed, from `meta.json` with the generator's legacy
+`edge_estimator="clip"` (still the upstream default).  `load_target` already
+refused them.

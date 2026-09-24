@@ -170,7 +170,14 @@ def precision(X: np.ndarray, method: str, ridge_alpha: float) -> np.ndarray:
     if method == "exact":
         return np.linalg.inv(cov)
     if method == "pinv":
-        return pinv(cov)
+        try:
+            return pinv(cov)
+        except np.linalg.LinAlgError:
+            # LAPACK's SVD occasionally fails to converge on near-singular
+            # class covariances (small classes); the covariance is symmetric,
+            # so the eigendecomposition gives the same pseudo-inverse.
+            from scipy.linalg import pinvh
+            return pinvh(cov)
     raise ValueError(f"Unknown covariance method {method!r}")
 
 

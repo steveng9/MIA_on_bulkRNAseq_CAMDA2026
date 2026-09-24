@@ -1,0 +1,51 @@
+# DP-PGM k/l forest sweep (2026-09-24, grid set by Steven).  Driven by
+#   python scripts/pgm_structure_sweep.py --config configs/experiments/pgm_forest_sweep.yaml
+#
+# Question: does keeping FEWER, smaller tables -- so each carries less noise --
+# give better synthetic data than last year's star (978 1-way + 978 gene x
+# label) or the DP spanning tree (pgm_structure_sweep, FINDINGS 10i/10j)?
+#
+# structure=forest (generator commit after cd5d1d5), all under one rho-zCDP budget:
+#   1. the label marginal;
+#   2. k_label genes chosen by the exponential mechanism (Gumbel top-k) on how
+#      label-dependent their (gene, label) table is, and those tables measured;
+#   3. l_pairs (gene, gene) tables chosen as a forest (MST's Kruskal selection,
+#      truncated after l rounds) against what stage 2 already explains;
+#   4. a 1-way table for every gene no chosen table covers.
+# 2-way tables only: FINDINGS 10j showed (gene, gene, label) tables are
+# noise-dominated at these sizes.  k_label=978, l_pairs=0 is the label-only
+# star (no 1-way tables at all).  binning_budget 0.1 and select_budget 0.3 of
+# rho as in the structure sweep; selection budget is split over the k + l
+# exponential-mechanism rounds.
+#
+# Every config is DP end to end.  Each target gets fidelity, the 10 MahalaMIA
+# variants, v1 MAMA-MIA + arms (in the sweep) and MAMA-MIA v2 afterwards
+# (scripts/mamamia_v2_eval.py --sweep results/pgm_forest_sweep.csv).
+name: pgm_forest_sweep
+datasets: [BRCA, COMBINED]
+epsilons: [10, 1000]
+first_epsilon: 10          # the paper's likely operating point runs first
+splits: [1]                # splits 2-3 once split 1 has been read
+
+base: {joint_mode: true, n_1way: 978, n_2way: 0, pgm_iters: 1000}
+
+binnings:
+  dp_quantile16: {binning: dp_quantile, edge_estimator: threshold, n_bins: 16}
+  dp_quantile32: {binning: dp_quantile, edge_estimator: threshold, n_bins: 32}
+
+structure_grid:
+  base: {structure: forest}
+  k_label: [10, 50, 100, 200, 500, 978]
+  l_pairs: [0, 20, 50, 100, 200, 400]
+
+mahalamia:
+  pinv:           {covariance: pinv}
+  ledoit:         {covariance: ledoit_wolf}
+  ridge1.0e-8:    {covariance: ridge, ridge_alpha: 1.0e-8}
+  pca850:         {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 850}
+  pca800:         {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800}
+  pinv_cc:        {covariance: pinv, class_conditional: true}
+  ledoit_cc:      {covariance: ledoit_wolf, class_conditional: true}
+  ridge1.0e-8_cc: {covariance: ridge, ridge_alpha: 1.0e-8, class_conditional: true}
+  pca850_cc:      {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 850, class_conditional: true}
+  pca800_cc:      {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800, class_conditional: true}

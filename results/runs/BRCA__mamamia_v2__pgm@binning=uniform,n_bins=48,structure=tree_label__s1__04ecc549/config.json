@@ -1,0 +1,67 @@
+{
+  "run_id": "BRCA__mamamia_v2__pgm@binning=uniform,n_bins=48,structure=tree_label__s1__04ecc549",
+  "timestamp": "2026-09-24T05:41:39+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia_v2",
+  "generator": "pgm@binning=uniform,n_bins=48,structure=tree_label",
+  "split": 1,
+  "tag": "cl-recovered_ed-aux_cc",
+  "experiment": "mamamia_v2",
+  "variant": "uniform48/tree_label|recovered/aux",
+  "notes": "black-box uniform48/tree_label epsilon=10",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mamamia_v2",
+    "cliques": "recovered",
+    "edges": "aux",
+    "families": [
+      "1way",
+      "gl",
+      "tree"
+    ],
+    "class_centre": true,
+    "alpha": 0.5,
+    "calibrate": true,
+    "attack": "mamamia_v2",
+    "arm": "all_cc"
+  },
+  "target": {
+    "fingerprint": "77fc797f2d6ec215",
+    "params": {
+      "seed": 1423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 10,
+      "delta": 1e-05,
+      "n_bins": 48,
+      "n_1way": 978,
+      "n_2way": 0,
+      "n_3way": 0,
+      "n_4way": 0,
+      "budget_weights": [
+        0.33,
+        0.67,
+        0.0,
+        0.0
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove",
+      "binning": "uniform",
+      "bin_range": [
+        0.0,
+        24.0
+      ],
+      "binning_budget": 0.1,
+      "bin_grid": 48,
+      "edge_estimator": "clip",
+      "structure": "tree_label",
+      "select_budget": 0.3
+    },
+    "seed": 1423,
+    "source": "trained"
+  }
+}

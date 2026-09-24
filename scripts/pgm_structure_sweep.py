@@ -4,6 +4,11 @@
     python scripts/pgm_structure_sweep.py --workers 12
     python scripts/pgm_structure_sweep.py --references      # MahalaMIA on mvn/cvae/nd
     python scripts/pgm_structure_sweep.py --dry-run         # list the jobs
+    python scripts/pgm_structure_sweep.py --config configs/experiments/pgm_forest_sweep.yaml
+
+`--config` points the same machinery at another design (its `name` is the
+experiment and names the output CSV; `structure_grid` expands to one structure
+per combination, labelled k<k>_l<l>).
 
 Everything the sweep does is declared in configs/experiments/
 pgm_structure_sweep.yaml; see its header for why.  For every (cohort, config,
@@ -60,9 +65,11 @@ from mia import runs as R  # noqa: E402
 from mia import targets as T  # noqa: E402
 from mamamia_aggregation import arms_for_split  # noqa: E402
 
-CONFIG = ROOT / "configs" / "experiments" / "pgm_structure_sweep.yaml"
-EXPERIMENT = "pgm_structure_sweep"
-OUT = ROOT / "results" / "pgm_structure_sweep.csv"
+_pre.add_argument("--config", default=str(ROOT / "configs" / "experiments"
+                                          / "pgm_structure_sweep.yaml"))
+CONFIG = Path(_pre.parse_known_args()[0].config)
+EXPERIMENT = yaml.safe_load(CONFIG.read_text())["name"]
+OUT = ROOT / "results" / f"{EXPERIMENT}.csv"
 KEY = ["dataset", "target", "split", "fingerprint"]
 
 
@@ -73,8 +80,15 @@ def load_config() -> dict:
 def configs(cfg: dict) -> dict:
     """label -> overrides, for every binning x structure plus the extras."""
     out = {}
+    structures = dict(cfg.get("structures", {}))
+    grid = cfg.get("structure_grid")
+    if grid:
+        for k in grid["k_label"]:
+            for l in grid["l_pairs"]:
+                structures[f"k{k}_l{l}"] = {**grid.get("base", {}),
+                                            "k_label": k, "l_pairs": l}
     for b, bo in cfg["binnings"].items():
-        for s, so in cfg["structures"].items():
+        for s, so in structures.items():
             out[f"{b}/{s}"] = {**bo, **so}
     for label, o in cfg.get("extra", {}).items():
         out[label] = dict(o)
@@ -194,6 +208,7 @@ def run_one(job: dict):
         row.update(dataset=ds, config=label, epsilon=eps, split=split, target=name,
                    binning=rp.get("binning"), n_bins=n_bins,
                    structure=rp.get("structure", "hierarchical"),
+                   k_label=rp.get("k_label"), l_pairs=rp.get("l_pairs"),
                    edge_estimator=rp.get("edge_estimator", "clip"),
                    fingerprint=rec["fingerprint"], seed=rec["seed"],
                    fit_seconds=round(t_fit, 1), seconds=round(time.time() - t0, 1),
@@ -249,7 +264,8 @@ def main():
             for lbl, o in cfgs.items() for d in datasets]
     # eps=1000 split 1 of every config first, so a first look at the whole
     # design arrives early; COMBINED before BRCA within that since it is slower.
-    jobs.sort(key=lambda j: (j["epsilon"] != 1000, j["split"],
+    first = cfg.get("first_epsilon", 1000)
+    jobs.sort(key=lambda j: (j["split"], j["epsilon"] != first,
                              j["dataset"] != "COMBINED"))
     if args.dry_run:
         for j in jobs:

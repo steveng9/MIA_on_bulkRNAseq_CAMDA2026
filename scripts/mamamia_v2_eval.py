@@ -54,7 +54,7 @@ from mia import metrics as M  # noqa: E402
 from mia import runs as R  # noqa: E402
 from mia import targets as T  # noqa: E402
 from mia.attacks.mamamia_v2 import (MAMAMIAv2, center_by_class,  # noqa: E402
-                                    recover_edges, true_tree)
+                                    recover_edges, true_cliques)
 from mia.attacks.mahalamia import sigmoid_calibrate  # noqa: E402
 
 SWEEP = ROOT / "results" / "pgm_structure_sweep.csv"
@@ -63,6 +63,7 @@ EXPERIMENT = "mamamia_v2"
 KEY = ["dataset", "target", "split", "fingerprint", "cliques", "edges", "arm"]
 PATHS = [("public", "aux"), ("public", "recovered"), ("recovered", "aux"),
          ("recovered", "recovered"), ("aux", "aux"), ("aux", "recovered"),
+         ("shadow", "recovered"),
          ("public", "known"), ("true", "known"), ("true", "recovered")]
 
 
@@ -84,7 +85,7 @@ def arms(fs: dict) -> dict:
 
 
 def run_one(job):
-    ds, name, split, label, eps = job
+    ds, name, split, label, eps, paths = job
     t0 = time.time()
     try:
         rec = T.target_record(ds, name, split)
@@ -96,19 +97,34 @@ def run_one(job):
         structure = params.get("structure", "hierarchical")
 
         # White-box bookkeeping, computed once.
-        truth = set(true_tree(ds, name, split)) if structure != "hierarchical" else set()
+        tc = true_cliques(ds, name, split) if structure != "hierarchical" else None
+        truth = set(tc["pairs"]) if tc else set()
+        truth_gl = set(tc["gl"]) if tc else set()
         E_true = (recover_edges(Xs, params, "known", Xr, ds, name, split)
                   if params.get("binning") != "uniform" else None)
 
         rows = []
         for cl, ed in PATHS:
-            if cl == "true" and not truth:
+            if paths and f"{cl}/{ed}" not in paths:
                 continue
+            if cl == "true" and tc is None:
+                continue
+            if cl == "shadow" and structure == "hierarchical":
+                continue        # the star is fixed by config: nothing to guess
             atk = MAMAMIAv2(cliques=cl, edges=ed)
             fs = atk.family_scores(ds, name, split)
-            extra = {"n_tree": len(fs["tree"])}
-            if truth and cl in ("recovered", "aux"):
-                extra["tree_recall"] = len(set(fs["tree"]) & truth) / len(truth)
+            extra = {"n_tree": len(fs["tree"]), "aux_set": fs["aux"]}
+            c = fs["cliques"]
+            if cl in ("recovered", "aux", "shadow") and tc is not None:
+                w = c.get("weights", {})
+                chosen = (set(p for p, wi in zip(c["pairs"], w["pairs"]) if wi >= 0.5)
+                          if "pairs" in w else set(c["pairs"]))
+                if truth:
+                    extra["tree_recall"] = len(chosen & truth) / len(truth)
+                gl = (set(g for g, wi in zip(c["gl"], w["gl"]) if wi >= 0.5)
+                      if "gl" in w else set(c["gl"]))
+                if truth_gl and len(truth_gl) < len(D.gene_names(ds)):
+                    extra["gl_recall"] = len(gl & truth_gl) / len(truth_gl)
             if E_true is not None:
                 extra["edge_mae_vs_target"] = float(np.abs(fs["edges"] - E_true).mean())
             for arm, sc in arms(fs).items():
@@ -145,9 +161,13 @@ def main():
     p.add_argument("--eps", nargs="+", type=float)
     p.add_argument("--splits", nargs="+", type=int)
     p.add_argument("--redo", action="store_true", help="re-run targets already in OUT")
+    p.add_argument("--sweep", default=str(SWEEP), help="sweep CSV listing the targets")
+    p.add_argument("--paths", nargs="+",
+                   help="only these cliques/edges paths, e.g. shadow/recovered; "
+                        "targets are skipped only if they already have them")
     args = p.parse_args()
 
-    sw = pd.read_csv(SWEEP)
+    sw = pd.read_csv(args.sweep)
     if args.datasets:
         sw = sw[sw.dataset.isin(args.datasets)]
     if args.only:
@@ -157,12 +177,15 @@ def main():
     if args.splits:
         sw = sw[sw.split.isin(args.splits)]
     if OUT.exists() and not args.redo:
-        done = set(pd.read_csv(OUT)[["target", "split", "fingerprint"]]
+        o = pd.read_csv(OUT)
+        if args.paths:
+            o = o[(o.cliques + "/" + o.edges).isin(args.paths)]
+        done = set(o[["target", "split", "fingerprint"]]
                    .itertuples(index=False, name=None))
         sw = sw[[(t, s, f) not in done for t, s, f in
                  zip(sw.target, sw.split, sw.fingerprint)]]
-    jobs = [(r.dataset, r.target, int(r.split), r.config, r.epsilon)
-            for r in sw.itertuples()]
+    jobs = [(r.dataset, r.target, int(r.split), r.config, r.epsilon,
+             tuple(args.paths or ())) for r in sw.itertuples()]
     print(f"{len(jobs)} targets on {args.workers} workers -> {OUT}", flush=True)
     with ProcessPoolExecutor(max_workers=args.workers) as pool:
         futs = [pool.submit(run_one, j) for j in jobs]
