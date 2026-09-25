@@ -187,12 +187,26 @@ class PGMGenerator(Generator):
 
         return out, np.asarray(y).astype(np.int64)
 
-    def save(self, path: Path) -> None:
+    def save(self, path: Path, keep_model: bool = False) -> None:
+        """Pickle the generator; by default without its fitted model.
+
+        Targets are sampled in memory right after `fit`, and everything read
+        back later (bin edges, chosen tables, rho breakdown, selection
+        diagnostics) is small.  The fitted graphical model is up to ~1 GB per
+        target (2026-09-25: 20 GB over 808 targets filled the disk), so it is
+        dropped unless `keep_model`.  A slim checkpoint cannot `sample`.
+        """
+        import copy
         import pickle
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
+        gen = self._gen
+        if not keep_model:
+            gen = copy.copy(gen)
+            gen._joint_fitter = None
+            gen._class_fitters = {}
         with open(path, "wb") as f:
-            pickle.dump(self._gen, f)
+            pickle.dump(gen, f)
 
     def load(self, path: Path) -> "PGMGenerator":
         import pickle

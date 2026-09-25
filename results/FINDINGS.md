@@ -1634,3 +1634,52 @@ selection; zCDP, joint mode, dp_quantile 8 bins):
 - **So the old negative result was not only the accounting.**  Higher-order
   tables do not add quality here.  Where they are many, private-pgm cannot fit
   them at all.
+
+### 10l. Star with hairs (Steven's idea): every hair costs a direct subtype link, and correlation gets worse, not better
+
+*2026-09-25.  `configs/experiments/pgm_hairy_star.yaml`,
+`results/pgm_hairy_star.csv`, 112 targets, no failures.  The l strongest
+gene–gene pairs (DP truncated Kruskal), then one (gene, label) table per
+connected piece, on the member with the most subtype signal (DP choice).  The
+result is a spanning tree over genes + label.  l ∈ {0, 20, 50, 100, 200, 400,
+977} × with/without a 1-way table per gene × dp_quantile 16/32 × ε 10/1000 ×
+both cohorts, split 1.*
+
+**Correlation error rises with every hair, in all 8 conditions.**
+
+COMBINED, ε=10, dp_quantile16:
+
+| l (gene–gene pairs) | utility | correlation MAE | per-gene W1 |
+|---|---|---|---|
+| 0 (label-only star) | 0.91 | 0.126 | 0.121 |
+| 20 | 0.89 | 0.133 | 0.127 |
+| 100 | 0.93 | 0.148 | 0.129 |
+| 400 | 0.92 | 0.167 | 0.136 |
+| 977 (one gene tied to subtype) | 0.27 | 0.174 | 0.136 |
+| star (reference) | 0.91 | 0.130 | 0.103 |
+
+- **Why.**  A hair replaces a gene's own (gene, label) table with a (gene,
+  gene) table to a hub.  The gene's subtype signal then reaches it through the
+  hub, attenuated by one extra noisy table.  In this data subtype explains most
+  co-expression (10k), so losing direct subtype links costs more correlation
+  than the gene pairs add.
+- **Utility** is flat within noise up to l=400 (BRCA single-split noise is
+  ±0.05).  It collapses at l=977, where one hub carries all subtype
+  information: 0.21–0.56.
+- **1-way tables** do what they did in the forest.  They improve W1 (0.12 →
+  0.10 on COMBINED) at a small cost in correlation.  With 1-way tables and l=0,
+  the table set is the star's, and it matches the star within noise.
+- **Sanity check.**  l=0 without 1-ways reproduces the forest's k=978, l=0
+  target exactly.  They are the same tables with the same noise.
+- **Privacy is unchanged.**  MahalaMIA's best variant stays at 0.51–0.54.
+  MAMA-MIA v2 on these targets is queued.
+- **Free hairs grow into big trees.**  At l=400 the pairs formed only 3
+  multi-gene pieces, so most genes hung off 3 hubs.  Steven's literal picture
+  (disjoint pairs, `max_component=2`) is running as
+  `configs/experiments/pgm_hairy_pairs.yaml`.  It can remove at most 489
+  label links, and removes exactly l of them.
+
+**Implication.**  This confirms 10k from the other direction.  Adding gene
+pairs on top of the star does little (the forest), and trading star edges for
+gene pairs hurts (the hairs).  The star's direct (gene, label) tables are the
+most valuable tables a 2-way DP-PGM can buy on this data.
