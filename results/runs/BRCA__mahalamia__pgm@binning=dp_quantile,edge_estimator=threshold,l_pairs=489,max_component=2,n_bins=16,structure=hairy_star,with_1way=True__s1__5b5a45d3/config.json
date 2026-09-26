@@ -1,0 +1,71 @@
+{
+  "run_id": "BRCA__mahalamia__pgm@binning=dp_quantile,edge_estimator=threshold,l_pairs=489,max_component=2,n_bins=16,structure=hairy_star,with_1way=True__s1__5b5a45d3",
+  "timestamp": "2026-09-25T06:45:27+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "pgm@binning=dp_quantile,edge_estimator=threshold,l_pairs=489,max_component=2,n_bins=16,structure=hairy_star,with_1way=True",
+  "split": 1,
+  "tag": "aux_ledoit_wolf",
+  "experiment": "pgm_hairy_pairs",
+  "variant": "dp_quantile16/pairs_l489_1way|ledoit",
+  "notes": "dp_quantile16/pairs_l489_1way epsilon=10",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ledoit_wolf",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "f9e835d18ae8a216",
+    "params": {
+      "seed": 1423,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgm",
+      "epsilon": 10,
+      "delta": 1e-05,
+      "n_bins": 16,
+      "n_1way": 978,
+      "n_2way": 0,
+      "n_3way": 0,
+      "n_4way": 0,
+      "budget_weights": [
+        0.33,
+        0.67,
+        0.0,
+        0.0
+      ],
+      "pgm_iters": 1000,
+      "joint_mode": true,
+      "composition": "zcdp",
+      "neighboring": "add_remove",
+      "binning": "dp_quantile",
+      "bin_range": [
+        0.0,
+        24.0
+      ],
+      "binning_budget": 0.1,
+      "bin_grid": 48,
+      "edge_estimator": "threshold",
+      "structure": "hairy_star",
+      "select_budget": 0.3,
+      "k_label": 978,
+      "l_pairs": 489,
+      "with_1way": true,
+      "max_component": 2,
+      "max_degree": null
+    },
+    "seed": 1423,
+    "source": "trained"
+  }
+}

@@ -1683,3 +1683,34 @@ COMBINED, ε=10, dp_quantile16:
 pairs on top of the star does little (the forest), and trading star edges for
 gene pairs hurts (the hairs).  The star's direct (gene, label) tables are the
 most valuable tables a 2-way DP-PGM can buy on this data.
+
+### 10m. PQRS part 2 (max_degree cap): it fits now, and it ties the star
+
+*2026-09-26.  `configs/experiments/pgm_pqrs_maxdeg{16,}.yaml`,
+`results/pgm_pqrs_maxdeg{16,}.csv`, 12 targets, no failures.  The selection
+is still Spearman ranking with no budget, so this is a reference, not DP end to
+end.  Each fit took 1–20 h.*
+
+Against the star at the same bins, split 1 (utility / correlation MAE / W1):
+
+| | PQRS | star |
+|---|---|---|
+| 16 bins, (50,15,5), max_degree 2: BRCA ε=10 | 0.653 / 0.150 / 0.449 | 0.638 / 0.148 / 0.442 |
+| COMBINED ε=10 | 0.915 / 0.138 / 0.105 | 0.912 / 0.130 / 0.103 |
+| BRCA ε=1000 | 0.847 / 0.132 / 0.049 | 0.859 / 0.136 / 0.050 |
+| COMBINED ε=1000 | 0.931 / 0.122 / 0.034 | 0.947 / 0.128 / 0.034 |
+| 8 bins, (200,50,10), max_degree 2: COMBINED ε=10 | 0.889 / 0.133 / 0.115 | 0.920 / 0.127 / 0.113 |
+| BRCA ε=10 | 0.655 / 0.149 / 0.444 | 0.616 / 0.149 / 0.441 |
+| COMBINED ε=1000 | 0.901 / 0.125 / 0.083 | 0.944 / 0.130 / 0.082 |
+| BRCA ε=1000 | 0.818 / 0.130 / 0.098 | 0.838 / 0.135 / 0.097 |
+
+- **No consistent win.**
+  - At ε=1000 the 3/4-way tables trim correlation error by about 0.005.
+  - At ε=10 on COMBINED they cost about 0.006–0.008 (more tables, more noise each).
+  - Utility is equal or worse, and W1 is unchanged.
+- **max_degree 3** changes nothing against max_degree 2 (differences within noise).
+- **Privacy is unchanged.**  Discriminator 0.99–1.00.  MahalaMIA best ≤ 0.53.
+  MAMA-MIA v1 0.52–0.66.  MAMA-MIA v2 is queued.
+- **Even with free (non-private) selection**, higher-order tables do not lift
+  quality above the star on this data.  Making the selection DP would only make
+  it worse, so a DP version is not worth building.

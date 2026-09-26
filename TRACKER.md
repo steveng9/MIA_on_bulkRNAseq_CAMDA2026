@@ -9,9 +9,9 @@ Last updated 2026-09-25.
 | Item | Status | Where |
 |---|---|---|
 | MAMA-MIA v2 with the new "grid" edge estimator (black box), 108 dp_quantile targets | **done** (108/108, no failures); write-up pending | `logs/mamamia_v2_grid.log` → `results/mamamia_v2.csv` (edges=grid) |
-| PQRS part 2 with your selector's `max_degree` cap: (50,15,5) at 16 bins; (200,50,10) at 8 bins | running, one fit at a time | `logs/pgm_pqrs_maxdeg.log` → `results/pgm_pqrs_maxdeg{,16}.csv` |
+| PQRS part 2 with your selector's `max_degree` cap: (50,15,5) at 16 bins; (200,50,10) at 8 bins | **done**: fits now, ties the star (FINDINGS §10m); v2 queued | `logs/pgm_pqrs_maxdeg.log` → `results/pgm_pqrs_maxdeg{,16}.csv` |
 | Star with hairs (your 2026-09-24 idea), hairs free to grow into trees: l ∈ {0,20,50,100,200,400,977} × with/without 1-ways, 112 targets | **done**: every hair makes correlation worse; the star's direct subtype links win (FINDINGS §10l). v2 queued | `configs/experiments/pgm_hairy_star.yaml`, `logs/pgm_hairy_star.log` |
-| Star with hairs, your literal version: hairs are disjoint gene pairs; l ∈ {20,50,100,200,489} × with/without 1-ways, 80 targets | running | `configs/experiments/pgm_hairy_pairs.yaml`, `logs/pgm_hairy_queue.log` |
+| Star with hairs, your literal version: hairs are disjoint gene pairs; l ∈ {20,50,100,200,489} × with/without 1-ways, 80 targets | **done** (88 incl. 1-way floor, no failures); write-up after v2 | `configs/experiments/pgm_hairy_pairs.yaml`, `logs/pgm_hairy_queue.log` |
 | 1-way-only floor (genes independent, no label link), 8 targets | queued behind the above | `configs/experiments/pgm_baselines.yaml` |
 | MAMA-MIA v2 on all the new targets, then rebuild the one-place table | queued, starts when the above finish | `scripts/run_v2_followup.sh`, `logs/v2_followup.log` |
 
@@ -31,7 +31,7 @@ Last updated 2026-09-25.
 
 ## Needs Steven
 
-1. **Which DP-PGM goes in the paper.** Leaning star (= forest k=978) at 16 bins; the forest sweep did cover k=500/978 and l up to 400, and none beat it.  Revisit once PQRS part 2 is in.
+1. **Which DP-PGM goes in the paper.** Leaning star (= forest k=978) at 16 bins; the forest sweep did cover k=500/978 and l up to 400, and none beat it.  PQRS part 2 is in and ties it (§10m).
 2. **Class-centring as headline or ablation.** It subtracts each subtype's mean attack score before ranking.
 
 Decided 2026-09-24: BRCA's optimistic held-out aux stays for now (better aux strategy and more datasets later); build the grid edge estimator (done, now running); `mia_output/` pruned.
