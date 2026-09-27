@@ -2,13 +2,13 @@ dataset,row,generator,mean,n
 BRCA,"Utility (TSTR / real, higher is better)",mvn,0.8842869791831871,5
 BRCA,"Utility (TSTR / real, higher is better)",cvae,0.9582209554845766,5
 BRCA,"Utility (TSTR / real, higher is better)",nd,0.9133196786727588,5
-BRCA,"Utility (TSTR / real, higher is better)","pgm@composition=basic,neighboring=legacy_exact_n",0.32104867719491387,5
+BRCA,"Utility (TSTR / real, higher is better)","pgm@composition=basic,neighboring=legacy_exact_n",0.3210486771949138,5
 BRCA,"Utility (TSTR / real, higher is better)","pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.6981547381315669,5
 BRCA,Gene-gene correlation error (lower is better),mvn,0.048119627592384716,5
 BRCA,Gene-gene correlation error (lower is better),cvae,0.07227116191298225,5
 BRCA,Gene-gene correlation error (lower is better),nd,0.09826814892290311,5
 BRCA,Gene-gene correlation error (lower is better),"pgm@composition=basic,neighboring=legacy_exact_n",0.20782477544312172,5
-BRCA,Gene-gene correlation error (lower is better),"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.14754058699590172,5
+BRCA,Gene-gene correlation error (lower is better),"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.14754058699590167,5
 BRCA,"Per-gene distribution distance, W1 (lower is better)",mvn,0.24342084506394035,5
 BRCA,"Per-gene distribution distance, W1 (lower is better)",cvae,0.17702995310283098,5
 BRCA,"Per-gene distribution distance, W1 (lower is better)",nd,0.19897003446081551,5
@@ -22,13 +22,13 @@ BRCA,MahalaMIA,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.50
 BRCA,MeLoMIA-CVAE,mvn,0.5527783423195383,5
 BRCA,MeLoMIA-CVAE,cvae,0.7980171114481804,5
 BRCA,MeLoMIA-CVAE,nd,0.5628003511155817,5
-BRCA,MeLoMIA-CVAE,"pgm@composition=basic,neighboring=legacy_exact_n",,0
-BRCA,MeLoMIA-CVAE,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",,0
+BRCA,MeLoMIA-CVAE,"pgm@composition=basic,neighboring=legacy_exact_n",0.5082681431195961,5
+BRCA,MeLoMIA-CVAE,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5099000568543575,5
 BRCA,MeLoMIA-ND,mvn,0.876091260976063,5
 BRCA,MeLoMIA-ND,cvae,0.8238515691593967,5
 BRCA,MeLoMIA-ND,nd,0.8583632272150687,5
-BRCA,MeLoMIA-ND,"pgm@composition=basic,neighboring=legacy_exact_n",0.5075074521534881,4
-BRCA,MeLoMIA-ND,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",,0
+BRCA,MeLoMIA-ND,"pgm@composition=basic,neighboring=legacy_exact_n",0.5123740757041036,5
+BRCA,MeLoMIA-ND,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5122549014373187,5
 BRCA,MAMA-MIA v1,mvn,0.5203997953961512,5
 BRCA,MAMA-MIA v1,cvae,0.5280279471713173,5
 BRCA,MAMA-MIA v1,nd,0.5388289147875354,5
@@ -51,7 +51,7 @@ BRCA,GAN-leaks,"pgm@composition=basic,neighboring=legacy_exact_n",0.499598394807
 BRCA,GAN-leaks,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5007564813749192,5
 BRCA,Conf-LR,mvn,0.5637002049290636,5
 BRCA,Conf-LR,cvae,0.5350776690810394,5
-BRCA,Conf-LR,nd,0.5407783535321711,5
+BRCA,Conf-LR,nd,0.5407783535321709,5
 BRCA,Conf-LR,"pgm@composition=basic,neighboring=legacy_exact_n",0.5052458847818024,5
 BRCA,Conf-LR,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5063473184309517,5
 BRCA,Conf-RF,mvn,0.5134411081711793,5
@@ -62,18 +62,18 @@ BRCA,Conf-RF,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5039
 COMBINED,"Utility (TSTR / real, higher is better)",mvn,0.9899982733422675,5
 COMBINED,"Utility (TSTR / real, higher is better)",cvae,0.9626005868062253,5
 COMBINED,"Utility (TSTR / real, higher is better)",nd,0.9755069877988152,5
-COMBINED,"Utility (TSTR / real, higher is better)","pgm@composition=basic,neighboring=legacy_exact_n",0.2049633131960069,5
+COMBINED,"Utility (TSTR / real, higher is better)","pgm@composition=basic,neighboring=legacy_exact_n",0.20496331319600686,5
 COMBINED,"Utility (TSTR / real, higher is better)","pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.9216407439891027,5
 COMBINED,Gene-gene correlation error (lower is better),mvn,0.03867623533229532,5
 COMBINED,Gene-gene correlation error (lower is better),cvae,0.06500654418578249,5
 COMBINED,Gene-gene correlation error (lower is better),nd,0.039784994394106356,5
-COMBINED,Gene-gene correlation error (lower is better),"pgm@composition=basic,neighboring=legacy_exact_n",0.19493457145873685,5
-COMBINED,Gene-gene correlation error (lower is better),"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.12961132903314393,5
+COMBINED,Gene-gene correlation error (lower is better),"pgm@composition=basic,neighboring=legacy_exact_n",0.1949345714587368,5
+COMBINED,Gene-gene correlation error (lower is better),"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.12961132903314385,5
 COMBINED,"Per-gene distribution distance, W1 (lower is better)",mvn,0.18356069648231457,5
 COMBINED,"Per-gene distribution distance, W1 (lower is better)",cvae,0.1857766417836143,5
 COMBINED,"Per-gene distribution distance, W1 (lower is better)",nd,0.11594878112000336,5
 COMBINED,"Per-gene distribution distance, W1 (lower is better)","pgm@composition=basic,neighboring=legacy_exact_n",0.756470191978529,5
-COMBINED,"Per-gene distribution distance, W1 (lower is better)","pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.10028721622439199,5
+COMBINED,"Per-gene distribution distance, W1 (lower is better)","pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.10028721622439193,5
 COMBINED,MahalaMIA,mvn,0.9000520666167559,5
 COMBINED,MahalaMIA,cvae,0.618755629950974,5
 COMBINED,MahalaMIA,nd,0.7697482836660142,5
@@ -82,13 +82,13 @@ COMBINED,MahalaMIA,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",
 COMBINED,MeLoMIA-CVAE,mvn,0.5283573894667268,5
 COMBINED,MeLoMIA-CVAE,cvae,0.7305582201610633,5
 COMBINED,MeLoMIA-CVAE,nd,0.5251176024639437,5
-COMBINED,MeLoMIA-CVAE,"pgm@composition=basic,neighboring=legacy_exact_n",,0
-COMBINED,MeLoMIA-CVAE,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",,0
+COMBINED,MeLoMIA-CVAE,"pgm@composition=basic,neighboring=legacy_exact_n",0.5049761149541581,5
+COMBINED,MeLoMIA-CVAE,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5050241040239596,5
 COMBINED,MeLoMIA-ND,mvn,0.6437171605822153,5
 COMBINED,MeLoMIA-ND,cvae,0.5912979496958383,5
 COMBINED,MeLoMIA-ND,nd,0.6481699206182989,5
-COMBINED,MeLoMIA-ND,"pgm@composition=basic,neighboring=legacy_exact_n",,0
-COMBINED,MeLoMIA-ND,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",,0
+COMBINED,MeLoMIA-ND,"pgm@composition=basic,neighboring=legacy_exact_n",0.4983450788404095,5
+COMBINED,MeLoMIA-ND,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.49934524524986124,5
 COMBINED,MAMA-MIA v1,mvn,0.5118199966907022,5
 COMBINED,MAMA-MIA v1,cvae,0.5168260392986804,5
 COMBINED,MAMA-MIA v1,nd,0.5280247853760289,5

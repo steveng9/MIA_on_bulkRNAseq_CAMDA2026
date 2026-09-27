@@ -1740,3 +1740,20 @@ is in `results/PGM_ARCHITECTURES.md`.*
   under the bound.
 - **Not yet run:** grid edges on the k/l forest targets (their black+grid cells
   are empty).
+
+### 10o. The group-meeting table, and where it disagrees with the abstract (2026-09-27)
+
+`results/SLIDE_TABLE.md` (`scripts/slide_table.py`): every attack on MVN, CVAE, ND, DP-PGM old (the CAMDA-25 generator rebuilt exactly, `neighboring=legacy_exact_n`, not DP) and DP-PGM new (star, zCDP, 16 DP bins). Every cell is the mean of 5 splits at ε = 10.
+
+- **DP-PGM new**: utility 0.70 (BRCA) and 0.92 (COMBINED), up from 0.32 and 0.21 on the old generator. Every attack from the abstract is at chance on both DP-PGMs: MahalaMIA, MeLoMIA-CVAE, MeLoMIA-ND, MAMA-MIA v1, and the 7 challenge baselines all fall in 0.49–0.52. MAMA-MIA v2 (black box) reaches 0.756 / 0.649, under the ε = 10 bound of 0.909.
+- **Challenge baselines** (`mia/attacks/generic.py`, ported from the submitted `baseline.py`) match the abstract's rows within 0.01, so our retrained targets are equivalent to the team's.
+- **MahalaMIA on CVAE** (abstract 0.986; ours 0.917): the pinv branch of `fix_covariance_matrix` is numerically unstable. A 1e-13 change flips BRCA split 2 from 0.844 to 0.998. A deliberate ridge gives 0.97.
+- **MahalaMIA on BRCA ND** (abstract 0.489): the submitted code gives 0.806 on the published data, so the abstract's value does not reproduce.
+- **MeLoMIA-CVAE**: the abstract used K = 5 shadows (0.753 BRCA, 0.677 COMBINED). With K = 5 we get 0.784 / 0.712; with K = 30 / 20, 0.798 / 0.731.
+- **MeLoMIA-ND** (abstract 0.620 BRCA, 0.739 COMBINED):
+  - The submitted `attack_synth_shadow.py` does not implement the abstract's Methods. Its meta-classifier trains on the blue team's published ND targets for the other evaluation splits, with their true membership labels.
+  - It scores only splits 4–5, each on a balanced subset (the non-members of that split plus the non-members of the previous split).
+  - Ours follows the described synth-shadow method on all 5 splits and all samples: 0.858 / 0.648 at K = 30 / 20, and 0.826 / 0.601 at K = 5.
+  - COMBINED per split: 0.748, 0.725, 0.579, 0.603, 0.585. Two splits alone are a noisy estimate.
+  - That the abstract's numbers came from this code path is inferred from the submitted repo; no run logs confirm it.
+- **MAMA-MIA v1 on DP-PGM old** (abstract 0.528 / 0.556; ours 0.511 / 0.502): the abstract's DP-PGM targets are not in the submitted repo. Open with Steven.
