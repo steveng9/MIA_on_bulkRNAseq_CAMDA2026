@@ -13,7 +13,7 @@ Last updated 2026-09-25.
 | Star with hairs (your 2026-09-24 idea), hairs free to grow into trees: l ∈ {0,20,50,100,200,400,977} × with/without 1-ways, 112 targets | **done**: every hair makes correlation worse; the star's direct subtype links win (FINDINGS §10l). v2 queued | `configs/experiments/pgm_hairy_star.yaml`, `logs/pgm_hairy_star.log` |
 | Star with hairs, your literal version: hairs are disjoint gene pairs; l ∈ {20,50,100,200,489} × with/without 1-ways, 80 targets | **done** (88 incl. 1-way floor, no failures); write-up after v2 | `configs/experiments/pgm_hairy_pairs.yaml`, `logs/pgm_hairy_queue.log` |
 | 1-way-only floor (genes independent, no label link), 8 targets | queued behind the above | `configs/experiments/pgm_baselines.yaml` |
-| MAMA-MIA v2 on all the new targets, then rebuild the one-place table | queued, starts when the above finish | `scripts/run_v2_followup.sh`, `logs/v2_followup.log` |
+| MAMA-MIA v2 on all the new targets, then rebuild the one-place table | **done** (214 evals, no failures); FINDINGS §10n, table rebuilt | `scripts/run_v2_followup.sh`, `logs/v2_followup.log` |
 
 ## Done, for Steven to read
 

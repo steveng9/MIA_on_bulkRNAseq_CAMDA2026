@@ -1714,3 +1714,29 @@ Against the star at the same bins, split 1 (utility / correlation MAE / W1):
 - **Even with free (non-private) selection**, higher-order tables do not lift
   quality above the star on this data.  Making the selection DP would only make
   it worse, so a DP version is not worth building.
+
+### 10n. Disjoint-pair hairs, the 1-way floor, and MAMA-MIA v2 on every architecture
+
+*2026-09-27.  `results/pgm_hairy_pairs.csv`, `results/pgm_baselines.csv`, v2
+follow-up (`logs/v2_followup.log`, 214 evaluations, no failures).  Every number
+is in `results/PGM_ARCHITECTURES.md`.*
+
+- **Disjoint-pair hairs (Steven's literal version, `max_component=2`) do not
+  beat the star.**
+  - They hurt correlation far less than free hairs.  COMBINED ε=10, 16 bins,
+    l=100: 0.132, against 0.148 for free hairs and 0.130 for the star.
+  - Utility is within noise of the star.
+- **The 1-way floor** (every gene independent, no subtype link) is useless as
+  data but leaks the most.
+  - Utility is 0.05–0.18.
+  - MAMA-MIA v2 with grid edges reaches 0.72–0.76 at ε=10 (star: 0.65–0.74).
+  - White box reaches 0.85 on COMBINED at ε=10, near the 0.89 bound.
+  - Why: it has half the tables of the star, so each table gets √2 less noise.
+- **The grid edge estimator closes most of the black/white gap everywhere.**
+  Star, 16 bins, ε=10: BRCA 0.576 → 0.735 (white box 0.749), COMBINED 0.613 →
+  0.653 (0.676).
+- **Privacy tracks the number of tables, not their shape.**  At ε=10, every
+  architecture sits at black+grid 0.60–0.74 and white box 0.60–0.77.  All stay
+  under the bound.
+- **Not yet run:** grid edges on the k/l forest targets (their black+grid cells
+  are empty).
