@@ -1,0 +1,60 @@
+# Slide table for the group meeting (Steven, 2026-09-27): every attack against
+# DP-PGM old (the CAMDA-25 generator: basic composition, 4 private-percentile
+# bins, exact row count -- NOT DP; neighboring=legacy_exact_n reproduces it)
+# and DP-PGM new (star, zCDP, 16 DP equal-depth bins, eps=10), 5 splits.
+# Attack settings are the grid's, so MeLoMIA reuses the grid's shadow stacks.
+name: grid_slides_combined
+dataset: COMBINED
+notes: "slide table: old vs new DP-PGM, all attacks, 5 splits"
+device: cuda
+
+generators: ["pgm@composition=basic,neighboring=legacy_exact_n", "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16"]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  mahalamia:
+    class: mahalamia
+    params:
+      use_reference: true
+  mamamia:
+    class: mamamia
+    params:
+      n_bins: 4
+  mamamia_v2:
+    class: mamamia_v2
+    params: {cliques: public, edges: auto, class_centre: true}
+  generic_mc:
+    class: generic
+    params: {method: mc}
+  generic_gan_leaks:
+    class: generic
+    params: {method: gan_leaks}
+  generic_conf_lr:
+    class: generic
+    params: {method: conf_lr}
+  generic_conf_rf:
+    class: generic
+    params: {method: conf_rf}
+  generic_logan_d1:
+    class: generic
+    params: {method: logan_d1}
+  generic_gan_leaks_cal:
+    class: generic
+    params: {method: gan_leaks_cal}
+  generic_domias_kde:
+    class: generic
+    params: {method: domias_kde}
+  melomia_nd:
+    class: melomia_nd
+    params:
+      n_shadows: 20
+      n_noise: 600
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+  melomia_cvae:
+    class: melomia_cvae
+    params:
+      n_shadows: 20
+      n_noise: 50
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]

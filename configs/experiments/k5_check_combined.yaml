@@ -1,0 +1,19 @@
+# Verification for the group meeting (2026-09-27): the abstract ran MeLoMIA with
+# K=5 shadows; our grid uses K=30 (BRCA) / K=20 (COMBINED).  Same settings as
+# the grid except K, so the shadow cache (keyed on everything but K) is reused
+# and only the meta-classifier is refitted.  Diagonal cells only.
+name: k5_check_combined
+dataset: COMBINED
+notes: "MeLoMIA at K=5, the abstract's shadow count"
+device: cuda
+
+generators: [cvae, nd]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  melomia_nd:
+    class: melomia_nd
+    params: {n_shadows: 5, n_noise: 600, optuna_trials: 60, classifiers: [xgb, rf, lgbm, cat, mlp]}
+  melomia_cvae:
+    class: melomia_cvae
+    params: {n_shadows: 5, n_noise: 50, optuna_trials: 60, classifiers: [xgb, rf, lgbm, cat, mlp]}

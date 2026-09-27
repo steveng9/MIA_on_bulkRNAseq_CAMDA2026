@@ -1,0 +1,29 @@
+{
+  "run_id": "COMBINED__generic__nd__s4__039f0105",
+  "timestamp": "2026-09-27T18:42:51+00:00",
+  "dataset": "COMBINED",
+  "attack": "generic",
+  "generator": "nd",
+  "split": 4,
+  "tag": "gan_leaks",
+  "experiment": "grid_slides_extra_combined",
+  "variant": "generic_gan_leaks",
+  "notes": "slide table: v2 + generic baselines on the non-DP generators",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "gan_leaks",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "b2494b95e9b58c4b",
+    "params": {
+      "epochs": 200,
+      "dp_noise_multiplier": 1e-05,
+      "smote_upsample_to": 3000
+    },
+    "seed": null,
+    "source": "published-blue-team"
+  }
+}

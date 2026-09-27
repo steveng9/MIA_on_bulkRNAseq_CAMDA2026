@@ -1,0 +1,38 @@
+{
+  "run_id": "BRCA__mamamia__mvn__s3__c4197d2d",
+  "timestamp": "2026-09-27T18:46:58+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia",
+  "generator": "mvn",
+  "split": 3,
+  "tag": "k4_1w_2w",
+  "experiment": "grid_slides_extra_brca",
+  "variant": "mamamia",
+  "notes": "slide table: v2 + generic baselines on the non-DP generators",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mamamia",
+    "n_bins": 4,
+    "use_oneway": true,
+    "use_twoway": true,
+    "use_subtype_marginal": true,
+    "calibrate": true,
+    "aggregation": "ratio",
+    "dp_epsilon": null,
+    "dp_delta": 1e-05,
+    "dp_budget_weights": [
+      0.33,
+      0.67
+    ],
+    "attack": "mamamia"
+  },
+  "target": {
+    "fingerprint": "7c277a3f655c5c9b",
+    "params": {
+      "noise_level": 0.7
+    },
+    "seed": 3077,
+    "source": "trained"
+  }
+}

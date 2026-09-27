@@ -1,0 +1,29 @@
+{
+  "run_id": "BRCA__generic__nd__s3__d79406db",
+  "timestamp": "2026-09-27T18:41:35+00:00",
+  "dataset": "BRCA",
+  "attack": "generic",
+  "generator": "nd",
+  "split": 3,
+  "tag": "conf_rf",
+  "experiment": "grid_slides_extra_brca",
+  "variant": "generic_conf_rf",
+  "notes": "slide table: v2 + generic baselines on the non-DP generators",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "conf_rf",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "07ab2e670212e960",
+    "params": {
+      "epochs": 200,
+      "dp_noise_multiplier": 1e-05,
+      "smote_upsample_to": 3000
+    },
+    "seed": null,
+    "source": "published-blue-team"
+  }
+}

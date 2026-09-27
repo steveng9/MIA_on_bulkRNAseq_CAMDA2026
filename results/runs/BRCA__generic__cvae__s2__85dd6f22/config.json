@@ -1,0 +1,36 @@
+{
+  "run_id": "BRCA__generic__cvae__s2__85dd6f22",
+  "timestamp": "2026-09-27T18:40:38+00:00",
+  "dataset": "BRCA",
+  "attack": "generic",
+  "generator": "cvae",
+  "split": 2,
+  "tag": "mc",
+  "experiment": "grid_slides_extra_brca",
+  "variant": "generic_mc",
+  "notes": "slide table: v2 + generic baselines on the non-DP generators",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "mc",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "80b04875d6de6732",
+    "params": {
+      "preprocess": "standard",
+      "optimizer": "adam",
+      "scheduler": "none",
+      "lr": 0.001,
+      "batch_size": 64,
+      "num_iters": 10000,
+      "z_dim": 128,
+      "beta": 0.001,
+      "condition_type": "embedding",
+      "early_stopping": false
+    },
+    "seed": 2908,
+    "source": "trained"
+  }
+}

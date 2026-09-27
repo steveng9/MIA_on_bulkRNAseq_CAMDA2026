@@ -1,0 +1,36 @@
+{
+  "run_id": "COMBINED__generic__cvae__s4__f1a3f74e",
+  "timestamp": "2026-09-27T18:47:31+00:00",
+  "dataset": "COMBINED",
+  "attack": "generic",
+  "generator": "cvae",
+  "split": 4,
+  "tag": "domias_kde",
+  "experiment": "grid_slides_extra_combined",
+  "variant": "generic_domias_kde",
+  "notes": "slide table: v2 + generic baselines on the non-DP generators",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "domias_kde",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "1425a8dcf925386f",
+    "params": {
+      "preprocess": "standard",
+      "optimizer": "adam",
+      "scheduler": "none",
+      "lr": 0.001,
+      "batch_size": 64,
+      "num_iters": 10000,
+      "z_dim": 128,
+      "beta": 0.001,
+      "condition_type": "embedding",
+      "early_stopping": false
+    },
+    "seed": 4583,
+    "source": "trained"
+  }
+}

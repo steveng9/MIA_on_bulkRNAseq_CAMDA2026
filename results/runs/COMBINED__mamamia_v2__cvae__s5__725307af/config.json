@@ -1,0 +1,48 @@
+{
+  "run_id": "COMBINED__mamamia_v2__cvae__s5__725307af",
+  "timestamp": "2026-09-27T18:42:02+00:00",
+  "dataset": "COMBINED",
+  "attack": "mamamia_v2",
+  "generator": "cvae",
+  "split": 5,
+  "tag": "cl-public_ed-auto_cc",
+  "experiment": "grid_slides_extra_combined",
+  "variant": "mamamia_v2",
+  "notes": "slide table: v2 + generic baselines on the non-DP generators",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mamamia_v2",
+    "cliques": "public",
+    "edges": "auto",
+    "families": [
+      "1way",
+      "gl",
+      "tree"
+    ],
+    "class_centre": true,
+    "alpha": 0.5,
+    "calibrate": true,
+    "n_shadows": 20,
+    "shadow_frac": 0.8,
+    "n_bins": 16,
+    "attack": "mamamia_v2"
+  },
+  "target": {
+    "fingerprint": "5328ee262bdbb112",
+    "params": {
+      "preprocess": "standard",
+      "optimizer": "adam",
+      "scheduler": "none",
+      "lr": 0.001,
+      "batch_size": 64,
+      "num_iters": 10000,
+      "z_dim": 128,
+      "beta": 0.001,
+      "condition_type": "embedding",
+      "early_stopping": false
+    },
+    "seed": 5583,
+    "source": "trained"
+  }
+}

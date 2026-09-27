@@ -1,0 +1,49 @@
+# Slide table: MAMA-MIA v2 (black box, star tables, 16 equal-depth bins read
+# off the release) and the challenge's generic baselines against MVN, CVAE and
+# ND, 5 splits.  The baselines also check our retrained targets against the
+# abstract's baseline rows.
+name: grid_slides_extra_combined
+dataset: COMBINED
+notes: "slide table: v2 + generic baselines on the non-DP generators"
+device: cuda
+
+generators: [mvn, cvae, nd]
+splits: [1, 2, 3, 4, 5]
+
+target_params:
+  mvn:
+    noise_level: 0.7
+
+attacks:
+  mamamia_v2:
+    class: mamamia_v2
+    params: {cliques: public, edges: auto, class_centre: true}
+  generic_mc:
+    class: generic
+    params: {method: mc}
+  generic_gan_leaks:
+    class: generic
+    params: {method: gan_leaks}
+  generic_conf_lr:
+    class: generic
+    params: {method: conf_lr}
+  generic_conf_rf:
+    class: generic
+    params: {method: conf_rf}
+  generic_logan_d1:
+    class: generic
+    params: {method: logan_d1}
+  generic_gan_leaks_cal:
+    class: generic
+    params: {method: gan_leaks_cal}
+  generic_domias_kde:
+    class: generic
+    params: {method: domias_kde}
+  mahalamia:
+    class: mahalamia
+    params:
+      use_reference: true
+  mamamia:
+    class: mamamia
+    params:
+      n_bins: 4

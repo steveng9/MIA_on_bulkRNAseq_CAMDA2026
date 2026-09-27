@@ -1,0 +1,41 @@
+{
+  "run_id": "COMBINED__mamamia_v2__nd__s4__725307af",
+  "timestamp": "2026-09-27T18:42:07+00:00",
+  "dataset": "COMBINED",
+  "attack": "mamamia_v2",
+  "generator": "nd",
+  "split": 4,
+  "tag": "cl-public_ed-auto_cc",
+  "experiment": "grid_slides_extra_combined",
+  "variant": "mamamia_v2",
+  "notes": "slide table: v2 + generic baselines on the non-DP generators",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mamamia_v2",
+    "cliques": "public",
+    "edges": "auto",
+    "families": [
+      "1way",
+      "gl",
+      "tree"
+    ],
+    "class_centre": true,
+    "alpha": 0.5,
+    "calibrate": true,
+    "n_shadows": 20,
+    "shadow_frac": 0.8,
+    "n_bins": 16,
+    "attack": "mamamia_v2"
+  },
+  "target": {
+    "fingerprint": "b2494b95e9b58c4b",
+    "params": {
+      "epochs": 200,
+      "dp_noise_multiplier": 1e-05,
+      "smote_upsample_to": 3000
+    },
+    "seed": null,
+    "source": "published-blue-team"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "run_id": "BRCA__generic__nd__s1__039f0105",
+  "timestamp": "2026-09-27T18:40:55+00:00",
+  "dataset": "BRCA",
+  "attack": "generic",
+  "generator": "nd",
+  "split": 1,
+  "tag": "gan_leaks",
+  "experiment": "grid_slides_extra_brca",
+  "variant": "generic_gan_leaks",
+  "notes": "slide table: v2 + generic baselines on the non-DP generators",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "gan_leaks",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "55d876cf95d22403",
+    "params": {
+      "epochs": 200,
+      "dp_noise_multiplier": 1e-05,
+      "smote_upsample_to": 3000
+    },
+    "seed": null,
+    "source": "published-blue-team"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "run_id": "COMBINED__generic__cvae__s3__501ebe83",
+  "timestamp": "2026-09-27T18:45:14+00:00",
+  "dataset": "COMBINED",
+  "attack": "generic",
+  "generator": "cvae",
+  "split": 3,
+  "tag": "logan_d1",
+  "experiment": "grid_slides_extra_combined",
+  "variant": "generic_logan_d1",
+  "notes": "slide table: v2 + generic baselines on the non-DP generators",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "logan_d1",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "0e71ff88b50ee25a",
+    "params": {
+      "preprocess": "standard",
+      "optimizer": "adam",
+      "scheduler": "none",
+      "lr": 0.001,
+      "batch_size": 64,
+      "num_iters": 10000,
+      "z_dim": 128,
+      "beta": 0.001,
+      "condition_type": "embedding",
+      "early_stopping": false
+    },
+    "seed": 3583,
+    "source": "trained"
+  }
+}

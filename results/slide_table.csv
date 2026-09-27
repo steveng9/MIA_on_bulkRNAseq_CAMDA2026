@@ -1,0 +1,136 @@
+dataset,row,generator,mean,n
+BRCA,"Utility (TSTR / real, higher is better)",mvn,0.8842869791831871,5
+BRCA,"Utility (TSTR / real, higher is better)",cvae,0.9582209554845766,5
+BRCA,"Utility (TSTR / real, higher is better)",nd,0.9133196786727588,5
+BRCA,"Utility (TSTR / real, higher is better)","pgm@composition=basic,neighboring=legacy_exact_n",0.32104867719491387,5
+BRCA,"Utility (TSTR / real, higher is better)","pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.6981547381315669,5
+BRCA,Gene-gene correlation error (lower is better),mvn,0.048119627592384716,5
+BRCA,Gene-gene correlation error (lower is better),cvae,0.07227116191298225,5
+BRCA,Gene-gene correlation error (lower is better),nd,0.09826814892290311,5
+BRCA,Gene-gene correlation error (lower is better),"pgm@composition=basic,neighboring=legacy_exact_n",0.20782477544312172,5
+BRCA,Gene-gene correlation error (lower is better),"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.14754058699590172,5
+BRCA,"Per-gene distribution distance, W1 (lower is better)",mvn,0.24342084506394035,5
+BRCA,"Per-gene distribution distance, W1 (lower is better)",cvae,0.17702995310283098,5
+BRCA,"Per-gene distribution distance, W1 (lower is better)",nd,0.19897003446081551,5
+BRCA,"Per-gene distribution distance, W1 (lower is better)","pgm@composition=basic,neighboring=legacy_exact_n",0.7309936254204202,5
+BRCA,"Per-gene distribution distance, W1 (lower is better)","pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.4427776021373827,5
+BRCA,MahalaMIA,mvn,0.9282340581725943,5
+BRCA,MahalaMIA,cvae,0.9167410963809264,5
+BRCA,MahalaMIA,nd,0.8059283081744024,5
+BRCA,MahalaMIA,"pgm@composition=basic,neighboring=legacy_exact_n",0.5016639170637969,5
+BRCA,MahalaMIA,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5077359265321129,5
+BRCA,MeLoMIA-CVAE,mvn,0.5527783423195383,5
+BRCA,MeLoMIA-CVAE,cvae,0.7980171114481804,5
+BRCA,MeLoMIA-CVAE,nd,0.5628003511155817,5
+BRCA,MeLoMIA-CVAE,"pgm@composition=basic,neighboring=legacy_exact_n",,0
+BRCA,MeLoMIA-CVAE,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",,0
+BRCA,MeLoMIA-ND,mvn,0.876091260976063,5
+BRCA,MeLoMIA-ND,cvae,0.8238515691593967,5
+BRCA,MeLoMIA-ND,nd,0.8583632272150687,5
+BRCA,MeLoMIA-ND,"pgm@composition=basic,neighboring=legacy_exact_n",0.5075074521534881,4
+BRCA,MeLoMIA-ND,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",,0
+BRCA,MAMA-MIA v1,mvn,0.5203997953961512,5
+BRCA,MAMA-MIA v1,cvae,0.5280279471713173,5
+BRCA,MAMA-MIA v1,nd,0.5388289147875354,5
+BRCA,MAMA-MIA v1,"pgm@composition=basic,neighboring=legacy_exact_n",0.5111015923734294,5
+BRCA,MAMA-MIA v1,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5208644874227512,5
+BRCA,MAMA-MIA v2 (black box),mvn,0.5155125364756404,5
+BRCA,MAMA-MIA v2 (black box),cvae,0.53909260945289,5
+BRCA,MAMA-MIA v2 (black box),nd,0.6128794899737465,5
+BRCA,MAMA-MIA v2 (black box),"pgm@composition=basic,neighboring=legacy_exact_n",0.5123130360251207,5
+BRCA,MAMA-MIA v2 (black box),"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.7561118203815858,5
+BRCA,MC,mvn,0.5093535714637626,5
+BRCA,MC,cvae,0.5625574052812858,5
+BRCA,MC,nd,0.5217460836968175,5
+BRCA,MC,"pgm@composition=basic,neighboring=legacy_exact_n",0.5000187926877908,5
+BRCA,MC,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5015704717843807,5
+BRCA,GAN-leaks,mvn,0.5297046738184494,5
+BRCA,GAN-leaks,cvae,0.7086921347459438,5
+BRCA,GAN-leaks,nd,0.5441849624714157,5
+BRCA,GAN-leaks,"pgm@composition=basic,neighboring=legacy_exact_n",0.49959839480727924,5
+BRCA,GAN-leaks,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5007564813749192,5
+BRCA,Conf-LR,mvn,0.5637002049290636,5
+BRCA,Conf-LR,cvae,0.5350776690810394,5
+BRCA,Conf-LR,nd,0.5407783535321711,5
+BRCA,Conf-LR,"pgm@composition=basic,neighboring=legacy_exact_n",0.5052458847818024,5
+BRCA,Conf-LR,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5063473184309517,5
+BRCA,Conf-RF,mvn,0.5134411081711793,5
+BRCA,Conf-RF,cvae,0.5318696893804671,5
+BRCA,Conf-RF,nd,0.5117291102708055,5
+BRCA,Conf-RF,"pgm@composition=basic,neighboring=legacy_exact_n",0.4901123395361844,5
+BRCA,Conf-RF,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5039047337841913,5
+COMBINED,"Utility (TSTR / real, higher is better)",mvn,0.9899982733422675,5
+COMBINED,"Utility (TSTR / real, higher is better)",cvae,0.9626005868062253,5
+COMBINED,"Utility (TSTR / real, higher is better)",nd,0.9755069877988152,5
+COMBINED,"Utility (TSTR / real, higher is better)","pgm@composition=basic,neighboring=legacy_exact_n",0.2049633131960069,5
+COMBINED,"Utility (TSTR / real, higher is better)","pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.9216407439891027,5
+COMBINED,Gene-gene correlation error (lower is better),mvn,0.03867623533229532,5
+COMBINED,Gene-gene correlation error (lower is better),cvae,0.06500654418578249,5
+COMBINED,Gene-gene correlation error (lower is better),nd,0.039784994394106356,5
+COMBINED,Gene-gene correlation error (lower is better),"pgm@composition=basic,neighboring=legacy_exact_n",0.19493457145873685,5
+COMBINED,Gene-gene correlation error (lower is better),"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.12961132903314393,5
+COMBINED,"Per-gene distribution distance, W1 (lower is better)",mvn,0.18356069648231457,5
+COMBINED,"Per-gene distribution distance, W1 (lower is better)",cvae,0.1857766417836143,5
+COMBINED,"Per-gene distribution distance, W1 (lower is better)",nd,0.11594878112000336,5
+COMBINED,"Per-gene distribution distance, W1 (lower is better)","pgm@composition=basic,neighboring=legacy_exact_n",0.756470191978529,5
+COMBINED,"Per-gene distribution distance, W1 (lower is better)","pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.10028721622439199,5
+COMBINED,MahalaMIA,mvn,0.9000520666167559,5
+COMBINED,MahalaMIA,cvae,0.618755629950974,5
+COMBINED,MahalaMIA,nd,0.7697482836660142,5
+COMBINED,MahalaMIA,"pgm@composition=basic,neighboring=legacy_exact_n",0.5003401859722839,5
+COMBINED,MahalaMIA,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5032220287776349,5
+COMBINED,MeLoMIA-CVAE,mvn,0.5283573894667268,5
+COMBINED,MeLoMIA-CVAE,cvae,0.7305582201610633,5
+COMBINED,MeLoMIA-CVAE,nd,0.5251176024639437,5
+COMBINED,MeLoMIA-CVAE,"pgm@composition=basic,neighboring=legacy_exact_n",,0
+COMBINED,MeLoMIA-CVAE,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",,0
+COMBINED,MeLoMIA-ND,mvn,0.6437171605822153,5
+COMBINED,MeLoMIA-ND,cvae,0.5912979496958383,5
+COMBINED,MeLoMIA-ND,nd,0.6481699206182989,5
+COMBINED,MeLoMIA-ND,"pgm@composition=basic,neighboring=legacy_exact_n",,0
+COMBINED,MeLoMIA-ND,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",,0
+COMBINED,MAMA-MIA v1,mvn,0.5118199966907022,5
+COMBINED,MAMA-MIA v1,cvae,0.5168260392986804,5
+COMBINED,MAMA-MIA v1,nd,0.5280247853760289,5
+COMBINED,MAMA-MIA v1,"pgm@composition=basic,neighboring=legacy_exact_n",0.5018913165291145,5
+COMBINED,MAMA-MIA v1,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5204201190596496,5
+COMBINED,MAMA-MIA v2 (black box),mvn,0.5079699767089328,5
+COMBINED,MAMA-MIA v2 (black box),cvae,0.5172314093562551,5
+COMBINED,MAMA-MIA v2 (black box),nd,0.5471299061599229,5
+COMBINED,MAMA-MIA v2 (black box),"pgm@composition=basic,neighboring=legacy_exact_n",0.5046638765316341,5
+COMBINED,MAMA-MIA v2 (black box),"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.6485776881346903,5
+COMBINED,MC,mvn,0.5065646905234801,5
+COMBINED,MC,cvae,0.5308855478914325,5
+COMBINED,MC,nd,0.5068828836540145,5
+COMBINED,MC,"pgm@composition=basic,neighboring=legacy_exact_n",0.5001557848713469,5
+COMBINED,MC,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5005385328426742,5
+COMBINED,GAN-leaks,mvn,0.5284215738243502,5
+COMBINED,GAN-leaks,cvae,0.6417791753087246,5
+COMBINED,GAN-leaks,nd,0.5144510519603281,5
+COMBINED,GAN-leaks,"pgm@composition=basic,neighboring=legacy_exact_n",0.5004498621081399,5
+COMBINED,GAN-leaks,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5014347110961659,5
+COMBINED,Conf-LR,mvn,0.5093614494654574,5
+COMBINED,Conf-LR,cvae,0.5062492428671408,5
+COMBINED,Conf-LR,nd,0.5072663577505834,5
+COMBINED,Conf-LR,"pgm@composition=basic,neighboring=legacy_exact_n",0.5058901683037004,5
+COMBINED,Conf-LR,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5060580627429612,5
+COMBINED,Conf-RF,mvn,0.5103606131457221,5
+COMBINED,Conf-RF,cvae,0.5134795695301972,5
+COMBINED,Conf-RF,nd,0.5086936094817401,5
+COMBINED,Conf-RF,"pgm@composition=basic,neighboring=legacy_exact_n",0.5074414563079684,5
+COMBINED,Conf-RF,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5042821168873324,5
+COMBINED,LOGAN,mvn,0.5015416983648094,5
+COMBINED,LOGAN,cvae,0.503678861381119,5
+COMBINED,LOGAN,nd,0.5012307751484061,5
+COMBINED,LOGAN,"pgm@composition=basic,neighboring=legacy_exact_n",0.5066445843587932,5
+COMBINED,LOGAN,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.5020389266433757,5
+COMBINED,GAN-leaks-cal,mvn,0.5660459356435494,5
+COMBINED,GAN-leaks-cal,cvae,0.5622988983509681,5
+COMBINED,GAN-leaks-cal,nd,0.5218047169248575,5
+COMBINED,GAN-leaks-cal,"pgm@composition=basic,neighboring=legacy_exact_n",0.5005211583617208,5
+COMBINED,GAN-leaks-cal,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.49817457639342805,5
+COMBINED,DOMIAS-KDE,mvn,0.5000363681488513,5
+COMBINED,DOMIAS-KDE,cvae,0.4994078651092372,5
+COMBINED,DOMIAS-KDE,nd,0.5001791945009125,5
+COMBINED,DOMIAS-KDE,"pgm@composition=basic,neighboring=legacy_exact_n",0.4997461897441857,5
+COMBINED,DOMIAS-KDE,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.4989946053623472,5

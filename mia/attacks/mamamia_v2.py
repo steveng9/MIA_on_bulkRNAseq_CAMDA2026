@@ -537,6 +537,10 @@ class MAMAMIAv2(Attack):
     calibrate: bool = True
     n_shadows: int = 20
     shadow_frac: float = 0.8
+    #: Bin count when the target records none (a non-PGM generator: MVN, CVAE,
+    #: ND).  The attack then treats the release as if it came from a star
+    #: DP-PGM with `n_bins` equal-depth bins read off the release itself.
+    n_bins: int = 16
 
     name = "mamamia_v2"
 
@@ -558,11 +562,16 @@ class MAMAMIAv2(Attack):
         yr = D.encode_subtypes(dataset, D.load_subtypes(dataset).values)
         tg = T.load_target(dataset, generator, split)
         Xs, ys = tg["X"].astype(np.float64), np.asarray(tg["y_int"]).astype(np.int64)
-        params = T.target_record(dataset, generator, split)["params"]
+        params = dict(T.target_record(dataset, generator, split)["params"])
+        if "n_bins" not in params:          # not a PGM: nothing to follow
+            params.update(n_bins=self.n_bins, binning="quantile")
         K = int(params["n_bins"])
         structure = params.get("structure", "hierarchical")
+        edges = self.edges
+        if edges == "auto":                 # the black-box default per binning
+            edges = "grid" if params.get("binning") == "dp_quantile" else "recovered"
 
-        E = recover_edges(Xs, params, self.edges, Xr, dataset, generator, split)
+        E = recover_edges(Xs, params, edges, Xr, dataset, generator, split)
         Br, Bs = digitize(Xr, E, K), digitize(Xs, E, K)
         G = Br.shape[1]
         allg = list(range(G))
@@ -615,7 +624,7 @@ class MAMAMIAv2(Attack):
             out["tree"], n_tab["tree"] = wmean(
                 _log_ratio(code(Br, yr), code(Bs, ys), code(Br, yr), len(tree),
                            ncell, self.alpha), "pairs")
-        access = self.access(self.cliques, self.edges, params.get("binning", "quantile"))
+        access = self.access(self.cliques, edges, params.get("binning", "quantile"))
         if "OPTIMISTIC" in aux_note:
             access += " (optimistic aux)"
         return {"scores": out, "tree": tree, "cliques": cl, "edges": E, "y": yr,

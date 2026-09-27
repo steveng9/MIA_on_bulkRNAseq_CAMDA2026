@@ -1,14 +1,14 @@
 {
   "run_id": "BRCA__mahalamia__mvn__s5__2e668480",
-  "timestamp": "2026-09-20T18:33:12+00:00",
+  "timestamp": "2026-09-27T18:46:38+00:00",
   "dataset": "BRCA",
   "attack": "mahalamia",
   "generator": "mvn",
   "split": 5,
   "tag": "aux",
-  "experiment": "mahala_geometry_brca",
-  "variant": "pinv",
-  "notes": "MahalaMIA geometry: conditioning x projection x band x scaling x class",
+  "experiment": "grid_slides_extra_brca",
+  "variant": "mahalamia",
+  "notes": "slide table: v2 + generic baselines on the non-DP generators",
   "params": {
     "seed": 42,
     "device": "cpu",
@@ -24,5 +24,13 @@
     "pca_per_class": false,
     "calibrate": true,
     "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "5a6c755110702445",
+    "params": {
+      "noise_level": 0.7
+    },
+    "seed": 5077,
+    "source": "trained"
   }
 }
