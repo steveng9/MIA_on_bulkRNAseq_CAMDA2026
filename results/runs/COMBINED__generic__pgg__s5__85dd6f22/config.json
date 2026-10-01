@@ -1,0 +1,33 @@
+{
+  "run_id": "COMBINED__generic__pgg__s5__85dd6f22",
+  "timestamp": "2026-09-30T23:31:42+00:00",
+  "dataset": "COMBINED",
+  "attack": "generic",
+  "generator": "pgg",
+  "split": 5,
+  "tag": "mc",
+  "experiment": "grid_slides_pgg_combined",
+  "variant": "generic_mc",
+  "notes": "slide table: DP-PGM as the CAMDA-26 challenge ran it (winner code, pgg), all attacks, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "mc",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "667e765e31af1dc4",
+    "params": {
+      "seed": 5881,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgg",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "iterations": 10000
+    },
+    "seed": 5881,
+    "source": "trained"
+  }
+}

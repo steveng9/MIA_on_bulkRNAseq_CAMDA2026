@@ -1,0 +1,49 @@
+# Slide table (Steven, 2026-09-30): every attack against DP-PGM as the CAMDA-26
+# challenge ran it -- the CAMDA-25 winner's code (mia/generators/pgg.py), eps=10,
+# 5 splits.  Replaces the StratHiM-fork stand-in "DP-PGM old".
+name: grid_slides_pgg_brca
+dataset: BRCA
+notes: "slide table: DP-PGM as the CAMDA-26 challenge ran it (winner code, pgg), all attacks, 5 splits"
+device: cuda
+
+generators: ["pgg"]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  mahalamia:
+    class: mahalamia
+    params:
+      use_reference: true
+  mamamia:
+    class: mamamia
+    params:
+      n_bins: 4
+  mamamia_v2:
+    class: mamamia_v2
+    params: {cliques: public, edges: auto, class_centre: true}
+  generic_mc:
+    class: generic
+    params: {method: mc}
+  generic_gan_leaks:
+    class: generic
+    params: {method: gan_leaks}
+  generic_conf_lr:
+    class: generic
+    params: {method: conf_lr}
+  generic_conf_rf:
+    class: generic
+    params: {method: conf_rf}
+  melomia_nd:
+    class: melomia_nd
+    params:
+      n_shadows: 30
+      n_noise: 600
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+  melomia_cvae:
+    class: melomia_cvae
+    params:
+      n_shadows: 30
+      n_noise: 50
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]

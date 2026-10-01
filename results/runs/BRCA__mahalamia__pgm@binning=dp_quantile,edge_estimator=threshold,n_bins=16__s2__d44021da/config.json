@@ -1,14 +1,14 @@
 {
   "run_id": "BRCA__mahalamia__pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16__s2__d44021da",
-  "timestamp": "2026-09-24T03:17:50+00:00",
+  "timestamp": "2026-09-30T21:10:38+00:00",
   "dataset": "BRCA",
   "attack": "mahalamia",
   "generator": "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",
   "split": 2,
   "tag": "aux_ridge1e-06_pca800",
-  "experiment": "pgm_structure_sweep",
-  "variant": "dp_quantile16/star|pca800",
-  "notes": "dp_quantile16/star epsilon=10",
+  "experiment": "mahala_slides_brca",
+  "variant": "pca800",
+  "notes": "slide table: MahalaMIA ridge / PCA / class-conditional rows",
   "params": {
     "seed": 42,
     "device": "cpu",

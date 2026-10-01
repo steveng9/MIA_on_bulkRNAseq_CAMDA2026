@@ -14,6 +14,7 @@ from .base import REGISTRY, Generator, build, register  # noqa: F401
 from .mvn import MVNGenerator  # noqa: F401
 from .cvae import CVAEGenerator  # noqa: F401
 from .nd import NDGenerator  # noqa: F401
+from .pgg import PGGGenerator  # noqa: F401
 
 # PGM depends on an external repo; make it optional so the rest still imports.
 try:

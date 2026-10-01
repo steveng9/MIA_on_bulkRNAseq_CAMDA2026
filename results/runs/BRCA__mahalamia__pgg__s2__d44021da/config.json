@@ -1,0 +1,42 @@
+{
+  "run_id": "BRCA__mahalamia__pgg__s2__d44021da",
+  "timestamp": "2026-09-30T23:30:18+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "pgg",
+  "split": 2,
+  "tag": "aux_ridge1e-06_pca800",
+  "experiment": "mahala_slides_brca",
+  "variant": "pca800",
+  "notes": "slide table: MahalaMIA ridge / PCA / class-conditional rows",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ridge",
+    "ridge_alpha": 1e-06,
+    "n_components": 800,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "a1fb7f44ac693ed4",
+    "params": {
+      "seed": 2881,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgg",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "iterations": 10000
+    },
+    "seed": 2881,
+    "source": "trained"
+  }
+}

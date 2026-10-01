@@ -1,14 +1,15 @@
 #!/usr/bin/env python
-"""UMAP / PCA of real training rows vs synthetic data: 2 cohorts x 4 generators, one figure per split.
+"""UMAP / PCA of real training rows vs synthetic data: 2 cohorts x 5 generators, one figure per split.
 
     python scripts/umap_grid_slides.py                 # UMAP, splits 1-5
     python scripts/umap_grid_slides.py --kind pca --splits 1
 
 For Steven (2026-09-30): how much closer the improved DP-PGM sits to the real
-data than the CAMDA-25 one.  Rows are BRCA and COMBINED; columns are CVAE, ND,
-DP-PGM old and DP-PGM new (the slide table's generators, `slide_table.py`).
+data than the one the CAMDA-26 challenge released.  Rows are BRCA and COMBINED;
+columns are MVN, CVAE, ND, DP-PGM CAMDA-26 (`pgg`, the CAMDA-25 winner's code)
+and DP-PGM new (the slide table's generators, `slide_table.py`).
 Real = the members of the split (the target's training rows), identical across
-the four columns of a row; synthetic = that generator's release for the split.
+all columns of a row; synthetic = that generator's release for the split.
 
 Each panel is its own UMAP, fitted jointly on real + synthetic after a
 50-component PCA, so good synthetic data mixes with the real points and bad
@@ -17,7 +18,7 @@ colour systematically covers the other.
 
 `--kind pca` instead fits 2 principal components on the real training rows
 only and projects the synthetic data into them.  The real rows are the same
-across a row, so the four panels share one set of axes and one frame (the
+across a row, so the panels share one set of axes and one frame (the
 0.5-99.5th percentiles of everything plotted in that row): the panels show
 where each generator puts its data in the real data's own frame.
 
@@ -45,10 +46,9 @@ from mia import palette as P  # noqa: E402
 from mia import paths  # noqa: E402
 from mia import targets as T  # noqa: E402
 
-OLD = "pgm@composition=basic,neighboring=legacy_exact_n"
 NEW = "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16"
-COLS = [("cvae", "CVAE"), ("nd", "NoisyDiffusion"),
-        (OLD, "DP-PGM old (CAMDA-25)"), (NEW, "DP-PGM new")]
+COLS = [("mvn", "MVN"), ("cvae", "CVAE"), ("nd", "NoisyDiffusion"),
+        ("pgg", "DP-PGM CAMDA-26"), (NEW, "DP-PGM new")]
 REAL, SYN = "#2166ac", "#e08214"   # blue / orange
 
 
@@ -66,7 +66,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     data = {ds: D.load_expression(ds).values.astype(np.float64) for ds in ("BRCA", "COMBINED")}
     for split in args.splits:
-        fig, axes = plt.subplots(2, 4, figsize=(11, 5.6), squeeze=False)
+        fig, axes = plt.subplots(2, len(COLS), figsize=(2.75 * len(COLS), 5.6), squeeze=False)
         for r, ds in enumerate(("BRCA", "COMBINED")):
             m = D.membership_labels(ds, split).astype(bool)
             Xr = data[ds][m]

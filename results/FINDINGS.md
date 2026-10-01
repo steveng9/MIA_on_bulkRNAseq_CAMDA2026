@@ -1743,7 +1743,9 @@ is in `results/PGM_ARCHITECTURES.md`.*
 
 ### 10o. The group-meeting table, and where it disagrees with the abstract (2026-09-27)
 
-`results/SLIDE_TABLE.md` (`scripts/slide_table.py`): every attack on MVN, CVAE, ND, DP-PGM old (the CAMDA-25 generator rebuilt exactly, `neighboring=legacy_exact_n`, not DP) and DP-PGM new (star, zCDP, 16 DP bins). Every cell is the mean of 5 splits at ε = 10.
+> **Correction (2026-09-30), see §10p:** "DP-PGM old" here was a stand-in, `pgm@composition=basic,neighboring=legacy_exact_n` from our StratHiM fork. It is not the generator the CAMDA-26 challenge released, and its 0.32 / 0.21 utility understates the release. The table now uses the real one (`pgg`).
+
+`results/SLIDE_TABLE.md` (`scripts/slide_table.py`): every attack on MVN, CVAE, ND, DP-PGM old and DP-PGM new (star, zCDP, 16 DP bins). Every cell is the mean of 5 splits at ε = 10.
 
 - **DP-PGM new**: utility 0.70 (BRCA) and 0.92 (COMBINED), up from 0.32 and 0.21 on the old generator. Every attack from the abstract is at chance on both DP-PGMs: MahalaMIA, MeLoMIA-CVAE, MeLoMIA-ND, MAMA-MIA v1, and the 7 challenge baselines all fall in 0.49–0.52. MAMA-MIA v2 (black box) reaches 0.756 / 0.649, under the ε = 10 bound of 0.909.
 - **Challenge baselines** (`mia/attacks/generic.py`, ported from the submitted `baseline.py`) match the abstract's rows within 0.01, so our retrained targets are equivalent to the team's.
@@ -1757,3 +1759,28 @@ is in `results/PGM_ARCHITECTURES.md`.*
   - COMBINED per split: 0.748, 0.725, 0.579, 0.603, 0.585. Two splits alone are a noisy estimate.
   - That the abstract's numbers came from this code path is inferred from the submitted repo; no run logs confirm it.
 - **MAMA-MIA v1 on DP-PGM old** (abstract 0.528 / 0.556; ours 0.511 / 0.502): the abstract's DP-PGM targets are not in the submitted repo. Open with Steven.
+
+### 10p. The real CAMDA-26 DP-PGM, and the stand-in it replaces (2026-09-30)
+
+"DP-PGM old" in §10o was `pgm@composition=basic,neighboring=legacy_exact_n`, built from our StratHiM fork. It is not the generator the challenge released. The challenge's DP-PGM release (`synthetic_data_2.csv`) came from the CAMDA-25 winner's code: sikhapentyala/Health-Privacy-Challenge `submission/pgg_pgm.py` on PRO-GENE-GEN's Private_PGM. That code is now wrapped as generator `pgg` (`mia/generators/pgg.py`) and rebuilt on our 5 splits of both cohorts (`scripts/run_pgg_fill.sh`).
+
+- **What it does.**
+  - 4 bins per gene at the training quartiles.
+  - Each output value is the training mean of its bin, so the release has 4 distinct values per gene.
+  - The exact row count is passed to the model.
+  - Tables are the star (978 single genes, the subtype, and 978 gene × subtype pairs), fitted by mirror descent for 10,000 iterations.
+  - Gaussian noise is calibrated by RDP for the whole release: σ = 0.76 at ε = 10, weights normalised per round, about 24 per cell.
+  - The bins, bin means and row count are not privatised, so the release is not DP end to end.
+  - The stand-in split ε linearly (σ ≈ 1440 per cell). That is why its utility was 0.32 / 0.21.
+- **The rebuild matches the release.** Per-gene spread 0.91 of the real data (release 0.91); 4 distinct values per gene (4); correlation of the gene–gene correlation matrix with the real one 0.49 / 0.81 (0.49 / 0.81). BRCA / COMBINED throughout.
+- **Fidelity, CAMDA-26 vs new** (mean of 5 splits, BRCA / COMBINED):
+  - Utility: 0.683 / 0.922 vs 0.698 / 0.922.
+  - Correlation error: 0.128 / 0.085 vs 0.148 / 0.130.
+  - W1: 0.292 / 0.285 vs 0.443 / 0.100.
+  - **The new generator is not higher fidelity than the release.** What it adds is the end-to-end guarantee.
+  - In PCA and UMAP (`results/figures/{pca,umap}_grid_s*.png`), both DP-PGMs collapse to tight blobs at the subtype centres. On BRCA, the CAMDA-26 blobs follow the real subtypes along PC1, while the new generator's collapse to the middle and form a single separate UMAP island.
+- **Attacks on CAMDA-26** (BRCA / COMBINED):
+  - At chance: MahalaMIA (submitted and all 4 variants), MeLoMIA-ND 0.511 / 0.496, MeLoMIA-CVAE 0.490 / 0.497, and every challenge baseline (best 0.507 / 0.506).
+  - MAMA-MIA v1: 0.580 / 0.620. The abstract has 0.528 / 0.556, but it scored the challenge's single release, while this is the mean over 5 rebuilt splits.
+  - MAMA-MIA v2: 0.639 / 0.659. For `pgg` targets v2 mirrors the generator's 4 quartile bins, with edges estimated from the candidate pool (`binning=quartile_means`, `edges=aux`); this is black box.
+  - On DP-PGM new, v2 gets 0.756 / 0.649. Only the new generator carries the ε = 10 ceiling of 0.909.

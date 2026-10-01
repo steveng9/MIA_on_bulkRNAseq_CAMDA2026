@@ -2,7 +2,7 @@
 
 One line per item Steven has asked for, with its status and where the work
 lives.  The long-form record is `EXPERIMENTS.tex` and `results/FINDINGS.md`.
-Last updated 2026-09-27.
+Last updated 2026-09-30.
 
 ## Running
 
@@ -13,7 +13,7 @@ Last updated 2026-09-27.
 | Star with hairs (your 2026-09-24 idea), hairs free to grow into trees: l ∈ {0,20,50,100,200,400,977} × with/without 1-ways, 112 targets | **done**: every hair makes correlation worse; the star's direct subtype links win (FINDINGS §10l). v2 queued | `configs/experiments/pgm_hairy_star.yaml`, `logs/pgm_hairy_star.log` |
 | Star with hairs, your literal version: hairs are disjoint gene pairs; l ∈ {20,50,100,200,489} × with/without 1-ways, 80 targets | **done** (88 incl. 1-way floor, no failures); write-up after v2 | `configs/experiments/pgm_hairy_pairs.yaml`, `logs/pgm_hairy_queue.log` |
 | 1-way-only floor (genes independent, no label link), 8 targets | queued behind the above | `configs/experiments/pgm_baselines.yaml` |
-| **Group-meeting slide table** (2026-09-27): every attack, including MeLoMIA, on MVN/CVAE/ND and DP-PGM old/new, plus 3 fidelity rows; checked against the abstract | **done**. MeLoMIA is at chance on both DP-PGMs; the differences from the abstract are explained in FINDINGS §10o | `results/SLIDE_TABLE.md` (`python scripts/slide_table.py`); page https://claude.ai/artifact/Kncd2sC1XLtYDNnAMKSgM5 |
+| **Group-meeting slide table** (2026-09-27, revised 2026-09-30): every attack on MVN/CVAE/ND, the challenge's real CAMDA-26 DP-PGM (`pgg`, replaces the earlier stand-in) and DP-PGM new; 3 fidelity rows; MahalaMIA PCA/ridge variants; 5-column PCA and UMAP grids | **done**. The new DP-PGM matches the release on utility and is worse on correlations; its gain is the end-to-end guarantee. Every attack except MAMA-MIA is at chance on both (FINDINGS §10o, §10p) | `results/SLIDE_TABLE.md` (`python scripts/slide_table.py`); page https://claude.ai/artifact/Kncd2sC1XLtYDNnAMKSgM5 |
 | MAMA-MIA v2 on all the new targets, then rebuild the one-place table | **done** (214 evals, no failures); FINDINGS §10n, table rebuilt | `scripts/run_v2_followup.sh`, `logs/v2_followup.log` |
 
 ## Done, for Steven to read

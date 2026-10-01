@@ -1,0 +1,45 @@
+{
+  "run_id": "BRCA__mamamia_v2__pgg__s5__725307af",
+  "timestamp": "2026-09-30T23:30:00+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia_v2",
+  "generator": "pgg",
+  "split": 5,
+  "tag": "cl-public_ed-auto_cc",
+  "experiment": "grid_slides_pgg_brca",
+  "variant": "mamamia_v2",
+  "notes": "slide table: DP-PGM as the CAMDA-26 challenge ran it (winner code, pgg), all attacks, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mamamia_v2",
+    "cliques": "public",
+    "edges": "auto",
+    "families": [
+      "1way",
+      "gl",
+      "tree"
+    ],
+    "class_centre": true,
+    "alpha": 0.5,
+    "calibrate": true,
+    "n_shadows": 20,
+    "shadow_frac": 0.8,
+    "n_bins": 16,
+    "attack": "mamamia_v2"
+  },
+  "target": {
+    "fingerprint": "1e75eb1b95d8f9cc",
+    "params": {
+      "seed": 5881,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgg",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "iterations": 10000
+    },
+    "seed": 5881,
+    "source": "trained"
+  }
+}

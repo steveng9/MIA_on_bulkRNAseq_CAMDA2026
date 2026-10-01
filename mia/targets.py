@@ -165,6 +165,8 @@ def default_params(generator: str, dataset: str) -> dict:
     if generator == "pgm":
         return {"epsilon": 10.0, "n_bins": 4, "n_1way": 978, "n_2way": 0,
                 "joint_mode": True, "pgm_iters": 1000}
+    if generator == "pgg":   # the CAMDA-25 winner's code, as the CAMDA-26 release ran it
+        return {"epsilon": 10.0, "delta": 1e-5, "iterations": 10000}
     raise KeyError(generator)
 
 

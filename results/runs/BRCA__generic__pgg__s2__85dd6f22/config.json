@@ -1,0 +1,33 @@
+{
+  "run_id": "BRCA__generic__pgg__s2__85dd6f22",
+  "timestamp": "2026-09-30T23:30:12+00:00",
+  "dataset": "BRCA",
+  "attack": "generic",
+  "generator": "pgg",
+  "split": 2,
+  "tag": "mc",
+  "experiment": "grid_slides_pgg_brca",
+  "variant": "generic_mc",
+  "notes": "slide table: DP-PGM as the CAMDA-26 challenge ran it (winner code, pgg), all attacks, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "mc",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "a1fb7f44ac693ed4",
+    "params": {
+      "seed": 2881,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgg",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "iterations": 10000
+    },
+    "seed": 2881,
+    "source": "trained"
+  }
+}

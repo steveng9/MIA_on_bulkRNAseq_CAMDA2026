@@ -1,0 +1,16 @@
+# MahalaMIA covariance / PCA variants for the slide table (Steven, 2026-09-30):
+# the geometry sweep's settings (mahala_geometry_combined.yaml), on the two DP-PGM
+# columns it never covered.  MVN/CVAE/ND already have these runs.
+name: mahala_slides_combined
+dataset: COMBINED
+notes: "slide table: MahalaMIA ridge / PCA / class-conditional rows"
+device: cpu
+
+generators: ["pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16", "pgg"]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  ridge1.0e-6:    {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6}}
+  ridge1.0e-6_cc: {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, class_conditional: true}}
+  pca800:         {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 800}}
+  pca850:         {class: mahalamia, params: {covariance: ridge, ridge_alpha: 1.0e-6, n_components: 850}}

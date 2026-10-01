@@ -3,9 +3,11 @@
 
     python scripts/slide_table.py
 
-For Steven (2026-09-27).  Columns are MVN, CVAE, ND, DP-PGM old (the CAMDA-25
-generator, `neighboring=legacy_exact_n`) and DP-PGM new (star, zCDP, 16 DP
-equal-depth bins).  Every cell is the mean over the splits that have a run,
+For Steven (2026-09-27).  Columns are MVN, CVAE, ND, DP-PGM CAMDA-26 (the
+CAMDA-25 winner's code as the CAMDA-26 challenge ran it, `pgg`; until
+2026-09-30 this column was `pgm@...legacy_exact_n`, a stand-in built from the
+StratHiM fork that turned out to be far noisier than the real thing) and
+DP-PGM new (star, zCDP, 16 DP equal-depth bins).  Every cell is the mean over the splits that have a run,
 taking the LATEST run per split for the attack's as-configured tag, so a
 cell always reflects the current target and the current code.  Cells with
 fewer than 5 splits are marked.  Fidelity is computed here for any
@@ -33,10 +35,9 @@ from mia import fidelity as F  # noqa: E402
 from mia import targets as T  # noqa: E402
 
 RES = ROOT / "results"
-OLD = "pgm@composition=basic,neighboring=legacy_exact_n"
 NEW = "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16"
 COLS = [("mvn", "MVN"), ("cvae", "CVAE"), ("nd", "ND"),
-        (OLD, "DP-PGM old"), (NEW, "DP-PGM new")]
+        ("pgg", "DP-PGM CAMDA-26"), (NEW, "DP-PGM new")]
 K = {"BRCA": 30, "COMBINED": 20}
 GENERIC = {"mc": "MC", "gan_leaks": "GAN-leaks", "conf_lr": "Conf-LR",
            "conf_rf": "Conf-RF", "logan_d1": "LOGAN", "gan_leaks_cal": "GAN-leaks-cal",
@@ -80,7 +81,11 @@ def fidelity() -> pd.DataFrame:
 
 def attack_rows(ds: str) -> list[tuple[str, str, str]]:
     k = K[ds]
-    rows = [("MahalaMIA", "mahalamia", "aux"),
+    rows = [("MahalaMIA (submitted: pseudo-inverse)", "mahalamia", "aux"),
+            ("  MahalaMIA, PCA to 800 dims", "mahalamia", "aux_ridge1e-06_pca800"),
+            ("  MahalaMIA, PCA to 850 dims", "mahalamia", "aux_ridge1e-06_pca850"),
+            ("  MahalaMIA, tiny ridge, all 978 dims", "mahalamia", "aux_ridge1e-06"),
+            ("  MahalaMIA, tiny ridge, per subtype", "mahalamia", "aux_ridge1e-06_cc"),
             ("MeLoMIA-CVAE", "melomia_cvae", f"k{k}_n50"),
             ("MeLoMIA-ND", "melomia_nd", f"k{k}_n600"),
             ("MAMA-MIA v1", "mamamia", "k4_1w_2w"),

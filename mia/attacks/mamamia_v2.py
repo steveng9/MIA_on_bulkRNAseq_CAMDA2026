@@ -563,13 +563,21 @@ class MAMAMIAv2(Attack):
         tg = T.load_target(dataset, generator, split)
         Xs, ys = tg["X"].astype(np.float64), np.asarray(tg["y_int"]).astype(np.int64)
         params = dict(T.target_record(dataset, generator, split)["params"])
-        if "n_bins" not in params:          # not a PGM: nothing to follow
+        if T.split_name(generator)[0] == "pgg":
+            # The CAMDA-25 winner's public code: 4 bins at the training
+            # quartiles, each released value the mean of its bin.  The release
+            # holds only those 4 values per gene, so its own quantiles sit ON
+            # the bin means, not between them; the candidate pool's quartiles
+            # (a superset of the training rows) are the better estimate.
+            params.update(n_bins=4, binning="quartile_means")
+        elif "n_bins" not in params:        # not a PGM: nothing to follow
             params.update(n_bins=self.n_bins, binning="quantile")
         K = int(params["n_bins"])
         structure = params.get("structure", "hierarchical")
         edges = self.edges
         if edges == "auto":                 # the black-box default per binning
-            edges = "grid" if params.get("binning") == "dp_quantile" else "recovered"
+            edges = {"dp_quantile": "grid", "quartile_means": "aux"}.get(
+                params.get("binning"), "recovered")
 
         E = recover_edges(Xs, params, edges, Xr, dataset, generator, split)
         Br, Bs = digitize(Xr, E, K), digitize(Xs, E, K)
