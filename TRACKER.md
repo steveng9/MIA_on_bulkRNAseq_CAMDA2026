@@ -2,12 +2,14 @@
 
 One line per item Steven has asked for, with its status and where the work
 lives.  The long-form record is `EXPERIMENTS.tex` and `results/FINDINGS.md`.
-Last updated 2026-09-30.
+Last updated 2026-10-03.
 
 ## Running
 
 | Item | Status | Where |
 |---|---|---|
+| **MeLoMIA per-record calibration** (2026-10-03, your note from the TimeDiff audit): z-score each record against itself under the other synth-shadows. On by default; black box unchanged | **done** (FINDINGS §10q); slide table regenerated. MeLoMIA-ND on ND: 0.858 → 0.969 (BRCA), 0.648 → 0.802 (COMBINED). MeLoMIA-CVAE on CVAE: 0.731 → 0.870 (COMBINED), 0.798 → 0.807 (BRCA, where TPR at 1% FPR falls 0.33 → 0.25). DP-PGMs stay at chance | `notes/note_per_record_calibration.md` §9; `results/SLIDE_TABLE.md`; trial `results/per_record_calibration/` |
+| **MeLoMIA ablations, one protocol** (2026-10-03): calibration on/off × shadow count × synth vs real shadows × selection folds; 52 arms, 5 generators × 5 splits each, every arm at 60 search trials | **BRCA done (28 arms), COMBINED running (24 arms)**; no discrepancies so far. Progress in `logs/melomia_ablations/progress.log` | `results/MELOMIA_ABLATIONS.md` (+ `melomia_ablations.csv`, `melomia_ablations_arms.csv`); arms defined in `scripts/melomia_ablations.py` |
 | MAMA-MIA v2 with the new "grid" edge estimator (black box), 108 dp_quantile targets | **done** (108/108, no failures); write-up pending | `logs/mamamia_v2_grid.log` → `results/mamamia_v2.csv` (edges=grid) |
 | PQRS part 2 with your selector's `max_degree` cap: (50,15,5) at 16 bins; (200,50,10) at 8 bins | **done**: fits now, ties the star (FINDINGS §10m); v2 queued | `logs/pgm_pqrs_maxdeg.log` → `results/pgm_pqrs_maxdeg{,16}.csv` |
 | Star with hairs (your 2026-09-24 idea), hairs free to grow into trees: l ∈ {0,20,50,100,200,400,977} × with/without 1-ways, 112 targets | **done**: every hair makes correlation worse; the star's direct subtype links win (FINDINGS §10l). v2 queued | `configs/experiments/pgm_hairy_star.yaml`, `logs/pgm_hairy_star.log` |
@@ -35,7 +37,7 @@ Last updated 2026-09-30.
 1. **Which DP-PGM goes in the paper.** Leaning star (= forest k=978) at 16 bins; the forest sweep did cover k=500/978 and l up to 400, and none beat it.  PQRS part 2 is in and ties it (§10m).
 2. **Class-centring as headline or ablation.** It subtracts each subtype's mean attack score before ranking.
 3. **The abstract's DP-PGM targets and its MAMA-MIA v1 run**: where did they come from? It reports 0.53 / 0.56; our exact rebuild of the CAMDA-25 generator gives 0.51 / 0.50.
-4. **The abstract's MeLoMIA-ND numbers (0.62 / 0.74)** came from a different setup than its Methods describe: the meta-classifier trained on the real ND targets of other splits with true labels; only splits 4–5 were scored, on a balanced subset. Ours follows the described method: 0.86 / 0.65 (0.83 / 0.60 with 5 shadows). Proposed fix: report ours.
+4. **The abstract's MeLoMIA-ND numbers (0.62 / 0.74)** came from a different setup than its Methods describe: the meta-classifier trained on the real ND targets of other splits with true labels; only splits 4–5 were scored, on a balanced subset. Ours follows the described method: 0.97 / 0.80 with per-record calibration (0.86 / 0.65 without). Proposed fix: report ours.
 
 Decided 2026-09-24: BRCA's optimistic held-out aux stays for now (better aux strategy and more datasets later); build the grid edge estimator (done, now running); `mia_output/` pruned.
 

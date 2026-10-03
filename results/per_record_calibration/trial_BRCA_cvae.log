@@ -1,0 +1,256 @@
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+BRCA cvae: K=30, records=1089, features=171, member rate 0.80
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  raw       lgbm   held-out 0.796 | MVN 0.561 (T@1% 0.025)  CVAE 0.798 (T@1% 0.317)  ND 0.566 (T@1% 0.041)  DP-PGM CAMDA-26 0.485 (T@1% 0.015)  DP-PGM new 0.507 (T@1% 0.022)
+  raw       logreg held-out 0.661 | MVN 0.506 (T@1% 0.018)  CVAE 0.555 (T@1% 0.028)  ND 0.506 (T@1% 0.019)  DP-PGM CAMDA-26 0.519 (T@1% 0.013)  DP-PGM new 0.506 (T@1% 0.008)
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  model     lgbm   held-out 0.802 | MVN 0.532 (T@1% 0.021)  CVAE 0.803 (T@1% 0.356)  ND 0.558 (T@1% 0.047)  DP-PGM CAMDA-26 0.497 (T@1% 0.009)  DP-PGM new 0.502 (T@1% 0.013)
+  model     logreg held-out 0.800 | MVN 0.547 (T@1% 0.035)  CVAE 0.798 (T@1% 0.342)  ND 0.566 (T@1% 0.054)  DP-PGM CAMDA-26 0.499 (T@1% 0.011)  DP-PGM new 0.503 (T@1% 0.018)
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  record    lgbm   held-out 0.815 | MVN 0.529 (T@1% 0.020)  CVAE 0.813 (T@1% 0.263)  ND 0.557 (T@1% 0.024)  DP-PGM CAMDA-26 0.495 (T@1% 0.014)  DP-PGM new 0.499 (T@1% 0.016)
+  record    logreg held-out 0.649 | MVN 0.514 (T@1% 0.012)  CVAE 0.560 (T@1% 0.058)  ND 0.523 (T@1% 0.016)  DP-PGM CAMDA-26 0.495 (T@1% 0.009)  DP-PGM new 0.509 (T@1% 0.015)
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  both      lgbm   held-out 0.817 | MVN 0.563 (T@1% 0.018)  CVAE 0.806 (T@1% 0.249)  ND 0.570 (T@1% 0.020)  DP-PGM CAMDA-26 0.490 (T@1% 0.009)  DP-PGM new 0.510 (T@1% 0.015)
+  both      logreg held-out 0.818 | MVN 0.552 (T@1% 0.020)  CVAE 0.796 (T@1% 0.230)  ND 0.568 (T@1% 0.025)  DP-PGM CAMDA-26 0.492 (T@1% 0.011)  DP-PGM new 0.506 (T@1% 0.012)
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  warnings.warn(
+  both_pool lgbm   held-out 0.814 | MVN 0.544 (T@1% 0.014)  CVAE 0.809 (T@1% 0.337)  ND 0.570 (T@1% 0.044)  DP-PGM CAMDA-26 0.495 (T@1% 0.015)  DP-PGM new 0.509 (T@1% 0.011)
+  both_pool logreg held-out 0.811 | MVN 0.552 (T@1% 0.031)  CVAE 0.793 (T@1% 0.289)  ND 0.573 (T@1% 0.047)  DP-PGM CAMDA-26 0.490 (T@1% 0.008)  DP-PGM new 0.505 (T@1% 0.020)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  warnings.warn(
+  draw      lgbm   held-out 0.816 | MVN 0.539 (T@1% 0.033)  CVAE 0.814 (T@1% 0.367)  ND 0.564 (T@1% 0.034)  DP-PGM CAMDA-26 0.490 (T@1% 0.005)  DP-PGM new 0.502 (T@1% 0.015)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  stats["skew"][:, col] = np.nan_to_num(scipy_skew(block, axis=1), nan=0.0)
+  draw      logreg held-out 0.822 | MVN 0.557 (T@1% 0.031)  CVAE 0.811 (T@1% 0.360)  ND 0.573 (T@1% 0.041)  DP-PGM CAMDA-26 0.496 (T@1% 0.008)  DP-PGM new 0.506 (T@1% 0.022)

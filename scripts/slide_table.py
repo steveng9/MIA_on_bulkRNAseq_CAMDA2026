@@ -86,8 +86,10 @@ def attack_rows(ds: str) -> list[tuple[str, str, str]]:
             ("  MahalaMIA, PCA to 850 dims", "mahalamia", "aux_ridge1e-06_pca850"),
             ("  MahalaMIA, tiny ridge, all 978 dims", "mahalamia", "aux_ridge1e-06"),
             ("  MahalaMIA, tiny ridge, per subtype", "mahalamia", "aux_ridge1e-06_cc"),
-            ("MeLoMIA-CVAE", "melomia_cvae", f"k{k}_n50"),
-            ("MeLoMIA-ND", "melomia_nd", f"k{k}_n600"),
+            # per-record calibration across synth-shadows (2026-10-03); the rows
+            # without it are tags k{k}_n50 / k{k}_n600, see FINDINGS 10q
+            ("MeLoMIA-CVAE", "melomia_cvae", f"k{k}_n50_prc"),
+            ("MeLoMIA-ND", "melomia_nd", f"k{k}_n600_prc"),
             ("MAMA-MIA v1", "mamamia", "k4_1w_2w"),
             ("MAMA-MIA v2 (black box)", "mamamia_v2", "cl-public_ed-auto_cc")]
     rows += [(f"  {GENERIC[m]}", "generic", m) for m in GENERIC

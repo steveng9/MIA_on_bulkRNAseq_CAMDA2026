@@ -1,0 +1,13 @@
+BRCA nd: K=30, records=1089, features=104, member rate 0.80
+  raw       lgbm   held-out 0.794 | MVN 0.822 (T@1% 0.085)  CVAE 0.808 (T@1% 0.340)  ND 0.858 (T@1% 0.341)  DP-PGM CAMDA-26 0.506 (T@1% 0.018)  DP-PGM new 0.496 (T@1% 0.009)
+  raw       logreg held-out 0.793 | MVN 0.900 (T@1% 0.242)  CVAE 0.804 (T@1% 0.073)  ND 0.863 (T@1% 0.305)  DP-PGM CAMDA-26 0.501 (T@1% 0.010)  DP-PGM new 0.500 (T@1% 0.010)
+  model     lgbm   held-out 0.830 | MVN 0.865 (T@1% 0.069)  CVAE 0.838 (T@1% 0.335)  ND 0.880 (T@1% 0.386)  DP-PGM CAMDA-26 0.503 (T@1% 0.015)  DP-PGM new 0.492 (T@1% 0.010)
+  model     logreg held-out 0.795 | MVN 0.862 (T@1% 0.060)  CVAE 0.820 (T@1% 0.299)  ND 0.863 (T@1% 0.335)  DP-PGM CAMDA-26 0.504 (T@1% 0.013)  DP-PGM new 0.498 (T@1% 0.021)
+  record    lgbm   held-out 0.923 | MVN 0.825 (T@1% 0.091)  CVAE 0.823 (T@1% 0.510)  ND 0.964 (T@1% 0.680)  DP-PGM CAMDA-26 0.499 (T@1% 0.018)  DP-PGM new 0.507 (T@1% 0.010)
+  record    logreg held-out 0.928 | MVN 0.880 (T@1% 0.327)  CVAE 0.838 (T@1% 0.426)  ND 0.953 (T@1% 0.631)  DP-PGM CAMDA-26 0.500 (T@1% 0.014)  DP-PGM new 0.498 (T@1% 0.010)
+  both      lgbm   held-out 0.954 | MVN 0.929 (T@1% 0.390)  CVAE 0.823 (T@1% 0.477)  ND 0.969 (T@1% 0.659)  DP-PGM CAMDA-26 0.504 (T@1% 0.020)  DP-PGM new 0.504 (T@1% 0.017)
+  both      logreg held-out 0.953 | MVN 0.927 (T@1% 0.403)  CVAE 0.807 (T@1% 0.496)  ND 0.967 (T@1% 0.662)  DP-PGM CAMDA-26 0.504 (T@1% 0.015)  DP-PGM new 0.511 (T@1% 0.012)
+  both_pool lgbm   held-out 0.943 | MVN 0.911 (T@1% 0.418)  CVAE 0.791 (T@1% 0.475)  ND 0.960 (T@1% 0.597)  DP-PGM CAMDA-26 0.502 (T@1% 0.013)  DP-PGM new 0.503 (T@1% 0.010)
+  both_pool logreg held-out 0.943 | MVN 0.918 (T@1% 0.517)  CVAE 0.799 (T@1% 0.474)  ND 0.957 (T@1% 0.629)  DP-PGM CAMDA-26 0.506 (T@1% 0.012)  DP-PGM new 0.515 (T@1% 0.014)
+  draw      lgbm   held-out 0.947 | MVN 0.918 (T@1% 0.570)  CVAE 0.852 (T@1% 0.499)  ND 0.958 (T@1% 0.573)  DP-PGM CAMDA-26 0.501 (T@1% 0.016)  DP-PGM new 0.504 (T@1% 0.010)
+  draw      logreg held-out 0.948 | MVN 0.916 (T@1% 0.508)  CVAE 0.860 (T@1% 0.434)  ND 0.951 (T@1% 0.472)  DP-PGM CAMDA-26 0.501 (T@1% 0.013)  DP-PGM new 0.504 (T@1% 0.012)

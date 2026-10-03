@@ -1,0 +1,53 @@
+cohort,arm,backend,K,shadows,selection,calibration,tag,runs,meta,protocol_source,cv_auc,cv_scheme
+BRCA,nd_k5_cal,nd,5,synth,grouped,True,k5_n600_prc,25,True,recorded at fit,0.9021396909617576,grouped
+BRCA,nd_k10_cal,nd,10,synth,grouped,True,k10_n600_prc,25,True,recorded at fit,0.9342724465435088,grouped
+BRCA,nd_k15_cal,nd,15,synth,grouped,True,k15_n600_prc,25,True,recorded at fit,0.9441358160100036,grouped
+BRCA,nd_k20_cal,nd,20,synth,grouped,True,k20_n600_prc,25,True,recorded at fit,0.9515391215256078,grouped
+BRCA,nd_k30_cal,nd,30,synth,grouped,True,k30_n600_prc,25,True,backfilled from run BRCA__melomia_nd__mvn__s1__d34f9e1b (melomia_prc_brca),0.9562984093978868,grouped
+BRCA,nd_k15_real_cal,nd,15,real,grouped,True,k15_n600_realshadow_prc,25,True,recorded at fit,0.9837487552501096,grouped
+BRCA,nd_k30_block_cal,nd,30,synth,block,True,k30_n600_blockcv_prc,25,True,recorded at fit,0.9527584759005362,block
+BRCA,nd_k5_raw,nd,5,synth,grouped,False,k5_n600,25,True,backfilled from run BRCA__melomia_nd__nd__s1__2110fdfd (k5_check_brca),0.7683493362734839,grouped
+BRCA,nd_k10_raw,nd,10,synth,grouped,False,k10_n600,25,True,recorded at fit,0.7899721775103224,grouped
+BRCA,nd_k15_raw,nd,15,synth,grouped,False,k15_n600,25,True,recorded at fit,0.7966107226161189,grouped
+BRCA,nd_k20_raw,nd,20,synth,grouped,False,k20_n600,25,True,recorded at fit,0.8072953863171339,grouped
+BRCA,nd_k30_raw,nd,30,synth,grouped,False,k30_n600,25,True,backfilled from run BRCA__melomia_nd__mvn__s1__b2dd6d83 (grid_brca),0.8017905841355295,grouped
+BRCA,nd_k15_real_raw,nd,15,real,grouped,False,k15_n600_realshadow,25,True,recorded at fit,0.9658314598447458,grouped
+BRCA,nd_k30_block_raw,nd,30,synth,block,False,k30_n600_blockcv,25,True,backfilled from run BRCA__melomia_nd__mvn__s1__67bc65c8 (ablation_internal_proxy),0.776452068411596,block
+BRCA,cvae_k5_cal,cvae,5,synth,grouped,True,k5_n50_prc,25,True,recorded at fit,0.7669486847048694,grouped
+BRCA,cvae_k10_cal,cvae,10,synth,grouped,True,k10_n50_prc,25,True,recorded at fit,0.7877032029561141,grouped
+BRCA,cvae_k15_cal,cvae,15,synth,grouped,True,k15_n50_prc,25,True,recorded at fit,0.786729138248349,grouped
+BRCA,cvae_k20_cal,cvae,20,synth,grouped,True,k20_n50_prc,25,True,recorded at fit,0.7929151209045299,grouped
+BRCA,cvae_k30_cal,cvae,30,synth,grouped,True,k30_n50_prc,25,True,backfilled from run BRCA__melomia_cvae__mvn__s1__ac8c6e68 (melomia_prc_brca),0.803393018901247,grouped
+BRCA,cvae_k15_real_cal,cvae,15,real,grouped,True,k15_n50_realshadow_prc,25,True,recorded at fit,0.9998410440366011,grouped
+BRCA,cvae_k30_block_cal,cvae,30,synth,block,True,k30_n50_blockcv_prc,25,True,recorded at fit,0.797535772258412,block
+BRCA,cvae_k5_raw,cvae,5,synth,grouped,False,k5_n50,25,True,backfilled from run BRCA__melomia_cvae__cvae__s1__fbaf5162 (k5_check_brca),0.7802518750599072,grouped
+BRCA,cvae_k10_raw,cvae,10,synth,grouped,False,k10_n50,25,True,recorded at fit,0.7869480854150106,grouped
+BRCA,cvae_k15_raw,cvae,15,synth,grouped,False,k15_n50,25,True,recorded at fit,0.7873511635318657,grouped
+BRCA,cvae_k20_raw,cvae,20,synth,grouped,False,k20_n50,25,True,recorded at fit,0.7905289549186031,grouped
+BRCA,cvae_k30_raw,cvae,30,synth,grouped,False,k30_n50,25,True,backfilled from run BRCA__melomia_cvae__mvn__s1__a9a60c41 (grid_brca),0.7927730022424603,grouped
+BRCA,cvae_k15_real_raw,cvae,15,real,grouped,False,k15_n50_realshadow,25,True,recorded at fit,0.9997282508643953,grouped
+BRCA,cvae_k30_block_raw,cvae,30,synth,block,False,k30_n50_blockcv,25,True,backfilled from run BRCA__melomia_cvae__mvn__s1__25bfe28c (ablation_internal_proxy),0.7784774035452936,block
+COMBINED,nd_k5_cal,nd,5,synth,grouped,True,k5_n600_prc,0,False,,,
+COMBINED,nd_k10_cal,nd,10,synth,grouped,True,k10_n600_prc,0,False,,,
+COMBINED,nd_k15_cal,nd,15,synth,grouped,True,k15_n600_prc,0,False,,,
+COMBINED,nd_k20_cal,nd,20,synth,grouped,True,k20_n600_prc,25,True,backfilled from run COMBINED__melomia_nd__mvn__s1__865c838b (melomia_prc_combined),0.7839758355015578,grouped
+COMBINED,nd_k15_real_cal,nd,15,real,grouped,True,k15_n600_realshadow_prc,0,False,,,
+COMBINED,nd_k20_block_cal,nd,20,synth,block,True,k20_n600_blockcv_prc,0,False,,,
+COMBINED,nd_k5_raw,nd,5,synth,grouped,False,k5_n600,0,True,backfilled from run COMBINED__melomia_nd__nd__s1__2110fdfd (k5_check_combined),0.5636207252160059,grouped
+COMBINED,nd_k10_raw,nd,10,synth,grouped,False,k10_n600,0,False,,,
+COMBINED,nd_k15_raw,nd,15,synth,grouped,False,k15_n600,0,False,,,
+COMBINED,nd_k20_raw,nd,20,synth,grouped,False,k20_n600,25,True,backfilled from run COMBINED__melomia_nd__mvn__s1__6e69f3d4 (grid_combined),0.6204002780698007,grouped
+COMBINED,nd_k15_real_raw,nd,15,real,grouped,False,k15_n600_realshadow,0,False,,,
+COMBINED,nd_k20_block_raw,nd,20,synth,block,False,k20_n600_blockcv,0,False,,,
+COMBINED,cvae_k5_cal,cvae,5,synth,grouped,True,k5_n50_prc,0,False,,,
+COMBINED,cvae_k10_cal,cvae,10,synth,grouped,True,k10_n50_prc,0,False,,,
+COMBINED,cvae_k15_cal,cvae,15,synth,grouped,True,k15_n50_prc,0,False,,,
+COMBINED,cvae_k20_cal,cvae,20,synth,grouped,True,k20_n50_prc,25,True,recorded at fit,0.8570786017904826,grouped
+COMBINED,cvae_k15_real_cal,cvae,15,real,grouped,True,k15_n50_realshadow_prc,0,False,,,
+COMBINED,cvae_k20_block_cal,cvae,20,synth,block,True,k20_n50_blockcv_prc,0,False,,,
+COMBINED,cvae_k5_raw,cvae,5,synth,grouped,False,k5_n50,0,True,backfilled from run COMBINED__melomia_cvae__cvae__s1__fbaf5162 (k5_check_combined),0.6984514560064462,grouped
+COMBINED,cvae_k10_raw,cvae,10,synth,grouped,False,k10_n50,0,False,,,
+COMBINED,cvae_k15_raw,cvae,15,synth,grouped,False,k15_n50,0,False,,,
+COMBINED,cvae_k20_raw,cvae,20,synth,grouped,False,k20_n50,25,True,backfilled from run COMBINED__melomia_cvae__mvn__s1__858dc425 (grid_combined),0.7122048103303915,grouped
+COMBINED,cvae_k15_real_raw,cvae,15,real,grouped,False,k15_n50_realshadow,0,False,,,
+COMBINED,cvae_k20_block_raw,cvae,20,synth,block,False,k20_n50_blockcv,0,False,,,

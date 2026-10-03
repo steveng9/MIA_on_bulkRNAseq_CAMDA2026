@@ -1784,3 +1784,32 @@ is in `results/PGM_ARCHITECTURES.md`.*
   - MAMA-MIA v1: 0.580 / 0.620. The abstract has 0.528 / 0.556, but it scored the challenge's single release, while this is the mean over 5 rebuilt splits.
   - MAMA-MIA v2: 0.639 / 0.659. For `pgg` targets v2 mirrors the generator's 4 quartile bins, with edges estimated from the candidate pool (`binning=quartile_means`, `edges=aux`); this is black box.
   - On DP-PGM new, v2 gets 0.756 / 0.649. Only the new generator carries the ε = 10 ceiling of 0.909.
+
+### 10q. MeLoMIA with per-record calibration: the new default (2026-10-03)
+
+Steven's note `notes/note_per_record_calibration.md` (from the TimeDiff audit) proposed comparing each record with itself across the attacker's shadow models before the meta-classifier sees it. It is now MeLoMIA's default (`per_record_calibration`, runs tagged `_prc`), and the slide table's MeLoMIA rows use it.
+
+- **What it does.**
+  - Take log losses and summarise them as before.
+  - Standardise each model's features over the candidate records.
+  - Z-score every feature of a record against the same record under the other synth-shadows (leave-one-out for training rows; all K shadows for the proxy).
+- **Threat model: unchanged, black box.** It uses only the candidates, the synth-shadows and the proxy. No target label and no auxiliary data. It is transductive: a record's score depends on the candidate pool.
+- **Headline, same shadows, proxies and classifier search** (AUC, mean of 5 splits, MVN / CVAE / ND targets; before → after):
+  - BRCA MeLoMIA-ND: 0.876 / 0.824 / 0.858 → **0.929 / 0.823 / 0.969**. TPR at 1% FPR on ND: 0.33 → 0.70.
+  - COMBINED MeLoMIA-ND: 0.644 / 0.591 / 0.648 → **0.714 / 0.694 / 0.802**. TPR at 1% FPR on ND: 0.06 → 0.20. Split-to-split spread is large here (sd 0.08–0.10 on ND and MVN, before and after).
+  - COMBINED MeLoMIA-CVAE: 0.528 / 0.731 / 0.525 → **0.551 / 0.870 / 0.561**. TPR at 1% FPR on CVAE: 0.05 → 0.31.
+  - BRCA MeLoMIA-CVAE: 0.553 / 0.798 / 0.563 → 0.560 / 0.807 / 0.574. **The exception:** AUC barely moves and TPR at 1% FPR on CVAE falls, 0.33 → 0.25. Not yet explained.
+  - Both DP-PGMs stay at chance under both attacks (0.49–0.51).
+- **Not tuned to the target.** The variant was chosen on shadow models held out of training (`scripts/trial_per_record_calibration.py`, `results/per_record_calibration/`); held-out-shadow AUC moved with the target AUC in every case.
+- **Model standardisation is needed off the diagonal.** Without it the proxy's overall loss scale shifts every calibrated row: in the trial, BRCA MeLoMIA-ND on MVN is 0.825 without, 0.929 with.
+
+**Ablations, one protocol** (`results/MELOMIA_ABLATIONS.md`, arms defined in `scripts/melomia_ablations.py`; 60 search trials, 5 classifiers, 5 generators × 5 splits in every arm). BRCA is complete; COMBINED is running.
+
+- **Number of shadows (BRCA, MeLoMIA-ND on ND).** Calibrated: 0.936 at K = 5, 0.953 at 10, 0.963 at 15, 0.966 at 20, 0.969 at 30. Uncalibrated: 0.826 at K = 5 to 0.858 at 30. Calibration with 5 shadows beats no calibration with 30.
+- **Synth-shadows vs real-data shadows (BRCA, K = 15).** Calibration helps both kinds, and synth-shadows still win where the target is the probe's own family:
+  - MeLoMIA-ND on ND: synth 0.963, real 0.893 (uncalibrated: 0.850 vs 0.778).
+  - MeLoMIA-ND on MVN: real shadows are ahead, 0.947 vs 0.921.
+  - MeLoMIA-CVAE on CVAE: synth 0.798, real 0.661.
+  - Real shadows still score 0.98–1.00 in the attacker's own cross-validation and deploy far lower, so the earlier warning stands: never quote a MeLoMIA cross-validation AUC as an attack result.
+- **Selection folds (BRCA, K = 30).** Sample-grouped and model-disjoint selection give the same attack AUC with calibration (0.969 and 0.969 on ND), as they did without.
+- **Earlier ablation numbers are superseded.** The old K = 15 synth-vs-real arms were fitted with 40 search trials, not 60. Each cached meta-classifier now records its protocol and refuses reuse under another; the 40-trial caches are archived as `meta/<tag>.legacy_trials40`.

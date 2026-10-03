@@ -1,0 +1,29 @@
+# MeLoMIA with per-record calibration across synth-shadows (Steven, 2026-10-03;
+# notes/note_per_record_calibration.md).  Same shadow stacks, proxies and
+# classifier search as the slide table; only the feature calibration changes.
+# Replaces the slide table's MeLoMIA rows (the trial on cached features beat them).
+name: melomia_prc_brca
+dataset: BRCA
+notes: "MeLoMIA with per-record calibration across synth-shadows, slide-table generators, 5 splits"
+device: cuda
+
+generators: ["mvn", "cvae", "nd", "pgg", "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16"]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  melomia_nd:
+    class: melomia_nd
+    params:
+      n_shadows: 30
+      n_noise: 600
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+      per_record_calibration: true
+  melomia_cvae:
+    class: melomia_cvae
+    params:
+      n_shadows: 30
+      n_noise: 50
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+      per_record_calibration: true

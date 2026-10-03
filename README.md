@@ -84,6 +84,28 @@ them *is* the internal-proxy role, and rotating that hold-out over the pool is
 model-disjoint cross-validation.  `MeLoMIA(internal_proxy_selection=True)` does
 this; it is off by default while the current grid is in flight.
 
+### Per-record calibration
+
+The second load-bearing idea, on by default (`per_record_calibration`).  A
+record's raw loss is mostly how hard that record is for *any* model; only a
+small part is what this model memorised.  Every synth-shadow has scored every
+candidate record, so each feature is rewritten as its distance from the same
+record's typical value under the other shadows, in units of that record's
+spread:
+
+```
+z[k, i, j] = (f[k, i, j] − mean over shadows m≠k of f[m, i, j]) / std over m≠k
+```
+
+on log losses, after standardising each model's features over the candidate
+records.  Training rows are leave-one-out; the proxy's rows are calibrated
+against all K shadows.  It uses only the candidates and models the adversary
+trained (no auxiliary data, no labels).  This is difficulty calibration (Watson
+et al., ICLR 2022) / the offline LiRA z-score (Carlini et al., S&P 2022),
+applied to every feature the meta-classifier sees.  Runs carry `_prc` in their
+tag; untagged MeLoMIA runs predate it.  See `notes/note_per_record_calibration.md`
+and `results/FINDINGS.md` §10q.
+
 See `docs/FIVE_ROLES.md` for the audit of what the pipeline builds against what
 the five roles require, and `docs/MODEL_ZOO.md` for the artifact store, the
 reuse patterns, and the six contamination rules that are checked rather than

@@ -38,6 +38,20 @@ never saw x at all.  That inheritance is the whole trick, and it is why the
 signal survives: whatever the base shadow memorised about its members leaves a
 trace in the synthetic data it generated, and the synth-shadow re-learns it.
 
+**Per-record calibration** is the second load-bearing step.  A record's raw
+loss is mostly how hard that record is for any model, and that varies across
+records far more than memorisation does, so a classifier on raw losses largely
+learns "unusual records look like non-members".  Each of the K synth-shadows
+has scored every candidate record, so before the meta-classifier sees a
+feature it is rewritten as "how far is this model's value for this record from
+the same record's typical value under the other shadows", in units of that
+record's spread (difficulty calibration, Watson et al. 2022; the offline LiRA
+z-score of Carlini et al. 2022, applied to every feature of the signature).
+Training rows are calibrated leave-one-out; the proxy's rows against all K.
+It needs no auxiliary data and no label -- only the candidates and models the
+adversary trained -- and is worth +0.11 to +0.15 AUC on the ND diagonal
+(results/FINDINGS.md section 10q, notes/note_per_record_calibration.md).
+
 The five pipeline stages below correspond one-to-one with the steps in the
 paper's methodology section.  All of them are cached and idempotent, so a run
 can be interrupted and resumed.
@@ -139,6 +153,17 @@ class MeLoMIA(Attack):
                                         # is the ablation that motivates the
                                         # whole design (see TODO item 8)
     reference_calibration: bool = True
+    #: Z-score every feature of a record against the same record under the
+    #: other synth-shadows (leave-one-out for training rows, all K for the
+    #: proxy), on log losses, after standardising each model's features over
+    #: the candidate records.  Removes record difficulty, which
+    #: `reference_calibration` cannot -- that one shifts all records of a model
+    #: alike -- and replaces it when on.  Uses only the candidates and the
+    #: attacker's own models.  On by default since 2026-10-03 (Steven); runs
+    #: with it carry `_prc` in their tag, so every cache and result recorded
+    #: before then (no suffix) is the uncalibrated attack and stays valid for
+    #: `per_record_calibration: false`.
+    per_record_calibration: bool = True
     keep_base_shadows: bool = False     # ~100 MB each for ND; not needed once
                                         # the internal synthetic data exists
     keep_proxies: bool = False
@@ -150,6 +175,9 @@ class MeLoMIA(Attack):
 
     def __post_init__(self):
         self._backend_cache: dict = {}
+        if self.per_record_calibration and self.n_shadows < 3:
+            raise ValueError("per_record_calibration needs n_shadows >= 3: each training "
+                             "row is z-scored against the other shadows' mean and spread")
 
     @property
     def attack_key(self) -> str:
@@ -182,6 +210,8 @@ class MeLoMIA(Attack):
             t += "_nooptuna"
         if self.internal_proxy_selection:
             t += "_blockcv"
+        if self.per_record_calibration:
+            t += "_prc"
         if self.label:
             t += f"_{self.label}"
         return t
@@ -387,11 +417,30 @@ class MeLoMIA(Attack):
                 del gen
                 self._free_gpu()
 
+    def _calibrate_grid(self, losses, ref_losses):
+        """Model-level treatment of one model's loss grid."""
+        if self.per_record_calibration:
+            return np.log(losses)
+        if self.reference_calibration and ref_losses is not None:
+            return F.calibrate_against_reference(losses, ref_losses)
+        return losses
+
+    def _design(self, summaries, sweep_idx, noise_budget) -> np.ndarray:
+        """Training matrix from the pooled grid (rows ordered shadow by shadow).
+
+        `summaries` is an `F.SummaryCache` over the pooled grid, so the search's
+        repeated re-slicing does not recompute the per-draw statistics.
+        """
+        X = summaries.prepare(sweep_idx, noise_budget)
+        if self.per_record_calibration:
+            # `_pooled` stacks shadow 1..K, each over the same records in the
+            # same order; per_record_train relies on exactly that layout.
+            X = F.per_record_train(X, self.n_shadows)
+        return X
+
     def _load_features(self, dataset: str, k: int) -> tuple:
         d = np.load(self._features_path(dataset, k), allow_pickle=True)
-        losses = d["losses"]
-        if self.reference_calibration and "ref_losses" in d:
-            losses = F.calibrate_against_reference(losses, d["ref_losses"])
+        losses = self._calibrate_grid(d["losses"], d["ref_losses"] if "ref_losses" in d else None)
         extra = d["extra"] if "extra" in d else None
         return losses, extra, d["y_member"], d["sample_ids"]
 
@@ -423,6 +472,35 @@ class MeLoMIA(Attack):
 
     # ── Stage 4: meta-classifier ────────────────────────────────────────────
 
+    #: Everything that decides which meta-classifier a search returns.  Only
+    #: some of these are in the cache tag (K, the validation scheme, the
+    #: calibration), so the rest are recorded in meta.json and checked on reuse:
+    #: a cached meta-classifier fitted with a different search budget must not
+    #: be picked up silently by a run that claims another.
+    _PROTOCOL_FIELDS = ("n_shadows", "classifiers", "optuna_enabled", "optuna_trials",
+                        "cv_folds", "ensemble_temperature", "ensemble_min_auc",
+                        "internal_proxy_selection", "synth_shadow",
+                        "reference_calibration", "per_record_calibration", "seed")
+
+    def protocol(self) -> dict:
+        p = self.params()
+        return {k: list(p[k]) if isinstance(p[k], (list, tuple)) else p[k]
+                for k in self._PROTOCOL_FIELDS}
+
+    def _check_protocol(self, meta: dict, path: Path) -> None:
+        saved = meta.get("protocol")
+        if saved is None:
+            self._say(f"  [melomia] {path.parent.name}: cached meta-classifier predates "
+                      "protocol records; run scripts/melomia_backfill_protocol.py")
+            return
+        now = self.protocol()
+        diff = {k: (saved.get(k), now[k]) for k in now if saved.get(k) != now[k]}
+        if diff:
+            raise RuntimeError(
+                f"{path} was fitted under a different protocol (cached, requested): {diff}. "
+                "Use the cached settings, move that directory aside, or set `label` to "
+                "fork a separate cache.")
+
     def _meta_path(self, dataset: str) -> Path:
         return self.meta_cache(dataset) / "meta.json"
 
@@ -432,11 +510,14 @@ class MeLoMIA(Attack):
     def _ensure_meta(self, dataset: str) -> dict:
         meta_path = self._meta_path(dataset)
         if meta_path.exists():
-            return MM.load_meta(meta_path)
+            meta = MM.load_meta(meta_path)
+            self._check_protocol(meta, meta_path)
+            return meta
 
         be = self._backend(dataset)
         n_sweep, n_noise = len(be.sweep_points), be.n_noise
         losses, extra, y, groups, shadows = self._pooled(dataset)
+        summaries = F.SummaryCache(losses, extra)
         self._say(f"  [melomia] meta-classifier pool: {losses.shape[0]} rows "
                   f"({self.n_shadows} shadows x {losses.shape[0] // self.n_shadows} samples)")
         if self.internal_proxy_selection:
@@ -447,14 +528,15 @@ class MeLoMIA(Attack):
                   "sweep_points": list(be.sweep_points), "n_noise": n_noise,
                   "n_shadows": self.n_shadows,
                   "selection": "block" if self.internal_proxy_selection else "grouped",
+                  "protocol": self.protocol(), "protocol_source": "recorded at fit",
                   "classifiers": {}}
         cv_aucs = {}
 
         for clf_name in self.classifiers:
             sweep_idx, noise_budget, hparams = self._search(
-                clf_name, losses, extra, y, groups, shadows, n_sweep, n_noise
+                clf_name, summaries, y, groups, shadows, n_sweep, n_noise
             )
-            X = F.prepare(losses, extra, sweep_idx, noise_budget)
+            X = self._design(summaries, sweep_idx, noise_budget)
             if self.internal_proxy_selection:
                 diag = MM.evaluate_block(clf_name, X, y, groups, shadows, hparams,
                                          n_folds=self.cv_folds, device=self.device)
@@ -468,6 +550,12 @@ class MeLoMIA(Attack):
 
             MM.get(clf_name).train(X, y, groups, self._clf_dir(dataset, clf_name),
                                    hparams=hparams, device=self.device)
+            if self.per_record_calibration:
+                mean, sd = F.per_record_reference(
+                    summaries.prepare(sweep_idx, noise_budget), self.n_shadows)
+                self._clf_dir(dataset, clf_name).mkdir(parents=True, exist_ok=True)
+                np.savez(self._clf_dir(dataset, clf_name) / "record_reference.npz",
+                         mean=mean, sd=sd, sample_ids=groups[:len(mean)])
             result["classifiers"][clf_name] = {
                 "sweep_indices": sweep_idx, "noise_budget": noise_budget,
                 "hparams": hparams, "cv": diag,
@@ -483,7 +571,7 @@ class MeLoMIA(Attack):
         MM.save_meta(meta_path, result)
         return result
 
-    def _search(self, clf_name, losses, extra, y, groups, shadows,
+    def _search(self, clf_name, summaries, y, groups, shadows,
                 n_sweep, n_noise) -> tuple:
         """Joint Optuna search over feature slice and model hyperparameters.
 
@@ -508,7 +596,7 @@ class MeLoMIA(Attack):
                 chosen = list(range(n_sweep))
             budget = trial.suggest_int("noise_budget", max(10, n_noise // 4), n_noise,
                                        step=max(1, n_noise // 12))
-            X = F.prepare(losses, extra, sorted(set(chosen)), budget)
+            X = self._design(summaries, sorted(set(chosen)), budget)
             hp = MM._suggest(trial, clf_name)
             folds = min(3, self.cv_folds)
             if self.internal_proxy_selection:
@@ -605,9 +693,7 @@ class MeLoMIA(Attack):
         else:
             d = None
         if d is not None:
-            losses = d["losses"]
-            if self.reference_calibration and "ref_losses" in d:
-                losses = F.calibrate_against_reference(losses, d["ref_losses"])
+            losses = self._calibrate_grid(d["losses"], d["ref_losses"] if "ref_losses" in d else None)
             return losses, (d["extra"] if "extra" in d else None)
 
         be = self._backend(dataset)
@@ -638,9 +724,7 @@ class MeLoMIA(Attack):
         del gen
         self._free_gpu()
 
-        if self.reference_calibration and "ref_losses" in payload:
-            losses = F.calibrate_against_reference(losses, payload["ref_losses"])
-        return losses, extra
+        return self._calibrate_grid(losses, payload.get("ref_losses")), extra
 
     def score(self, dataset: str, generator: str, split: int) -> np.ndarray:
         meta = self.prepare(dataset)
@@ -653,6 +737,17 @@ class MeLoMIA(Attack):
                 continue
             spec = meta["classifiers"][clf_name]
             X = F.prepare(losses, extra, spec["sweep_indices"], spec["noise_budget"])
+            if self.per_record_calibration:
+                # The reference is per record, so the proxy's rows must be the
+                # same records in the same order as the shadows' (both are
+                # D.load_expression order).
+                ref = np.load(self._clf_dir(dataset, clf_name) / "record_reference.npz",
+                              allow_pickle=True)
+                if "sample_ids" in ref and list(ref["sample_ids"]) != list(
+                        D.load_expression(dataset).index):
+                    raise RuntimeError("per-record reference and candidate pool disagree "
+                                       f"on record order for {dataset}; rebuild the meta cache")
+                X = F.per_record_apply(X, ref["mean"], ref["sd"])
             clf = MM.get(clf_name).load(self._clf_dir(dataset, clf_name))
             total += MM.get(clf_name).predict(clf, X) * w
         return total
