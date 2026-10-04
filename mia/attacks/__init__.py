@@ -20,6 +20,8 @@ from .mahalamia import MahalaMIA  # noqa: F401
 from .mamamia import MAMAMIA  # noqa: F401
 from .mamamia_v2 import MAMAMIAv2  # noqa: F401
 from .melomia import MeLoMIACVAE, MeLoMIAND  # noqa: F401
+from .redsigma import RedSigma  # noqa: F401
 
 __all__ = ["Attack", "build", "register", "REGISTRY",
-           "GenericBaseline", "MahalaMIA", "MAMAMIA", "MAMAMIAv2", "MeLoMIAND", "MeLoMIACVAE"]
+           "GenericBaseline", "MahalaMIA", "MAMAMIA", "MAMAMIAv2", "MeLoMIAND", "MeLoMIACVAE",
+           "RedSigma"]

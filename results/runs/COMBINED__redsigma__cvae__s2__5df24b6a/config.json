@@ -1,0 +1,37 @@
+{
+  "run_id": "COMBINED__redsigma__cvae__s2__5df24b6a",
+  "timestamp": "2026-10-04T21:01:36+00:00",
+  "dataset": "COMBINED",
+  "attack": "redsigma",
+  "generator": "cvae",
+  "split": 2,
+  "tag": "mvn_labels",
+  "experiment": "redsigma_combined",
+  "variant": "redsigma_mvn_labels",
+  "notes": "RedSigma (Tucker et al.) as submitted, plus each of its four rules against every generator",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "redsigma",
+    "rule": "mvn",
+    "use_labels": true,
+    "attack": "redsigma"
+  },
+  "target": {
+    "fingerprint": "1c72c4cd144e688b",
+    "params": {
+      "preprocess": "standard",
+      "optimizer": "adam",
+      "scheduler": "none",
+      "lr": 0.001,
+      "batch_size": 64,
+      "num_iters": 10000,
+      "z_dim": 128,
+      "beta": 0.001,
+      "condition_type": "embedding",
+      "early_stopping": false
+    },
+    "seed": 2583,
+    "source": "trained"
+  }
+}

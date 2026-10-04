@@ -1,0 +1,30 @@
+{
+  "run_id": "BRCA__redsigma__nd__s1__ce28c25d",
+  "timestamp": "2026-10-04T20:58:52+00:00",
+  "dataset": "BRCA",
+  "attack": "redsigma",
+  "generator": "nd",
+  "split": 1,
+  "tag": "auto",
+  "experiment": "redsigma_brca",
+  "variant": "redsigma",
+  "notes": "RedSigma (Tucker et al.) as submitted, plus each of its four rules against every generator",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "redsigma",
+    "rule": "auto",
+    "use_labels": false,
+    "attack": "redsigma"
+  },
+  "target": {
+    "fingerprint": "55d876cf95d22403",
+    "params": {
+      "epochs": 200,
+      "dp_noise_multiplier": 1e-05,
+      "smote_upsample_to": 3000
+    },
+    "seed": null,
+    "source": "published-blue-team"
+  }
+}

@@ -1,0 +1,43 @@
+# RedSigma (Tucker et al., the other winning CAMDA-26 red-team attack) on our
+# grid: same targets, same five splits, same membership labels as every other
+# attack.  `redsigma` is the attack as submitted -- their per-generator rule,
+# no synthetic labels, BRCA without a reference set.  The remaining rows hold
+# one of their four rules fixed across all generators, which is the
+# off-diagonal their submission never ran.
+name: redsigma_brca
+dataset: BRCA
+notes: "RedSigma (Tucker et al.) as submitted, plus each of its four rules against every generator"
+device: cpu
+
+generators:
+  - mvn
+  - cvae
+  - nd
+  - pgg                            # DP-PGM as the CAMDA-26 challenge ran it
+  - "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16"   # DP-PGM new
+  - tabpfn
+  - "tabpfn@preprocess=standard+pca:64"
+  - tabsyn
+  - dpcvae
+  - "dpcvae@epsilon=1000"
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  redsigma:
+    class: redsigma
+    params: {rule: auto}
+  redsigma_knn200:
+    class: redsigma
+    params: {rule: knn200}
+  redsigma_knn500:
+    class: redsigma
+    params: {rule: knn500}
+  redsigma_cvae:
+    class: redsigma
+    params: {rule: cvae}
+  redsigma_mvn:
+    class: redsigma
+    params: {rule: mvn}
+  redsigma_mvn_labels:             # their per-class likelihood, given the released labels
+    class: redsigma
+    params: {rule: mvn, use_labels: true}
