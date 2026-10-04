@@ -123,19 +123,19 @@ Shadows are trained on a base shadow's synthetic data (the method) or directly o
 
 | Arm | Cross-validated AUC | MVN | CVAE | ND | DP-PGM CAMDA-26 | DP-PGM new |
 |---|---|---|---|---|---|---|
-| Synth-shadows, no calibration | — | pending | pending | pending | pending | pending |
-| Real shadows, no calibration | — | pending | pending | pending | pending | pending |
-| Synth-shadows, calibrated | — | pending | pending | pending | pending | pending |
-| Real shadows, calibrated | — | pending | pending | pending | pending | pending |
+| Synth-shadows, no calibration | 0.619 | 0.638 [0.072] | 0.595 [0.028] | 0.645 [0.060] | 0.497 [0.011] | 0.500 [0.012] |
+| Real shadows, no calibration | 0.770 | 0.670 [0.065] | 0.495 [0.016] | 0.566 [0.021] | 0.499 [0.011] | 0.500 [0.010] |
+| Synth-shadows, calibrated | 0.782 | 0.712 [0.074] | 0.694 [0.068] | 0.798 [0.162] | 0.502 [0.012] | 0.502 [0.011] |
+| Real shadows, calibrated | 0.857 | 0.772 [0.136] | 0.653 [0.058] | 0.718 [0.126] | 0.503 [0.009] | 0.501 [0.009] |
 
 **MeLoMIA-CVAE, COMBINED** (AUC; TPR at 1% FPR in brackets)
 
 | Arm | Cross-validated AUC | MVN | CVAE | ND | DP-PGM CAMDA-26 | DP-PGM new |
 |---|---|---|---|---|---|---|
-| Synth-shadows, no calibration | — | pending | pending | pending | pending | pending |
-| Real shadows, no calibration | — | pending | pending | pending | pending | pending |
-| Synth-shadows, calibrated | — | pending | pending | pending | pending | pending |
-| Real shadows, calibrated | — | pending | pending | pending | pending | pending |
+| Synth-shadows, no calibration | 0.708 | 0.528 [0.014] | 0.723 [0.045] | 0.523 [0.013] | 0.498 [0.011] | 0.505 [0.009] |
+| Real shadows, no calibration | 0.998 | 0.523 [0.014] | 0.603 [0.018] | 0.516 [0.014] | 0.503 [0.011] | 0.501 [0.012] |
+| Synth-shadows, calibrated | 0.850 | 0.550 [0.019] | 0.866 [0.278] | 0.561 [0.020] | 0.499 [0.012] | 0.505 [0.010] |
+| Real shadows, calibrated | 1.000 | 0.512 [0.011] | 0.614 [0.025] | 0.512 [0.011] | 0.498 [0.010] | 0.502 [0.012] |
 
 ### C. Selection folds (K = 20)
 
@@ -144,18 +144,18 @@ Shadows are trained on a base shadow's synthetic data (the method) or directly o
 | Arm | Cross-validated AUC | MVN | CVAE | ND | DP-PGM CAMDA-26 | DP-PGM new |
 |---|---|---|---|---|---|---|
 | Sample-grouped, no calibration | 0.620 | 0.644 [0.075] | 0.591 [0.031] | 0.648 [0.058] | 0.496 [0.010] | 0.499 [0.012] |
-| Model-disjoint, no calibration | — | pending | pending | pending | pending | pending |
+| Model-disjoint, no calibration | 0.612 | 0.644 [0.071] | 0.595 [0.032] | 0.644 [0.055] | 0.498 [0.009] | 0.500 [0.009] |
 | Sample-grouped, calibrated | 0.784 | 0.714 [0.062] | 0.694 [0.055] | 0.802 [0.195] | 0.503 [0.010] | 0.501 [0.011] |
-| Model-disjoint, calibrated | — | pending | pending | pending | pending | pending |
+| Model-disjoint, calibrated | 0.778 | 0.715 [0.068] | 0.698 [0.063] | 0.800 [0.163] | 0.503 [0.011] | 0.501 [0.008] |
 
 **MeLoMIA-CVAE, COMBINED** (AUC; TPR at 1% FPR in brackets)
 
 | Arm | Cross-validated AUC | MVN | CVAE | ND | DP-PGM CAMDA-26 | DP-PGM new |
 |---|---|---|---|---|---|---|
 | Sample-grouped, no calibration | 0.712 | 0.528 [0.015] | 0.731 [0.052] | 0.525 [0.011] | 0.497 [0.011] | 0.505 [0.008] |
-| Model-disjoint, no calibration | — | pending | pending | pending | pending | pending |
+| Model-disjoint, no calibration | 0.695 | 0.528 [0.012] | 0.725 [0.054] | 0.523 [0.011] | 0.497 [0.011] | 0.505 [0.012] |
 | Sample-grouped, calibrated | 0.857 | 0.551 [0.016] | 0.870 [0.308] | 0.561 [0.021] | 0.499 [0.012] | 0.506 [0.011] |
-| Model-disjoint, calibrated | — | pending | pending | pending | pending | pending |
+| Model-disjoint, calibrated | 0.854 | 0.551 [0.015] | 0.870 [0.293] | 0.561 [0.022] | 0.499 [0.009] | 0.506 [0.010] |
 
 ### D. Number of synth-shadows
 
@@ -163,30 +163,30 @@ Shadows are trained on a base shadow's synthetic data (the method) or directly o
 
 | Arm | Cross-validated AUC | MVN | CVAE | ND | DP-PGM CAMDA-26 | DP-PGM new |
 |---|---|---|---|---|---|---|
-| K = 5, no calibration | 0.564 | pending | pending | pending | pending | pending |
-| K = 10, no calibration | — | pending | pending | pending | pending | pending |
-| K = 15, no calibration | — | pending | pending | pending | pending | pending |
+| K = 5, no calibration | 0.564 | 0.587 [0.038] | 0.562 [0.017] | 0.601 [0.017] | 0.498 [0.008] | 0.501 [0.011] |
+| K = 10, no calibration | 0.594 | 0.641 [0.073] | 0.590 [0.033] | 0.642 [0.053] | 0.498 [0.009] | 0.501 [0.009] |
+| K = 15, no calibration | 0.619 | 0.638 [0.072] | 0.595 [0.028] | 0.645 [0.060] | 0.497 [0.011] | 0.500 [0.012] |
 | K = 20, no calibration | 0.620 | 0.644 [0.075] | 0.591 [0.031] | 0.648 [0.058] | 0.496 [0.010] | 0.499 [0.012] |
-| K = 5, calibrated | — | pending | pending | pending | pending | pending |
-| K = 10, calibrated | — | pending | pending | pending | pending | pending |
-| K = 15, calibrated | — | pending | pending | pending | pending | pending |
+| K = 5, calibrated | 0.722 | 0.710 [0.068] | 0.699 [0.052] | 0.750 [0.105] | 0.504 [0.010] | 0.501 [0.010] |
+| K = 10, calibrated | 0.755 | 0.712 [0.072] | 0.695 [0.069] | 0.784 [0.154] | 0.504 [0.010] | 0.503 [0.008] |
+| K = 15, calibrated | 0.782 | 0.712 [0.074] | 0.694 [0.068] | 0.798 [0.162] | 0.502 [0.012] | 0.502 [0.011] |
 | K = 20, calibrated | 0.784 | 0.714 [0.062] | 0.694 [0.055] | 0.802 [0.195] | 0.503 [0.010] | 0.501 [0.011] |
 
 **MeLoMIA-CVAE, COMBINED** (AUC; TPR at 1% FPR in brackets)
 
 | Arm | Cross-validated AUC | MVN | CVAE | ND | DP-PGM CAMDA-26 | DP-PGM new |
 |---|---|---|---|---|---|---|
-| K = 5, no calibration | 0.698 | pending | pending | pending | pending | pending |
-| K = 10, no calibration | — | pending | pending | pending | pending | pending |
-| K = 15, no calibration | — | pending | pending | pending | pending | pending |
+| K = 5, no calibration | 0.698 | 0.526 [0.013] | 0.712 [0.035] | 0.521 [0.011] | 0.495 [0.011] | 0.505 [0.011] |
+| K = 10, no calibration | 0.703 | 0.527 [0.014] | 0.718 [0.046] | 0.522 [0.012] | 0.497 [0.009] | 0.506 [0.013] |
+| K = 15, no calibration | 0.708 | 0.528 [0.014] | 0.723 [0.045] | 0.523 [0.013] | 0.498 [0.011] | 0.505 [0.009] |
 | K = 20, no calibration | 0.712 | 0.528 [0.015] | 0.731 [0.052] | 0.525 [0.011] | 0.497 [0.011] | 0.505 [0.008] |
-| K = 5, calibrated | — | pending | pending | pending | pending | pending |
-| K = 10, calibrated | — | pending | pending | pending | pending | pending |
-| K = 15, calibrated | — | pending | pending | pending | pending | pending |
+| K = 5, calibrated | 0.810 | 0.547 [0.013] | 0.836 [0.203] | 0.554 [0.021] | 0.498 [0.012] | 0.506 [0.009] |
+| K = 10, calibrated | 0.841 | 0.549 [0.018] | 0.857 [0.241] | 0.559 [0.019] | 0.499 [0.012] | 0.506 [0.011] |
+| K = 15, calibrated | 0.850 | 0.550 [0.019] | 0.866 [0.278] | 0.561 [0.020] | 0.499 [0.012] | 0.505 [0.010] |
 | K = 20, calibrated | 0.857 | 0.551 [0.016] | 0.870 [0.308] | 0.561 [0.021] | 0.499 [0.012] | 0.506 [0.011] |
 
 ## Consistency checks
 
-32 of 52 arms complete.  Checked for every run: recorded parameters equal the arm's definition; tag as expected; the release scored is the current target; candidate pool identical across arms; the cached classifier's recorded protocol.
+52 of 52 arms complete.  Checked for every run: recorded parameters equal the arm's definition; tag as expected; the release scored is the current target; candidate pool identical across arms; the cached classifier's recorded protocol.
 
 No discrepancies found.

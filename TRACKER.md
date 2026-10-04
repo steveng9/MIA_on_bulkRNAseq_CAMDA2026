@@ -2,14 +2,15 @@
 
 One line per item Steven has asked for, with its status and where the work
 lives.  The long-form record is `EXPERIMENTS.tex` and `results/FINDINGS.md`.
-Last updated 2026-10-03.
+Last updated 2026-10-04.
 
 ## Running
 
 | Item | Status | Where |
 |---|---|---|
+| **State-of-the-art generators for the white paper** (2026-10-03): TabSyn, TabPFN, DPSynth, DP-CVAE as ordinary targets, plus preprocessing as one swept parameter | **TabSyn, TabPFN-3.5, DP-CVAE built, scored and attacked (cheap attacks) on BRCA split 1; DPSynth does not reach 978 genes yet.** Gene-by-gene TabPFN-3.5 is the most faithful generator we have (discriminator AUC 0.651, TSTR F1 0.795 vs 0.811 real) and MahalaMIA gets only 0.589 on it. Splits 2-5, COMBINED, MeLoMIA and MAMA-MIA not run. Not committed. | `docs/SOTA_GENERATORS.md`; `configs/experiments/grid_sota_{brca,combined}.yaml`; `results/preprocess_ablation.csv` |
 | **MeLoMIA per-record calibration** (2026-10-03, your note from the TimeDiff audit): z-score each record against itself under the other synth-shadows. On by default; black box unchanged | **done** (FINDINGS §10q); slide table regenerated. MeLoMIA-ND on ND: 0.858 → 0.969 (BRCA), 0.648 → 0.802 (COMBINED). MeLoMIA-CVAE on CVAE: 0.731 → 0.870 (COMBINED), 0.798 → 0.807 (BRCA, where TPR at 1% FPR falls 0.33 → 0.25). DP-PGMs stay at chance | `notes/note_per_record_calibration.md` §9; `results/SLIDE_TABLE.md`; trial `results/per_record_calibration/` |
-| **MeLoMIA ablations, one protocol** (2026-10-03): calibration on/off × shadow count × synth vs real shadows × selection folds; 52 arms, 5 generators × 5 splits each, every arm at 60 search trials | **BRCA done (28 arms), COMBINED running (24 arms)**; no discrepancies so far. Progress in `logs/melomia_ablations/progress.log` | `results/MELOMIA_ABLATIONS.md` (+ `melomia_ablations.csv`, `melomia_ablations_arms.csv`); arms defined in `scripts/melomia_ablations.py` |
+| **MeLoMIA ablations, one protocol** (2026-10-03): calibration on/off × shadow count × synth vs real shadows × selection folds; 52 arms, 5 generators × 5 splits each, every arm at 60 search trials | **done 2026-10-04, 52 of 52 arms, no discrepancies** (FINDINGS §10q). Both cohorts agree: 5 calibrated shadows beat the largest uncalibrated stack; synth-shadows beat real shadows on the probe's own family (real shadows ahead only for MeLoMIA-ND on MVN); selection folds make no difference. One exception: BRCA MeLoMIA-CVAE gains nothing and loses TPR at 1% FPR at every shadow count | `results/MELOMIA_ABLATIONS.md` (+ `melomia_ablations.csv`, `melomia_ablations_arms.csv`); arms defined in `scripts/melomia_ablations.py` |
 | MAMA-MIA v2 with the new "grid" edge estimator (black box), 108 dp_quantile targets | **done** (108/108, no failures); write-up pending | `logs/mamamia_v2_grid.log` → `results/mamamia_v2.csv` (edges=grid) |
 | PQRS part 2 with your selector's `max_degree` cap: (50,15,5) at 16 bins; (200,50,10) at 8 bins | **done**: fits now, ties the star (FINDINGS §10m); v2 queued | `logs/pgm_pqrs_maxdeg.log` → `results/pgm_pqrs_maxdeg{,16}.csv` |
 | Star with hairs (your 2026-09-24 idea), hairs free to grow into trees: l ∈ {0,20,50,100,200,400,977} × with/without 1-ways, 112 targets | **done**: every hair makes correlation worse; the star's direct subtype links win (FINDINGS §10l). v2 queued | `configs/experiments/pgm_hairy_star.yaml`, `logs/pgm_hairy_star.log` |
@@ -33,6 +34,8 @@ Last updated 2026-10-03.
 | Disk pruning | 3.9 GB freed from BROKEN targets (`results/BROKEN.md`); then 7.5 GB of legacy shadow-generator weights in `mia_output/` (Steven OK'd; synthetic data, features, splits, classifiers kept; list in `mia_output/PRUNED_2026-09-24.txt`).  9.2 GB free.  2026-09-25: disk hit 2 GB and paused the hairy sweep; PGM target checkpoints now drop the fitted model (never reloaded; edges, tables and rho kept), 19 GB freed, `scripts/slim_pgm_checkpoints.py`, list in `artifacts/targets/SLIMMED.txt` |
 
 ## Needs Steven
+
+0. **State-of-the-art generators: three choices.** (a) Build gene-by-gene TabPFN-3.5 for all splits (3.8 h per BRCA target, ~19 h of one GPU for five; COMBINED untimed)? (b) DPSynth cannot fit 978 genes as shipped: accept a few-hundred-gene subset, or let me fit its noisy marginals with our Private-PGM code? (c) TabSyn's upstream recipe is worse than CVAE here (TSTR F1 0.629 vs 0.780): keep it as the faithful baseline, or tune it?
 
 1. **Which DP-PGM goes in the paper.** Leaning star (= forest k=978) at 16 bins; the forest sweep did cover k=500/978 and l up to 400, and none beat it.  PQRS part 2 is in and ties it (§10m).
 2. **Class-centring as headline or ablation.** It subtracts each subtype's mean attack score before ranking.

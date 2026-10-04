@@ -22,7 +22,7 @@ BRCA,MahalaMIA (submitted: pseudo-inverse),"pgm@binning=dp_quantile,edge_estimat
 BRCA,"MahalaMIA, PCA to 800 dims",mvn,0.9812145069817569,5
 BRCA,"MahalaMIA, PCA to 800 dims",cvae,0.9877355945216921,5
 BRCA,"MahalaMIA, PCA to 800 dims",nd,0.7810266407782673,5
-BRCA,"MahalaMIA, PCA to 800 dims",pgg,0.5041958193092503,5
+BRCA,"MahalaMIA, PCA to 800 dims",pgg,0.5041958193092504,5
 BRCA,"MahalaMIA, PCA to 800 dims","pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.49954737975580044,5
 BRCA,"MahalaMIA, PCA to 850 dims",mvn,0.993794999486209,5
 BRCA,"MahalaMIA, PCA to 850 dims",cvae,0.9926827585095509,5
@@ -57,7 +57,7 @@ BRCA,MAMA-MIA v1,"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.
 BRCA,MAMA-MIA v2 (black box),mvn,0.5155125364756404,5
 BRCA,MAMA-MIA v2 (black box),cvae,0.53909260945289,5
 BRCA,MAMA-MIA v2 (black box),nd,0.6128794899737465,5
-BRCA,MAMA-MIA v2 (black box),pgg,0.6387225379692019,5
+BRCA,MAMA-MIA v2 (black box),pgg,0.638722537969202,5
 BRCA,MAMA-MIA v2 (black box),"pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",0.7561118203815858,5
 BRCA,MC,mvn,0.5093535714637626,5
 BRCA,MC,cvae,0.5625574052812858,5

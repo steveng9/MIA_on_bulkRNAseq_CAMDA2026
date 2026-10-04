@@ -1803,7 +1803,7 @@ Steven's note `notes/note_per_record_calibration.md` (from the TimeDiff audit) p
 - **Not tuned to the target.** The variant was chosen on shadow models held out of training (`scripts/trial_per_record_calibration.py`, `results/per_record_calibration/`); held-out-shadow AUC moved with the target AUC in every case.
 - **Model standardisation is needed off the diagonal.** Without it the proxy's overall loss scale shifts every calibrated row: in the trial, BRCA MeLoMIA-ND on MVN is 0.825 without, 0.929 with.
 
-**Ablations, one protocol** (`results/MELOMIA_ABLATIONS.md`, arms defined in `scripts/melomia_ablations.py`; 60 search trials, 5 classifiers, 5 generators × 5 splits in every arm). BRCA is complete; COMBINED is running.
+**Ablations, one protocol** (`results/MELOMIA_ABLATIONS.md`, arms defined in `scripts/melomia_ablations.py`; 60 search trials, 5 classifiers, 5 generators × 5 splits in every arm). Complete 2026-10-04: 52 of 52 arms, no discrepancies in the consistency checks.
 
 - **Number of shadows (BRCA, MeLoMIA-ND on ND).** Calibrated: 0.936 at K = 5, 0.953 at 10, 0.963 at 15, 0.966 at 20, 0.969 at 30. Uncalibrated: 0.826 at K = 5 to 0.858 at 30. Calibration with 5 shadows beats no calibration with 30.
 - **Synth-shadows vs real-data shadows (BRCA, K = 15).** Calibration helps both kinds, and synth-shadows still win where the target is the probe's own family:
@@ -1813,3 +1813,13 @@ Steven's note `notes/note_per_record_calibration.md` (from the TimeDiff audit) p
   - Real shadows still score 0.98–1.00 in the attacker's own cross-validation and deploy far lower, so the earlier warning stands: never quote a MeLoMIA cross-validation AUC as an attack result.
 - **Selection folds (BRCA, K = 30).** Sample-grouped and model-disjoint selection give the same attack AUC with calibration (0.969 and 0.969 on ND), as they did without.
 - **Earlier ablation numbers are superseded.** The old K = 15 synth-vs-real arms were fitted with 40 search trials, not 60. Each cached meta-classifier now records its protocol and refuses reuse under another; the 40-trial caches are archived as `meta/<tag>.legacy_trials40`.
+
+COMBINED tells the same story as BRCA on all three questions:
+
+- **Number of shadows (COMBINED).** MeLoMIA-ND on ND, calibrated: 0.750 at K = 5, 0.784 at 10, 0.798 at 15, 0.802 at 20; uncalibrated 0.601 to 0.648. MeLoMIA-CVAE on CVAE, calibrated: 0.836, 0.857, 0.866, 0.870; uncalibrated 0.712 to 0.731. Again 5 calibrated shadows beat 20 uncalibrated ones.
+- **Synth-shadows vs real-data shadows (COMBINED, K = 15, calibrated).**
+  - MeLoMIA-ND on ND: synth 0.798, real 0.718 (uncalibrated: 0.645 vs 0.566).
+  - MeLoMIA-ND on MVN: real shadows are ahead again, 0.772 vs 0.712.
+  - MeLoMIA-CVAE on CVAE: synth 0.866, real 0.614.
+- **Selection folds (COMBINED, K = 20).** No difference: 0.802 vs 0.800 (ND on ND), 0.870 vs 0.870 (CVAE on CVAE).
+- **The BRCA MeLoMIA-CVAE exception holds at every K.** Calibrated TPR at 1% FPR on CVAE is 0.19–0.25 against 0.31–0.33 uncalibrated, with AUC about equal (at K = 5 slightly lower, 0.773 vs 0.784). It is the only attack-cohort pair where calibration does not help; COMBINED MeLoMIA-CVAE gains at every K. Still unexplained.
