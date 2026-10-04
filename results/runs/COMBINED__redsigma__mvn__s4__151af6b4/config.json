@@ -1,0 +1,28 @@
+{
+  "run_id": "COMBINED__redsigma__mvn__s4__151af6b4",
+  "timestamp": "2026-10-04T20:59:22+00:00",
+  "dataset": "COMBINED",
+  "attack": "redsigma",
+  "generator": "mvn",
+  "split": 4,
+  "tag": "knn200",
+  "experiment": "redsigma_combined",
+  "variant": "redsigma_knn200",
+  "notes": "RedSigma (Tucker et al.) as submitted, plus each of its four rules against every generator",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "redsigma",
+    "rule": "knn200",
+    "use_labels": false,
+    "attack": "redsigma"
+  },
+  "target": {
+    "fingerprint": "0ea1c8c1fd5dcf0e",
+    "params": {
+      "noise_level": 0.7
+    },
+    "seed": 4967,
+    "source": "trained"
+  }
+}

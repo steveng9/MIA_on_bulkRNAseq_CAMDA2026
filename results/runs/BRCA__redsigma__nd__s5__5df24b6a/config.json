@@ -1,0 +1,30 @@
+{
+  "run_id": "BRCA__redsigma__nd__s5__5df24b6a",
+  "timestamp": "2026-10-04T21:01:05+00:00",
+  "dataset": "BRCA",
+  "attack": "redsigma",
+  "generator": "nd",
+  "split": 5,
+  "tag": "mvn_labels",
+  "experiment": "redsigma_brca",
+  "variant": "redsigma_mvn_labels",
+  "notes": "RedSigma (Tucker et al.) as submitted, plus each of its four rules against every generator",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "redsigma",
+    "rule": "mvn",
+    "use_labels": true,
+    "attack": "redsigma"
+  },
+  "target": {
+    "fingerprint": "abffcc13cf24f1fb",
+    "params": {
+      "epochs": 200,
+      "dp_noise_multiplier": 1e-05,
+      "smote_upsample_to": 3000
+    },
+    "seed": null,
+    "source": "published-blue-team"
+  }
+}

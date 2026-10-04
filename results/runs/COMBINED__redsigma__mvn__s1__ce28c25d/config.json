@@ -1,0 +1,28 @@
+{
+  "run_id": "COMBINED__redsigma__mvn__s1__ce28c25d",
+  "timestamp": "2026-10-04T20:58:46+00:00",
+  "dataset": "COMBINED",
+  "attack": "redsigma",
+  "generator": "mvn",
+  "split": 1,
+  "tag": "auto",
+  "experiment": "redsigma_combined",
+  "variant": "redsigma",
+  "notes": "RedSigma (Tucker et al.) as submitted, plus each of its four rules against every generator",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "redsigma",
+    "rule": "auto",
+    "use_labels": false,
+    "attack": "redsigma"
+  },
+  "target": {
+    "fingerprint": "05a3560e4c3528fb",
+    "params": {
+      "noise_level": 0.7
+    },
+    "seed": 1967,
+    "source": "trained"
+  }
+}
