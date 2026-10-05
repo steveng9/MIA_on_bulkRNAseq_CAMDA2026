@@ -6,6 +6,7 @@
     melomia_nd   -- loss-trajectory attack instrumented with a diffusion model
     melomia_cvae -- loss-trajectory attack instrumented with a CVAE
     melomia_tabsyn -- the same, instrumented with a TabSyn latent diffusion model
+    melomia_e2e_cvae -- synth-shadows, proxy and classifier trained as one module
 
 Every attack can be pointed at every generator: the two MeLoMIA variants train
 their proxy on whatever synthetic data they are given, and the two statistical
@@ -21,8 +22,9 @@ from .mahalamia import MahalaMIA  # noqa: F401
 from .mamamia import MAMAMIA  # noqa: F401
 from .mamamia_v2 import MAMAMIAv2  # noqa: F401
 from .melomia import MeLoMIACVAE, MeLoMIAND, MeLoMIATabSyn  # noqa: F401
+from .melomia_e2e.attack import MeLoMIAE2E  # noqa: F401
 from .redsigma import RedSigma  # noqa: F401
 
 __all__ = ["Attack", "build", "register", "REGISTRY",
            "GenericBaseline", "MahalaMIA", "MAMAMIA", "MAMAMIAv2", "MeLoMIAND", "MeLoMIACVAE",
-           "MeLoMIATabSyn", "RedSigma"]
+           "MeLoMIATabSyn", "MeLoMIAE2E", "RedSigma"]

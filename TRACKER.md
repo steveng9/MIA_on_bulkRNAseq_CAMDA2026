@@ -25,6 +25,7 @@ Last updated 2026-10-05.
 
 | Item | Where |
 |---|---|
+| **MeLoMIA-E2E** (Steven's idea, 2026-10-05): proxy / synth-shadow weights and the classifier trained as one module. BRCA, CVAE targets, 5 splits: AUC 0.823, TPR@1%FPR 0.41, against MeLoMIA-CVAE 0.807 / 0.245 and its own frozen control 0.790 / 0.318. No change on MVN / ND targets. One seed, CVAE backend only; limited by label memorisation across 24 training shadows | attack `melomia_e2e_cvae` (`mia/attacks/melomia_e2e/`), `configs/experiments/melomia_e2e_brca.yaml`, `results/melomia_e2e_brca.csv` (the 60 runs are in `results/runs`, not yet in `results/index.csv`) |
 | **One place for every DP-PGM architecture**: catalogue, what has been run under which conditions, head-to-head tables (same bins, ε, split) | `results/PGM_ARCHITECTURES.md` (regenerate: `python scripts/pgm_architectures.py`); per-target rows in `results/pgm_architectures.csv` |
 | k/l forest sweep (288 targets): it does not beat the star; k (genes tied to subtype) is the only lever, and gene pairs barely help | FINDINGS §10k, `results/pgm_forest_sweep.csv` |
 | MAMA-MIA v2 on the forests: black-box 0.58–0.67 at ε=10, 0.65–0.995 at ε=1000; white-box 0.74–0.78 at ε=10 (DP bound 0.89) | FINDINGS §10k |

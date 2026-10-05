@@ -1,0 +1,50 @@
+{
+  "run_id": "BRCA__melomia_e2e_cvae__cvae__s3__d4ee5b86",
+  "timestamp": "2026-10-05T22:41:36+00:00",
+  "dataset": "BRCA",
+  "attack": "melomia_e2e_cvae",
+  "generator": "cvae",
+  "split": 3,
+  "tag": "k30h6_T200g170_joint_eval_every20_head_dropout0.5_lr_init3e-05_outer_steps200_train_subsample0.8",
+  "experiment": "melomia_e2e_brca",
+  "variant": "e2e_joint_reg",
+  "notes": "MeLoMIA-E2E, joint vs frozen module, CVAE base shadows, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "melomia_e2e_cvae",
+    "n_shadows": 30,
+    "n_holdout": 6,
+    "base_generator": null,
+    "stack_noise": 50,
+    "joint": true,
+    "module_params": {
+      "inner_steps": 200,
+      "grad_from": 170,
+      "outer_steps": 200,
+      "eval_every": 20,
+      "lr_init": 3e-05,
+      "train_subsample": 0.8,
+      "head_dropout": 0.5
+    },
+    "label": "",
+    "attack": "melomia_e2e_cvae"
+  },
+  "target": {
+    "fingerprint": "f33db8b7c293715b",
+    "params": {
+      "preprocess": "standard",
+      "optimizer": "adam",
+      "scheduler": "none",
+      "lr": 0.001,
+      "batch_size": 64,
+      "num_iters": 10000,
+      "z_dim": 128,
+      "beta": 0.001,
+      "condition_type": "embedding",
+      "early_stopping": false
+    },
+    "seed": 3908,
+    "source": "trained"
+  }
+}

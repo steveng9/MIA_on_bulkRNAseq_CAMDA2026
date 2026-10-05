@@ -1,0 +1,44 @@
+# MeLoMIA-E2E (Steven, 2026-10-05): synth-shadows, proxy and classifier trained
+# as one module.  Base shadows and internal synthetic data are MeLoMIA-CVAE's
+# (K=30, the same cache), so compare with melomia_cvae, tag k30_n50_prc.
+# `frozen` trains the head alone on the pretrained shared initialisation: the
+# control for the joint training.
+name: melomia_e2e_brca
+dataset: BRCA
+notes: "MeLoMIA-E2E, joint vs frozen module, CVAE base shadows, 5 splits"
+device: cuda
+
+generators: ["cvae", "mvn", "nd"]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  e2e_joint:
+    class: melomia_e2e_cvae
+    params:
+      n_shadows: 30
+      n_holdout: 6
+      joint: true
+      module_params: {inner_steps: 200, grad_from: 170, outer_steps: 100, eval_every: 20, lr_init: 1.0e-4}
+  e2e_frozen:
+    class: melomia_e2e_cvae
+    params:
+      n_shadows: 30
+      n_holdout: 6
+      joint: false
+      module_params: {inner_steps: 200, grad_from: 170, outer_steps: 100, eval_every: 20, lr_init: 1.0e-4}
+  # Regularised against meta-overfitting: each joint step adapts a shadow to a
+  # fresh random 80% of its synthetic rows, heavier head dropout, slower p0.
+  e2e_joint_reg:
+    class: melomia_e2e_cvae
+    params:
+      n_shadows: 30
+      n_holdout: 6
+      joint: true
+      module_params: {inner_steps: 200, grad_from: 170, outer_steps: 200, eval_every: 20, lr_init: 3.0e-5, train_subsample: 0.8, head_dropout: 0.5}
+  e2e_frozen_reg:
+    class: melomia_e2e_cvae
+    params:
+      n_shadows: 30
+      n_holdout: 6
+      joint: false
+      module_params: {inner_steps: 200, grad_from: 170, outer_steps: 200, eval_every: 20, lr_init: 3.0e-5, train_subsample: 0.8, head_dropout: 0.5}
