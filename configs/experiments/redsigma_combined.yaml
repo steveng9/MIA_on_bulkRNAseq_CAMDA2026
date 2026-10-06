@@ -20,6 +20,10 @@ generators:
   - tabsyn
   - dpcvae
   - "dpcvae@epsilon=1000"
+  - dpsynth
+  - "dpsynth@mechanism=star"
+  # Add any new generator here; targets that are not built yet are skipped,
+  # so re-running this file later fills in whatever has been built since.
 splits: [1, 2, 3, 4, 5]
 
 attacks:
