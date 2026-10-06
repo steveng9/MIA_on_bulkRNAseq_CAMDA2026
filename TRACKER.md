@@ -48,4 +48,5 @@ Decided 2026-09-24: BRCA's optimistic held-out aux stays for now (better aux str
 
 - Splits 2–3 for the forest sweep, once split 1 has been read.
 - Classic MST with the label as a free node (the only architecture in the catalogue not yet run), if Steven wants it.
+- Offered 2026-10-02 to 10-04, not run, waiting on Steven: donor-level spectral bump test on the scRNA-seq data; an attack that scores a record's distance off the synthetic data's span; MeLoMIA calibration variants (non-member-only reference, raw plus calibrated features, re-tuned search space); why BRCA MeLoMIA-CVAE does not gain from calibration; republish the group-meeting page (https://claude.ai/artifact/Kncd2sC1XLtYDNnAMKSgM5), which still shows uncalibrated MeLoMIA rows; fix the opening of `docs/WHY_DP_PGM_WORKS_NOW.md`.
 - Earlier open items: more ND synth-shadow splits; GPU items (MeLoMIA K sweep, sweep-axis ablation, matched base shadows).
