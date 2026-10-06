@@ -1,4 +1,4 @@
-"""Common interface for the four target generators.
+"""Common interface for the target generators.
 
 A generator is anything that can be fitted to a labelled real cohort and then
 sampled from.  It always speaks *raw* gene-expression space: `fit` receives the
@@ -35,6 +35,24 @@ class Generator(ABC):
     #: registry key, e.g. "mvn"
     name: str = field(init=False, default="base")
 
+    #: packages (name -> minimum version) the implementation needs.  When the
+    #: running interpreter lacks them, `build` hands back a proxy that runs the
+    #: generator in the environment named by `env` instead (see `remote.py`).
+    requires = {}
+    env = None
+
+    @classmethod
+    def available(cls) -> bool:
+        from importlib import metadata
+        for pkg, minimum in cls.requires.items():
+            try:
+                have = metadata.version(pkg)
+            except metadata.PackageNotFoundError:
+                return False
+            if _vtuple(have) < _vtuple(minimum):
+                return False
+        return True
+
     @abstractmethod
     def fit(self, X: np.ndarray, y: np.ndarray, n_classes: int) -> "Generator":
         """Train on raw expression `X` (n, n_genes) with integer labels `y`."""
@@ -49,6 +67,18 @@ class Generator(ABC):
     def load(self, path: Path) -> "Generator":  # pragma: no cover - optional
         raise NotImplementedError(f"{type(self).__name__} does not support load()")
 
+    def resolved_params(self) -> dict:
+        """Every hyperparameter as actually used, defaults included."""
+        from dataclasses import asdict
+        return {k: v for k, v in asdict(self).items()
+                if not k.startswith("_")
+                and isinstance(v, (int, float, str, bool, tuple, list, type(None)))}
+
+    def report(self) -> dict:
+        """Facts established while fitting that belong in the target's record,
+        e.g. a DP generator's noise scale and what its guarantee covers."""
+        return {}
+
     def params(self) -> dict:
         """Hyperparameters as a plain dict, for the run record."""
         from dataclasses import asdict
@@ -56,6 +86,11 @@ class Generator(ABC):
         d.pop("verbose", None)
         d["generator"] = self.name
         return d
+
+
+def _vtuple(v: str) -> tuple:
+    import re
+    return tuple(int(x) for x in re.findall(r"\d+", v)[:3])
 
 
 REGISTRY: dict[str, Any] = {}
@@ -69,4 +104,10 @@ def register(cls):
 def build(name: str, **params) -> Generator:
     if name not in REGISTRY:
         raise KeyError(f"Unknown generator {name!r}. Known: {sorted(REGISTRY)}")
-    return REGISTRY[name](**params)
+    cls = REGISTRY[name]
+    if cls.env and not cls.available():
+        from .remote import RemoteGenerator
+        common = {k: params.pop(k) for k in ("seed", "device", "verbose") if k in params}
+        return RemoteGenerator(remote_name=name, remote_env=cls.env,
+                               remote_params=params, **common)
+    return cls(**params)

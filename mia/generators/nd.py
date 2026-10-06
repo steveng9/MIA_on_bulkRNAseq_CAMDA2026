@@ -166,6 +166,7 @@ class NDGenerator(Generator):
         y = np.asarray(y, dtype=np.int64)
         self._label_counts = dict(Counter(y.tolist()))
         self.n_classes = 1 if self.unconditional else int(n_classes)
+        self.input_dim = int(X.shape[1])     # 978 for the challenge cohorts
 
         X_fit, y_fit = self._smote(X, y)
         if self.unconditional:
@@ -268,11 +269,12 @@ class NDGenerator(Generator):
         self.n_classes = ckpt["n_classes"]
         self._label_counts = ckpt.get("label_counts")
         self.unconditional = ckpt.get("unconditional", self.unconditional)
+        self.scaler = pp.load_scaler(pp.scaler_path(path))
+        self.input_dim = int(getattr(self.scaler, "n_features_in_", self.input_dim))
         self.model = self._build(self.n_classes)
         self.model.load_state_dict(ckpt["state_dict"])
         self.model.eval()
         self.diffusion = self._build_diffusion()
-        self.scaler = pp.load_scaler(pp.scaler_path(path))
         return self
 
 

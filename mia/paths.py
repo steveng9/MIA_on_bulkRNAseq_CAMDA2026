@@ -25,6 +25,12 @@ ND_REPO = _env_path("CAMDA_ND_REPO", "~/CAMDA25_NoisyDiffusion")
 # Private-PGM generator repo (DP-PGM target generator).
 PGM_REPO = _env_path("CAMDA_PGM_REPO", "~/private-pgm-rnaseq-camda2026")
 
+# Interpreters of sibling environments, for generators whose dependencies cannot
+# live in the main one (see `mia/generators/remote.py`, environment-sota.yml).
+ENV_PYTHON = {
+    "sota": _env_path("CAMDA_SOTA_PYTHON", "~/miniconda3/envs/camda_sota/bin/python"),
+}
+
 # ── Project outputs ──────────────────────────────────────────────────────────
 # Large, regenerable intermediates: target synthetic datasets, shadow models,
 # extracted features, meta-classifiers.  Git-ignored.

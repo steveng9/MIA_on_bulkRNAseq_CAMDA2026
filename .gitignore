@@ -20,3 +20,6 @@ catboost_info/
 results/*.lock
 results/*.tmp
 results/*.tmp.*
+
+# Claude Code session worktrees (full copies of the repo).
+.claude/

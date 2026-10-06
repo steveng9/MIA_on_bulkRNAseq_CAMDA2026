@@ -26,6 +26,7 @@ import pandas as pd
 from . import datasets as D
 from . import generators as G
 from . import paths
+from . import preprocessing as pp
 
 GENERATORS = ("mvn", "cvae", "nd", "pgm")
 
@@ -165,6 +166,12 @@ def default_params(generator: str, dataset: str) -> dict:
     if generator == "pgm":
         return {"epsilon": 10.0, "n_bins": 4, "n_1way": 978, "n_2way": 0,
                 "joint_mode": True, "pgm_iters": 1000}
+    if generator in ("tabsyn", "tabpfn", "dpcvae", "dpsynth"):
+        # the class defaults are the upstream recipe
+        from dataclasses import MISSING, fields
+        return {f.name: f.default for f in fields(G.REGISTRY[generator])
+                if f.init and f.default is not MISSING
+                and f.name not in ("seed", "device", "verbose")}
     if generator == "pgg":   # the CAMDA-25 winner's code, as the CAMDA-26 release ran it
         return {"epsilon": 10.0, "delta": 1e-5, "iterations": 10000}
     raise KeyError(generator)
@@ -193,6 +200,8 @@ def build_target(
         print(f"  [target] {dataset}/{generator}/split_{split} cached", flush=True)
         return f["dir"]
 
+    if isinstance(D.spec(dataset), D.ManifestSpec):
+        retrain_nd = True        # published ND data exists for the challenge cohorts only
     if generator == "nd" and not retrain_nd:
         return _import_published_nd(dataset, split)
     if generator.startswith("nd@") and not retrain_nd:
@@ -233,12 +242,13 @@ def build_target(
     # That bit us with the DP-PGM accounting fixes, where the same config file
     # produced materially different generators either side of 2026-09-20, so
     # record the generator's full resolved state alongside it.
-    resolved = {k: v for k, v in asdict(gen).items()
-                if not k.startswith("_") and isinstance(v, (int, float, str, bool,
-                                                            tuple, list, type(None)))}
+    resolved = gen.resolved_params()
     f["meta"].write_text(json.dumps({
         "dataset": dataset, "generator": base, "target": generator, "split": split,
         "params": params, "resolved_params": resolved,
+        "preprocessing": (pp.describe(resolved["preprocess"])
+                          if isinstance(resolved.get("preprocess"), str) else None),
+        "report": gen.report(),
         "seed": seed, "source": "trained",
         "n_synthetic": int(len(X_syn)), "n_train": int(len(X_train)),
     }, indent=2, default=str))

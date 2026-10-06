@@ -1,0 +1,53 @@
+{
+  "run_id": "BRCA__generic__dpcvae@epsilon=1000__s1__85dd6f22",
+  "timestamp": "2026-10-03T20:29:46+00:00",
+  "dataset": "BRCA",
+  "attack": "generic",
+  "generator": "dpcvae@epsilon=1000",
+  "split": 1,
+  "tag": "mc",
+  "experiment": "grid_sota_brca",
+  "variant": "generic_mc",
+  "notes": "SOTA generators: all attacks on tabsyn / tabpfn / dpsynth / dpcvae targets",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "mc",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "35f61c058639f2ea",
+    "params": {
+      "seed": 1574,
+      "device": "cuda",
+      "verbose": true,
+      "name": "dpcvae",
+      "z_dim": 64,
+      "beta": 0.001,
+      "transform": "none",
+      "condition_type": "onehot",
+      "disease_embed_dim": 20,
+      "preprocess": "standard",
+      "batch_size": 64,
+      "num_iters": 10000,
+      "epochs": null,
+      "lr": 0.001,
+      "weight_decay": 0.0,
+      "optimizer": "adam",
+      "scheduler": "none",
+      "early_stopping": false,
+      "patience": 50,
+      "min_delta": 0.0001,
+      "condition_mode": null,
+      "epsilon": 1000,
+      "delta": 1e-05,
+      "max_grad_norm": 0.1,
+      "accountant": "auto",
+      "private_labels": false,
+      "label_budget": 0.05
+    },
+    "seed": 1574,
+    "source": "trained"
+  }
+}

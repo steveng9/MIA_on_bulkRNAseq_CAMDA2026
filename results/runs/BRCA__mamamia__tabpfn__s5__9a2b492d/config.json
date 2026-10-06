@@ -1,0 +1,46 @@
+{
+  "run_id": "BRCA__mamamia__tabpfn__s5__9a2b492d",
+  "timestamp": "2026-10-05T05:24:31+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia",
+  "generator": "tabpfn",
+  "split": 5,
+  "tag": "k4_1w_2w",
+  "experiment": "grid_sota_brca",
+  "variant": "mamamia",
+  "notes": "SOTA generators: all attacks on tabsyn / tabpfn / dpsynth / dpcvae targets",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mamamia",
+    "n_bins": 4,
+    "use_oneway": true,
+    "use_twoway": true,
+    "use_subtype_marginal": true,
+    "calibrate": true,
+    "aggregation": "ratio",
+    "dp_epsilon": null,
+    "dp_delta": 1e-05,
+    "dp_budget_weights": [
+      0.33,
+      0.67
+    ],
+    "attack": "mamamia"
+  },
+  "target": {
+    "fingerprint": "5680b5c3a896c375",
+    "params": {
+      "seed": 5167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 5167,
+    "source": "trained"
+  }
+}

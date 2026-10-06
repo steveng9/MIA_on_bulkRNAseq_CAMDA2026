@@ -1,0 +1,33 @@
+{
+  "run_id": "BRCA_HVG200__generic__pgg__s1__6ca30c41",
+  "timestamp": "2026-10-04T22:55:04+00:00",
+  "dataset": "BRCA_HVG200",
+  "attack": "generic",
+  "generator": "pgg",
+  "split": 1,
+  "tag": "conf_lr",
+  "experiment": "grid_hvg200_brca",
+  "variant": "generic_conf_lr",
+  "notes": "200-gene subset: all attacks on every generator incl. DPSynth",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "conf_lr",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "cb41860d476f0df6",
+    "params": {
+      "seed": 1881,
+      "device": "cuda",
+      "verbose": true,
+      "name": "pgg",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "iterations": 10000
+    },
+    "seed": 1881,
+    "source": "trained"
+  }
+}

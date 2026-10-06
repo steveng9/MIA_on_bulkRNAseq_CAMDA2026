@@ -1,0 +1,62 @@
+{
+  "run_id": "BRCA__melomia_cvae__tabpfn__s5__b2dcf209",
+  "timestamp": "2026-10-05T05:46:12+00:00",
+  "dataset": "BRCA",
+  "attack": "melomia_cvae",
+  "generator": "tabpfn",
+  "split": 5,
+  "tag": "k30_n50_prc",
+  "experiment": "grid_sota_brca",
+  "variant": "melomia_cvae",
+  "notes": "SOTA generators: all attacks on tabsyn / tabpfn / dpsynth / dpcvae targets",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "melomia_cvae",
+    "backend": "cvae",
+    "base_generator": null,
+    "n_shadows": 30,
+    "shadow_ratio": 0.8,
+    "shadow_seed": 90000,
+    "n_noise": 50,
+    "sweep_points": null,
+    "backend_params": {},
+    "classifiers": [
+      "xgb",
+      "rf",
+      "lgbm",
+      "cat",
+      "mlp"
+    ],
+    "optuna_enabled": true,
+    "optuna_trials": 60,
+    "cv_folds": 4,
+    "ensemble_temperature": 0.05,
+    "ensemble_min_auc": 0.55,
+    "internal_proxy_selection": false,
+    "synth_shadow": true,
+    "white_box": false,
+    "reference_calibration": true,
+    "per_record_calibration": true,
+    "keep_base_shadows": false,
+    "keep_proxies": false,
+    "label": "",
+    "attack": "melomia_cvae"
+  },
+  "target": {
+    "fingerprint": "5680b5c3a896c375",
+    "params": {
+      "seed": 5167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 5167,
+    "source": "trained"
+  }
+}

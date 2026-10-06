@@ -1,0 +1,47 @@
+{
+  "run_id": "BRCA_HVG200__generic__cvae__s1__d79406db",
+  "timestamp": "2026-10-04T22:55:08+00:00",
+  "dataset": "BRCA_HVG200",
+  "attack": "generic",
+  "generator": "cvae",
+  "split": 1,
+  "tag": "conf_rf",
+  "experiment": "grid_hvg200_brca",
+  "variant": "generic_conf_rf",
+  "notes": "200-gene subset: all attacks on every generator incl. DPSynth",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "conf_rf",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "8e8822094421f594",
+    "params": {
+      "seed": 1850,
+      "device": "cuda",
+      "verbose": true,
+      "name": "cvae",
+      "z_dim": 128,
+      "beta": 0.001,
+      "transform": "none",
+      "condition_type": "embedding",
+      "disease_embed_dim": 20,
+      "preprocess": "standard",
+      "batch_size": 64,
+      "num_iters": 10000,
+      "epochs": null,
+      "lr": 0.001,
+      "weight_decay": 0.0,
+      "optimizer": "adam",
+      "scheduler": "none",
+      "early_stopping": false,
+      "patience": 50,
+      "min_delta": 0.0001,
+      "condition_mode": null
+    },
+    "seed": 1850,
+    "source": "trained"
+  }
+}

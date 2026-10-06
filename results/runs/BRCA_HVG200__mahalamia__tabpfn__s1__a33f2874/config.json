@@ -1,0 +1,44 @@
+{
+  "run_id": "BRCA_HVG200__mahalamia__tabpfn__s1__a33f2874",
+  "timestamp": "2026-10-05T01:09:49+00:00",
+  "dataset": "BRCA_HVG200",
+  "attack": "mahalamia",
+  "generator": "tabpfn",
+  "split": 1,
+  "tag": "aux",
+  "experiment": "grid_hvg200_brca",
+  "variant": "mahalamia",
+  "notes": "200-gene subset: all attacks on every generator incl. DPSynth",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "pinv",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "330a4f7780a096a6",
+    "params": {
+      "seed": 1167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 1167,
+    "source": "trained"
+  }
+}

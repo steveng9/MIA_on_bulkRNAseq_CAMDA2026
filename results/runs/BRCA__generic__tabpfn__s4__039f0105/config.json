@@ -1,0 +1,35 @@
+{
+  "run_id": "BRCA__generic__tabpfn__s4__039f0105",
+  "timestamp": "2026-10-05T05:24:36+00:00",
+  "dataset": "BRCA",
+  "attack": "generic",
+  "generator": "tabpfn",
+  "split": 4,
+  "tag": "gan_leaks",
+  "experiment": "grid_sota_brca",
+  "variant": "generic_gan_leaks",
+  "notes": "SOTA generators: all attacks on tabsyn / tabpfn / dpsynth / dpcvae targets",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "gan_leaks",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "1521ba3f5550e0a6",
+    "params": {
+      "seed": 4167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 4167,
+    "source": "trained"
+  }
+}

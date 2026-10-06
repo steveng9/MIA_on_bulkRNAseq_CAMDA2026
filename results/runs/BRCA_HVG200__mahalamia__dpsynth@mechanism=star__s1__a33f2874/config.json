@@ -1,0 +1,52 @@
+{
+  "run_id": "BRCA_HVG200__mahalamia__dpsynth@mechanism=star__s1__a33f2874",
+  "timestamp": "2026-10-04T22:54:52+00:00",
+  "dataset": "BRCA_HVG200",
+  "attack": "mahalamia",
+  "generator": "dpsynth@mechanism=star",
+  "split": 1,
+  "tag": "aux",
+  "experiment": "grid_hvg200_brca",
+  "variant": "mahalamia",
+  "notes": "200-gene subset: all attacks on every generator incl. DPSynth",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "pinv",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "ae793c80461aa4f9",
+    "params": {
+      "seed": 1506,
+      "device": "cuda",
+      "verbose": true,
+      "name": "dpsynth",
+      "mechanism": "star",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "numerical_bins": 32,
+      "init_budget_fraction": 0.1,
+      "bounds": "public",
+      "lo": 0.0,
+      "hi": 24.0,
+      "interval_handling": "sample",
+      "accountant": "auto",
+      "oracle": "default",
+      "pgm_iters": null,
+      "max_model_size": 80
+    },
+    "seed": 1506,
+    "source": "trained"
+  }
+}

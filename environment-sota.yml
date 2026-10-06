@@ -1,0 +1,37 @@
+# The sibling environment for generators that need a newer stack than
+# environment.yml can offer (which numpy < 2 / torch 1.13 pin for Private-PGM
+# and the published NoisyDiffusion weights):
+#
+#   tabpfn   needs torch >= 2.5, Python >= 3.10
+#   dpcvae   needs Opacus 1.x, i.e. torch >= 2.6
+#   dpsynth  needs Python >= 3.12 and jax
+#
+#   conda env create -f environment-sota.yml
+#
+# mia/paths.py looks for it at ~/miniconda3/envs/camda_sota/bin/python; set
+# CAMDA_SOTA_PYTHON to point elsewhere.  The main pipeline starts it on demand
+# (mia/generators/remote.py) -- you never activate it yourself.
+#
+# Versions are the ones the first targets were built with (2026-10-03).
+name: camda_sota
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - torch==2.14.1
+      - tabpfn==9.1.0
+      - tabpfn-extensions[unsupervised]==0.6.3
+      - opacus==1.6.0
+      - scikit-learn==1.9.1
+      - pandas==3.0.6
+      - pyyaml
+      - dpsynth @ git+https://github.com/google/dpsynth.git@15acc9799bb12feb91eb88d183adc53a13fb3357
+      # dpsynth's pyproject asks for mbi's HEAD, but mbi commit 243b2e5
+      # (2026-09-22) registers mbi.Dataset as a JAX pytree and dpsynth still
+      # registers it too, so import fails on anything newer than this.
+      # Install this one last, with --no-deps --force-reinstall.
+      - mbi @ git+https://github.com/ryan112358/mbi.git@1821fa07dba52dd1d5bb69d81b3973985e93f369
+      # torch needs >= 4.10; dp-accounting declares ~= 4.9 but runs fine
+      - typing_extensions>=4.12

@@ -152,6 +152,14 @@ class MeLoMIA(Attack):
                                         # shadows directly on real splits, which
                                         # is the ablation that motivates the
                                         # whole design (see TODO item 8)
+    #: White box: the adversary holds the target *model*.  Shadows are then the
+    #: target's own recipe fitted to real splits (the base shadows of the
+    #: black-box stack, reused when that stack kept them), features are read
+    #: from those models directly, and at inference from the target model
+    #: itself -- no synthetic layer and no proxy.  The adversary is also taken
+    #: to know each candidate's class, which a label-conditional model needs
+    #: in order to be read.  Needs targets that saved their generator.
+    white_box: bool = False
     reference_calibration: bool = True
     #: Z-score every feature of a record against the same record under the
     #: other synth-shadows (leave-one-out for training rows, all K for the
@@ -197,7 +205,9 @@ class MeLoMIA(Attack):
             t += f"_base{self.base_generator}"
         if self.sweep_points is not None:
             t += f"_s{len(self.sweep_points)}"
-        if not self.synth_shadow:
+        if self.white_box:
+            t += "_whitebox"
+        elif not self.synth_shadow:
             t += "_realshadow"
         if self.backend_params:
             t += "_" + "_".join(f"{k}{v}" for k, v in sorted(self.backend_params.items()))
@@ -234,9 +244,10 @@ class MeLoMIA(Attack):
             kw = {"device": self.device, "seed": self.seed, "verbose": self.verbose}
             kw.update(self.backend_params)
             if self.n_noise is not None:
-                kw["n_noise_vectors" if self.backend == "nd" else "n_draws"] = self.n_noise
+                kw["n_draws" if self.backend == "cvae" else "n_noise_vectors"] = self.n_noise
             if self.sweep_points is not None:
-                kw["timesteps" if self.backend == "nd" else "temperatures"] = tuple(self.sweep_points)
+                kw[{"nd": "timesteps", "cvae": "temperatures",
+                    "tabsyn": "sigmas"}[self.backend]] = tuple(self.sweep_points)
             self._backend_cache[dataset] = build_backend(self.backend, dataset, **kw)
         return self._backend_cache[dataset]
 
@@ -322,8 +333,8 @@ class MeLoMIA(Attack):
         return self.cache(dataset) / "internal_synth" / f"shadow_{k}.npz"
 
     def _ensure_internal_synth(self, dataset: str, shadows=None) -> None:
-        if not self.synth_shadow:
-            return                      # real-data-shadow ablation: no inner layer
+        if not self.synth_shadow or self.white_box:
+            return                      # real-data shadows: no inner layer
         be = self._backend(dataset)
         n_classes = D.n_classes(dataset)
         for k in self._shadow_range(shadows):
@@ -361,6 +372,9 @@ class MeLoMIA(Attack):
         for k in self._shadow_range(shadows):
             out = self._synth_shadow_path(dataset, k)
             src = self._internal_synth_path(dataset, k)
+            if self.white_box:
+                self._ensure_white_box_shadow(dataset, k, be, out, n_classes)
+                continue
             if out.exists() or (self.synth_shadow and not src.exists()):
                 continue
             with _claim(out) as claimed:
@@ -379,6 +393,51 @@ class MeLoMIA(Attack):
                 gen.save(out)
                 del gen
                 self._free_gpu()
+
+    def _black_box_sibling(self, dataset: str) -> Path:
+        """Cache of the black-box stack with otherwise identical settings."""
+        import dataclasses
+        twin = dataclasses.replace(self, white_box=False, synth_shadow=True)
+        return twin.cache(dataset)
+
+    def _ensure_white_box_shadow(self, dataset, k, be, out: Path, n_classes) -> None:
+        """Shadow k = the target's recipe on real split k.
+
+        That is exactly base shadow k of the black-box stack (same split, same
+        seed), so it is copied from there when that stack kept its base shadows
+        (`keep_base_shadows`), and trained only otherwise.
+        """
+        if out.exists():
+            return
+        with _claim(out) as claimed:
+            if claimed is None:
+                return
+            kept = self._black_box_sibling(dataset) / "base_shadows" / f"shadow_{k}.pt"
+            if kept.exists():
+                out.parent.mkdir(parents=True, exist_ok=True)
+                # the model and its sidecar scaler (shadow_k.pt, shadow_k_scaler.pkl)
+                for f in [*kept.parent.glob(f"shadow_{k}.*"), *kept.parent.glob(f"shadow_{k}_*")]:
+                    shutil.copy2(f, out.parent / f.name)
+                self._say(f"  [melomia] white-box shadow {k}/{self.n_shadows} "
+                          "(reused black-box base shadow)")
+                return
+            X, y = self._shadow_training_set(dataset, k)
+            self._say(f"  [melomia] white-box shadow {k}/{self.n_shadows} (n={len(X)})")
+            gen = self._base_shadow(be)
+            gen.seed = self.seed + k
+            gen.fit(X, y, n_classes)
+            gen.save(out)
+            del gen
+            self._free_gpu()
+
+    def _read_model(self, be, path: Path):
+        return be.load_base(path) if self.white_box else be.load_probe(path)
+
+    def _labels(self, dataset: str):
+        """Candidates' classes, for reading label-conditional models (white box)."""
+        if not self.white_box:
+            return None
+        return D.encode_subtypes(dataset, D.load_subtypes(dataset).values)
 
     # ── Stage 3: loss features ──────────────────────────────────────────────
 
@@ -401,8 +460,8 @@ class MeLoMIA(Attack):
                 if claimed is None:
                     continue
                 self._say(f"  [melomia] features {k}/{self.n_shadows}")
-                gen = be.load_probe(src)
-                losses, extra = be.extract(gen, X_real)
+                gen = self._read_model(be, src)
+                losses, extra = be.extract(gen, X_real, self._labels(dataset))
                 payload = {
                     "losses": losses,
                     "y_member": self._shadow_membership(dataset, k),
@@ -410,7 +469,7 @@ class MeLoMIA(Attack):
                 }
                 if extra is not None:
                     payload["extra"] = extra
-                if X_ref is not None:
+                if X_ref is not None and not self.white_box:
                     ref_losses, _ = be.extract(gen, X_ref)
                     payload["ref_losses"] = ref_losses
                 np.savez(out, **payload)
@@ -701,25 +760,33 @@ class MeLoMIA(Attack):
         self._say(f"  [melomia] proxy on {dataset}/{generator}/split_{split} "
                   f"(n={len(target['X'])})")
 
-        gen = be.probe()
-        gen.seed = self.seed + 7000 + split
-        gen.fit(target["X"], target["y_int"], D.n_classes(dataset))
+        if self.white_box:
+            model = target["paths"].get("model")
+            if model is None or not Path(model).exists():
+                raise FileNotFoundError(
+                    f"white-box MeLoMIA needs the target model; {dataset}/{generator}/"
+                    f"split_{split} has no saved generator")
+            gen = be.load_base(Path(model))
+        else:
+            gen = be.probe()
+            gen.seed = self.seed + 7000 + split
+            gen.fit(target["X"], target["y_int"], D.n_classes(dataset))
 
         X_real = D.load_expression(dataset).values.astype(np.float32)
-        losses, extra = be.extract(gen, X_real)
+        losses, extra = be.extract(gen, X_real, self._labels(dataset))
         payload = {"losses": losses, "target_fingerprint": fp}
         if extra is not None:
             payload["extra"] = extra
 
         ref = D.load_reference(dataset)
-        if ref is not None:
+        if ref is not None and not self.white_box:
             ref_losses, _ = be.extract(gen, ref.values.astype(np.float32))
             payload["ref_losses"] = ref_losses
 
         out.parent.mkdir(parents=True, exist_ok=True)
         np.savez(out, **payload)
 
-        if self.keep_proxies:
+        if self.keep_proxies and not self.white_box:
             gen.save(self.cache(dataset) / "proxies" / f"{generator}_split_{split}.pt")
         del gen
         self._free_gpu()
@@ -782,5 +849,14 @@ class MeLoMIACVAE(MeLoMIA):
     name: str = field(init=False, default="melomia_cvae")
 
 
+@dataclass
+class MeLoMIATabSyn(MeLoMIA):
+    backend: str = "tabsyn"
+    # ~75 MB each, and what the white-box stack reuses as its shadows
+    keep_base_shadows: bool = True
+    name: str = field(init=False, default="melomia_tabsyn")
+
+
 register(MeLoMIAND)
 register(MeLoMIACVAE)
+register(MeLoMIATabSyn)

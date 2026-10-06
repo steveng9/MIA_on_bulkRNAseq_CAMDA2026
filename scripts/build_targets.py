@@ -22,7 +22,8 @@ from mia import targets as TG  # noqa: E402
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--dataset", default="BRCA", choices=["BRCA", "COMBINED"])
+    p.add_argument("--dataset", default="BRCA",
+                   help="BRCA, COMBINED, or any cohort in configs/datasets/")
     p.add_argument("--generators", nargs="+", default=list(TG.GENERATORS))
     p.add_argument("--splits", nargs="+", type=int, default=[1, 2, 3, 4, 5])
     p.add_argument("--device", default="cuda")

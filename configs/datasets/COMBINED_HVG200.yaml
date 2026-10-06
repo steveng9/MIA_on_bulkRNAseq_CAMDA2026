@@ -1,0 +1,6 @@
+# The 200 most variable genes of TCGA-COMBINED (variance of the VST values over the
+# whole cohort), for generators that cannot fit all 978 landmark genes.  Same
+# samples, labels and member/non-member splits as COMBINED.  Why this rule and this
+# k: docs/SOTA_GENERATORS.md, "Gene subset"; results/gene_subset_ablation.csv.
+parent: COMBINED
+prepare: hvg:200

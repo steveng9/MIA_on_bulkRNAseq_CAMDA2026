@@ -1,0 +1,31 @@
+{
+  "run_id": "BRCA_HVG200__generic__mvn__s1__6ca30c41",
+  "timestamp": "2026-10-04T22:55:02+00:00",
+  "dataset": "BRCA_HVG200",
+  "attack": "generic",
+  "generator": "mvn",
+  "split": 1,
+  "tag": "conf_lr",
+  "experiment": "grid_hvg200_brca",
+  "variant": "generic_conf_lr",
+  "notes": "200-gene subset: all attacks on every generator incl. DPSynth",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "conf_lr",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "c7815ecc35521b8a",
+    "params": {
+      "seed": 1958,
+      "device": "cuda",
+      "verbose": true,
+      "name": "mvn",
+      "noise_level": 0.7
+    },
+    "seed": 1958,
+    "source": "trained"
+  }
+}

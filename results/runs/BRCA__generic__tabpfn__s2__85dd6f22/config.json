@@ -1,0 +1,35 @@
+{
+  "run_id": "BRCA__generic__tabpfn__s2__85dd6f22",
+  "timestamp": "2026-10-05T05:24:33+00:00",
+  "dataset": "BRCA",
+  "attack": "generic",
+  "generator": "tabpfn",
+  "split": 2,
+  "tag": "mc",
+  "experiment": "grid_sota_brca",
+  "variant": "generic_mc",
+  "notes": "SOTA generators: all attacks on tabsyn / tabpfn / dpsynth / dpcvae targets",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "mc",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "b2c2f84a5fdfd6d9",
+    "params": {
+      "seed": 2167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 2167,
+    "source": "trained"
+  }
+}

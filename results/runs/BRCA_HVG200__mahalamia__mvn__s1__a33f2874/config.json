@@ -1,0 +1,40 @@
+{
+  "run_id": "BRCA_HVG200__mahalamia__mvn__s1__a33f2874",
+  "timestamp": "2026-10-04T22:54:49+00:00",
+  "dataset": "BRCA_HVG200",
+  "attack": "mahalamia",
+  "generator": "mvn",
+  "split": 1,
+  "tag": "aux",
+  "experiment": "grid_hvg200_brca",
+  "variant": "mahalamia",
+  "notes": "200-gene subset: all attacks on every generator incl. DPSynth",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "pinv",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "c7815ecc35521b8a",
+    "params": {
+      "seed": 1958,
+      "device": "cuda",
+      "verbose": true,
+      "name": "mvn",
+      "noise_level": 0.7
+    },
+    "seed": 1958,
+    "source": "trained"
+  }
+}

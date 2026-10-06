@@ -1,0 +1,43 @@
+{
+  "run_id": "BRCA_HVG200__generic__dpsynth__s1__d79406db",
+  "timestamp": "2026-10-04T22:55:13+00:00",
+  "dataset": "BRCA_HVG200",
+  "attack": "generic",
+  "generator": "dpsynth",
+  "split": 1,
+  "tag": "conf_rf",
+  "experiment": "grid_hvg200_brca",
+  "variant": "generic_conf_rf",
+  "notes": "200-gene subset: all attacks on every generator incl. DPSynth",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "conf_rf",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "9114d9913cb7370f",
+    "params": {
+      "seed": 1506,
+      "device": "cuda",
+      "verbose": true,
+      "name": "dpsynth",
+      "mechanism": "mst",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "numerical_bins": 32,
+      "init_budget_fraction": 0.1,
+      "bounds": "public",
+      "lo": 0.0,
+      "hi": 24.0,
+      "interval_handling": "sample",
+      "accountant": "auto",
+      "oracle": "default",
+      "pgm_iters": null,
+      "max_model_size": 80
+    },
+    "seed": 1506,
+    "source": "trained"
+  }
+}

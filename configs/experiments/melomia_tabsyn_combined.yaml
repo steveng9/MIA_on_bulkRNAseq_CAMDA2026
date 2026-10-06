@@ -1,0 +1,53 @@
+# MeLoMIA-TabSyn, black box and white box (Steven, 2026-10-05), parallel to the
+# MeLoMIA-ND / MeLoMIA-CVAE rows of melomia_prc_combined.yaml: same K, same
+# classifier search, per-record calibration on.
+#
+# Model roles (mia/attacks/melomia/backends.py, TabSynBackend):
+#   target, base shadow     the tuned recipe below (tabsyn.TUNED), tuned for
+#                           fidelity; a base shadow releases as many rows as
+#                           it was trained on
+#   synth-shadow, proxy     one overfitting-probe recipe: 4x denoiser capacity,
+#                           2x steps, label-free
+#   white box               shadows = the base shadows (reused), features read
+#                           from them and from the target model itself
+#
+# The `_k10` labels read the first 10 shadows of the same stack, for an early
+# result while the rest is built.  Runner: scripts/run_melomia_tabsyn.sh COMBINED
+name: melomia_tabsyn_combined
+dataset: COMBINED
+notes: "MeLoMIA-TabSyn black box + white box on tuned TabSyn (and off-diagonal targets)"
+device: cuda
+
+generators:
+  - "tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard"
+  - mvn
+  - cvae
+  - nd
+  - pgg
+  - tabpfn
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  melomia_tabsyn: &bb
+    class: melomia_tabsyn
+    params: &bbp
+      n_shadows: 20
+      n_noise: 200
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+      per_record_calibration: true
+  melomia_tabsyn_k10:
+    class: melomia_tabsyn
+    params:
+      <<: *bbp
+      n_shadows: 10
+  melomia_tabsyn_wb:
+    class: melomia_tabsyn
+    params: &wbp
+      <<: *bbp
+      white_box: true
+  melomia_tabsyn_wb_k10:
+    class: melomia_tabsyn
+    params:
+      <<: *wbp
+      n_shadows: 10

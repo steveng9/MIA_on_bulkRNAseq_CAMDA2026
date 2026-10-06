@@ -1,0 +1,57 @@
+# State-of-the-art generators (Steven, 2026-10-03): every existing attack
+# against TabSyn, TabPFN, DPSynth and DP-CVAE targets, same splits and same
+# attack parameters as the slide-table grid, so the new columns sit beside the
+# CAMDA ones.  A target is named <generator>@<overrides>; trim `generators` to
+# the variants that are built (docs/SOTA_GENERATORS.md lists costs).
+name: grid_sota_brca
+dataset: BRCA
+notes: "SOTA generators: all attacks on tabsyn / tabpfn / dpsynth / dpcvae targets"
+device: cuda
+
+generators:
+  - tabpfn                         # TabPFN-3.5 gene by gene (3.8 h per BRCA target)
+  - "tabpfn@preprocess=standard+pca:64"
+  - "tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard"   # tuned (docs/SOTA_GENERATORS.md)
+  - tabsyn                         # upstream recipe
+  - dpcvae                         # eps = 10
+  - "dpcvae@epsilon=1000"
+  # dpsynth does not build at 978 genes yet (docs/SOTA_GENERATORS.md):
+  # - "dpsynth@mechanism=star"
+  # - dpsynth                      # MST, eps = 10
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  mahalamia:
+    class: mahalamia
+    params:
+      use_reference: true
+  mamamia:
+    class: mamamia
+    params:
+      n_bins: 4
+  generic_mc:
+    class: generic
+    params: {method: mc}
+  generic_gan_leaks:
+    class: generic
+    params: {method: gan_leaks}
+  generic_conf_lr:
+    class: generic
+    params: {method: conf_lr}
+  generic_conf_rf:
+    class: generic
+    params: {method: conf_rf}
+  melomia_nd:
+    class: melomia_nd
+    params:
+      n_shadows: 30
+      n_noise: 600
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+  melomia_cvae:
+    class: melomia_cvae
+    params:
+      n_shadows: 30
+      n_noise: 50
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]

@@ -1,0 +1,53 @@
+{
+  "run_id": "BRCA__generic__tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard__s5__039f0105",
+  "timestamp": "2026-10-05T05:01:40+00:00",
+  "dataset": "BRCA",
+  "attack": "generic",
+  "generator": "tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",
+  "split": 5,
+  "tag": "gan_leaks",
+  "experiment": "grid_sota_brca",
+  "variant": "generic_gan_leaks",
+  "notes": "SOTA generators: all attacks on tabsyn / tabpfn / dpsynth / dpcvae targets",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "gan_leaks",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "a8f265a52a40f591",
+    "params": {
+      "seed": 5760,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabsyn",
+      "preprocess": "clip:0.001:0.999+standard",
+      "d_token": 4,
+      "n_head": 1,
+      "factor": 32,
+      "num_layers": 2,
+      "vae_lr": 0.001,
+      "vae_epochs": 4000,
+      "max_beta": 0.01,
+      "min_beta": 1e-05,
+      "lambd": 0.7,
+      "batch_size": 256,
+      "val_frac": 0.0,
+      "dim_t": 1024,
+      "diff_lr": 0.001,
+      "diff_epochs": 10001,
+      "diff_batch_size": 4096,
+      "diff_patience": 500,
+      "sample_steps": 50,
+      "latent_scale": "std",
+      "diff_schedule": "steps",
+      "diff_steps": 20000,
+      "diff_ema": 0.999,
+      "class_freq": "train"
+    },
+    "seed": 5760,
+    "source": "trained"
+  }
+}

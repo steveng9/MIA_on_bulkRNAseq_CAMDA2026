@@ -1,0 +1,44 @@
+{
+  "run_id": "BRCA__mahalamia__tabpfn__s2__a33f2874",
+  "timestamp": "2026-10-05T05:24:25+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "tabpfn",
+  "split": 2,
+  "tag": "aux",
+  "experiment": "grid_sota_brca",
+  "variant": "mahalamia",
+  "notes": "SOTA generators: all attacks on tabsyn / tabpfn / dpsynth / dpcvae targets",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "pinv",
+    "ridge_alpha": 0.001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "b2c2f84a5fdfd6d9",
+    "params": {
+      "seed": 2167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 2167,
+    "source": "trained"
+  }
+}

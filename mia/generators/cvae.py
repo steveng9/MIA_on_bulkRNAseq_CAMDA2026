@@ -95,14 +95,14 @@ class CVAEGenerator(Generator):
         torch.manual_seed(self.seed)
         np.random.seed(self.seed)
 
-        self.scaler, X_scaled = pp.fit_scaler(self.preprocess, X)
+        self.scaler, X_scaled = pp.fit_scaler(self.preprocess, X, y)
         loader = DataLoader(
             TensorDataset(torch.tensor(X_scaled), torch.tensor(y)),
             batch_size=self.batch_size, shuffle=True,
         )
 
         self.model = CVAE(
-            x_dim=X.shape[1], y_dim=self.n_classes, z_dim=self.z_dim,
+            x_dim=X_scaled.shape[1], y_dim=self.n_classes, z_dim=self.z_dim,
             beta=self.beta, transform=self.transform,
             condition_type=self.condition_type,
             disease_embed_dim=self.disease_embed_dim,
@@ -174,7 +174,7 @@ class CVAEGenerator(Generator):
         X_scaled = self.model.sample_labels(
             y_syn, condition_mode=self.condition_mode, device=self.device
         )
-        return pp.invert_scaler(self.scaler, X_scaled), y_syn.astype(np.int64)
+        return pp.invert_scaler(self.scaler, X_scaled, y_syn), y_syn.astype(np.int64)
 
     # ── Persistence ─────────────────────────────────────────────────────────
 
@@ -197,7 +197,8 @@ class CVAEGenerator(Generator):
         self.n_classes = ckpt["n_classes"]
         self._train_labels = ckpt.get("train_labels")
         self.model = CVAE(
-            x_dim=978, y_dim=self.n_classes, z_dim=self.z_dim, beta=self.beta,
+            x_dim=ckpt["state_dict"]["dec.4.bias"].numel(), y_dim=self.n_classes,
+            z_dim=self.z_dim, beta=self.beta,
             transform=self.transform, condition_type=self.condition_type,
             disease_embed_dim=self.disease_embed_dim,
         ).to(self.device)

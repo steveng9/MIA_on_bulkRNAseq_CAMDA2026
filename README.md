@@ -118,7 +118,8 @@ asserted.
 ```
 mia/
   paths.py           where everything lives; the only file to edit on a new machine
-  datasets.py        TCGA cohort loaders, class labels, the 5 canonical splits
+  datasets.py        cohort loaders (TCGA, plus any cohort in configs/datasets/),
+                     class labels, the 5 canonical splits
   zoo/               content-addressed model + synthetic-dataset store
     ids.py             canonical hashing; closure hashes over real sample ids
     registry.py        get-or-create for fits and samples, provenance, locking
@@ -127,8 +128,11 @@ mia/
   metrics.py         AUC / AUPR / TPR@FPR, shared by every attack
   runs.py            experiment record keeping (results/index.csv)
   experiment.py      YAML-driven runner
-  preprocessing.py   scalers, persisted alongside model weights
-  generators/        the four SDG methods: mvn, cvae, nd, pgm
+  preprocessing.py   model-level transform chains ("standard+pca:64"), persisted
+                     alongside model weights; cohort-level preparation
+  generators/        the challenge's four (mvn, cvae, nd, pgg/pgm) and the
+                     state-of-the-art ones (tabsyn, tabpfn, dpsynth, dpcvae)
+    remote.py          runs a generator in the camda_sota env, same interface
   attacks/
     mahalamia.py     Mahalanobis distance attack
     mamamia.py       marginal domain-ratio attack
@@ -139,11 +143,14 @@ mia/
       meta.py        classifier zoo, Optuna search, ensembling
 
 configs/experiments/ one YAML per experiment
+configs/datasets/    one YAML per additional cohort (README.md there)
 scripts/             build_targets, run_experiment, make_tables, make_figures,
                      sanity_check, zoo; orchestrate_rest + after_orchestrate
                      sequence a whole queue, shadow_loop adds workers to a
                      shadow build already in flight
 docs/
+  SOTA_GENERATORS.md TabSyn, TabPFN, DPSynth, DP-CVAE: sources, recipes,
+                     deviations, costs, and the preprocessing ablation
   FIVE_ROLES.md      the five model roles and which ones the code builds
   MODEL_ZOO.md       the artifact store, reuse patterns, contamination rules
 results/             tracked: per-run config, row-level scores, metrics,
