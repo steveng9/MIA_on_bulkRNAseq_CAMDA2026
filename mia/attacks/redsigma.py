@@ -40,6 +40,14 @@ would be attacking with something other than what won:
 `rule="auto"` picks the rule their dispatcher would for our generator names.
 Generators they never saw (tabsyn, tabpfn, ...) fall through to `mvn`, exactly
 as an unrecognised name does in their code; pass a rule explicitly to do better.
+
+To run it on a new generator: build the target, add its name to `generators`
+in `configs/experiments/redsigma_{brca,combined}.yaml`, and re-run
+
+    python scripts/run_experiment.py configs/experiments/redsigma_brca.yaml
+
+(seconds per target, CPU only).  If the generator belongs to one of their four
+families, add it to FAMILY_RULE so `auto` gives it that family's rule.
 """
 
 from __future__ import annotations
