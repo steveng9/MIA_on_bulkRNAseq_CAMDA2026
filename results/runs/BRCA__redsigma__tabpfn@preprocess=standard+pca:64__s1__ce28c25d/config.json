@@ -1,0 +1,36 @@
+{
+  "run_id": "BRCA__redsigma__tabpfn@preprocess=standard+pca:64__s1__ce28c25d",
+  "timestamp": "2026-10-04T20:59:06+00:00",
+  "dataset": "BRCA",
+  "attack": "redsigma",
+  "generator": "tabpfn@preprocess=standard+pca:64",
+  "split": 1,
+  "tag": "auto",
+  "experiment": "redsigma_brca",
+  "variant": "redsigma",
+  "notes": "RedSigma (Tucker et al.) as submitted, plus each of its four rules against every generator",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "redsigma",
+    "rule": "auto",
+    "use_labels": false,
+    "attack": "redsigma"
+  },
+  "target": {
+    "fingerprint": "96bdd1db99388a81",
+    "params": {
+      "seed": 1167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "standard+pca:64",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 1167,
+    "source": "trained"
+  }
+}

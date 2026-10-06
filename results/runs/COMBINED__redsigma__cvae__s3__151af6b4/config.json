@@ -1,0 +1,37 @@
+{
+  "run_id": "COMBINED__redsigma__cvae__s3__151af6b4",
+  "timestamp": "2026-10-04T20:59:27+00:00",
+  "dataset": "COMBINED",
+  "attack": "redsigma",
+  "generator": "cvae",
+  "split": 3,
+  "tag": "knn200",
+  "experiment": "redsigma_combined",
+  "variant": "redsigma_knn200",
+  "notes": "RedSigma (Tucker et al.) as submitted, plus each of its four rules against every generator",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "redsigma",
+    "rule": "knn200",
+    "use_labels": false,
+    "attack": "redsigma"
+  },
+  "target": {
+    "fingerprint": "0e71ff88b50ee25a",
+    "params": {
+      "preprocess": "standard",
+      "optimizer": "adam",
+      "scheduler": "none",
+      "lr": 0.001,
+      "batch_size": 64,
+      "num_iters": 10000,
+      "z_dim": 128,
+      "beta": 0.001,
+      "condition_type": "embedding",
+      "early_stopping": false
+    },
+    "seed": 3583,
+    "source": "trained"
+  }
+}

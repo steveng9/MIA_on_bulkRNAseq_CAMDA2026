@@ -1,0 +1,49 @@
+{
+  "run_id": "BRCA__redsigma__tabsyn__s1__4435755c",
+  "timestamp": "2026-10-04T20:59:59+00:00",
+  "dataset": "BRCA",
+  "attack": "redsigma",
+  "generator": "tabsyn",
+  "split": 1,
+  "tag": "knn500",
+  "experiment": "redsigma_brca",
+  "variant": "redsigma_knn500",
+  "notes": "RedSigma (Tucker et al.) as submitted, plus each of its four rules against every generator",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "redsigma",
+    "rule": "knn500",
+    "use_labels": false,
+    "attack": "redsigma"
+  },
+  "target": {
+    "fingerprint": "db19acd1ae6561e6",
+    "params": {
+      "seed": 1760,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabsyn",
+      "preprocess": "quantile_n30",
+      "d_token": 4,
+      "n_head": 1,
+      "factor": 32,
+      "num_layers": 2,
+      "vae_lr": 0.001,
+      "vae_epochs": 4000,
+      "max_beta": 0.01,
+      "min_beta": 1e-05,
+      "lambd": 0.7,
+      "batch_size": 256,
+      "val_frac": 0.0,
+      "dim_t": 1024,
+      "diff_lr": 0.001,
+      "diff_epochs": 10001,
+      "diff_batch_size": 4096,
+      "diff_patience": 500,
+      "sample_steps": 50
+    },
+    "seed": 1760,
+    "source": "trained"
+  }
+}

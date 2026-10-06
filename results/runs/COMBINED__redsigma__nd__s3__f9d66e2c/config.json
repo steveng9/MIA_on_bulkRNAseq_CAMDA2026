@@ -1,0 +1,30 @@
+{
+  "run_id": "COMBINED__redsigma__nd__s3__f9d66e2c",
+  "timestamp": "2026-10-04T21:00:38+00:00",
+  "dataset": "COMBINED",
+  "attack": "redsigma",
+  "generator": "nd",
+  "split": 3,
+  "tag": "cvae",
+  "experiment": "redsigma_combined",
+  "variant": "redsigma_cvae",
+  "notes": "RedSigma (Tucker et al.) as submitted, plus each of its four rules against every generator",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "redsigma",
+    "rule": "cvae",
+    "use_labels": false,
+    "attack": "redsigma"
+  },
+  "target": {
+    "fingerprint": "5d7cf3cc7f615bc9",
+    "params": {
+      "epochs": 200,
+      "dp_noise_multiplier": 1e-05,
+      "smote_upsample_to": 3000
+    },
+    "seed": null,
+    "source": "published-blue-team"
+  }
+}

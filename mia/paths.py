@@ -18,6 +18,10 @@ def _env_path(var: str, default: str) -> Path:
 # Challenge data as distributed by the ELSA benchmark platform.
 CHALLENGE_DATA = _env_path("CAMDA_DATA", "~/data/CAMDA26")
 
+# RedSigma red-team repo (Tucker et al., a CAMDA-26 winning attack): the
+# `redsigma` attack calls its scoring functions rather than re-deriving them.
+REDSIGMA_REPO = _env_path("CAMDA_REDSIGMA_REPO", "~/ELSA_REDSIGMA")
+
 # Blue-team NoisyDiffusion repo: supplies the canonical 5 train/test splits and
 # the ND synthetic data generated from them.
 ND_REPO = _env_path("CAMDA_ND_REPO", "~/CAMDA25_NoisyDiffusion")
