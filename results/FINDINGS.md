@@ -1823,3 +1823,34 @@ COMBINED tells the same story as BRCA on all three questions:
   - MeLoMIA-CVAE on CVAE: synth 0.866, real 0.614.
 - **Selection folds (COMBINED, K = 20).** No difference: 0.802 vs 0.800 (ND on ND), 0.870 vs 0.870 (CVAE on CVAE).
 - **The BRCA MeLoMIA-CVAE exception holds at every K.** Calibrated TPR at 1% FPR on CVAE is 0.19–0.25 against 0.31–0.33 uncalibrated, with AUC about equal (at K = 5 slightly lower, 0.773 vs 0.784). It is the only attack-cohort pair where calibration does not help; COMBINED MeLoMIA-CVAE gains at every K. Still unexplained.
+
+---
+
+## 11. Donor-linked leakage, and attacks under mismatched auxiliary data (2026-10-07)
+
+Written up in full in `docs/DONOR_LINKED_AND_PERTURBATIONS.md`; tables in
+`results/perturb/TABLES.md`.  In one paragraph each:
+
+**A sample that was never trained on still reveals its donor's membership.**
+TCGA holds a second RNA-seq sample for 465 COMBINED donors.  Scoring those
+second samples against the existing targets, member donors against non-member
+donors: 97 second *tumour* samples (re-sequenced aliquots, other vials,
+metastases) give MahalaMIA 0.65 [0.61, 0.69] against MVN, where the same
+donors' trained-on samples give 0.87; CVAE 0.65 against 0.82; NoisyDiffusion
+0.57 against 0.69.  410 matched *normal* samples give 0.50 to 0.52 everywhere.
+The ordering of the tiers follows how often a second sample's nearest
+candidate is its own donor's training sample (68% for aliquots and metastases,
+19% for other vials, 1.7% for normals).
+
+**A mismatched auxiliary set costs the attack its auxiliary gain and no more.**
+With the COMBINED reference set re-normalised as TPM, MahalaMIA against MVN
+falls from 0.89 to 0.69, which is its level with no auxiliary set at all; with
+the reference set quantile-aligned to the release, which needs only the
+release, it is back at 0.90.  On BRCA an outside cohort (GSE58135) behaves the
+same way, and the attack is 1.00 / 0.97 on MVN / CVAE with no auxiliary set.
+
+**Withholding genes protects against the covariance attack only.**  With a
+random 100 of the 978 genes MahalaMIA is at 0.57 on BRCA MVN (1.00 with all);
+GAN-leaks on TabSyn keeps 96% of its AUC with 50 genes.  The selection rule
+changes the AUC by 0.01 on average.  The challenge baseline's fixed 100 PCA
+components understate DOMIAS-KDE: 0.59 against MVN on COMBINED, 0.81 at 400.
