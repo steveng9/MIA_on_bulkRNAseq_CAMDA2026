@@ -1,0 +1,351 @@
+% Prose from the earlier white-paper draft (overleaf_import/main.tex) that main.tex does not use.
+% Kept so that it is not lost; this file is not \input anywhere and does not compile on its own.
+% Most of it is NF1-specific or written for a governance committee; the governance section may reuse parts.
+
+% ===== Scope of the white paper (NF1 framing) =====
+We have results showing how valuable synthetic data can be on real bulk RNA-seq data. This white paper uses those results  to lay the governance groundwork for adopting synthetic data generation for other data types ahead of that need, not after it.
+
+This white paper:
+\begin{itemize}
+  \item Describes the methods used to generate synthetic bulk RNA-seq data
+  \item Reports fidelity, utility, and privacy evaluation results on public benchmark datasets from the CAMDA Health Privacy Challenge (TCGA-BRCA and TCGA-COMBINED)
+  \item Provides a risk analysis based on adversarial (red team) testing, including what these results imply about privacy risk as cohort size decreases
+  \item Proposes concrete governance recommendations, including a control-level policy for deciding when and how synthetic data may be released, particularly for smaller, higher-risk cohorts
+\end{itemize}
+
+TCGA-BRCA and TCGA-COMBINED are large, well-characterized cancer genomics cohorts, chosen so that synthetic data generation methods could be evaluated rigorously against ground truth. This white paper also includes one preliminary result on the NF1 dataset (Section~\ref{sec:results}), presented as an early feasibility signal rather than a full evaluation, alongside a recommendation for the additional testing needed before broader release. These findings are intended to inform two follow-on efforts: an upcoming NF1 bulk RNA-seq notebook that will publish accompanying synthetic data, and a broader governance framework for releasing synthetic data from more complex, rare disease variant-level (VCF) datasets.
+
+It does \textbf{not} cover single-cell RNA-seq, clinical metadata synthesis, or downstream drug discovery applications.
+
+% ===== Methods and evaluation approach (generators tried, Private-PGM box, blue teaming, red teaming, DCR) =====
+\section{Methods and Evaluation Approach}
+\label{sec:methods}
+
+\subsection{Generative Models Evaluated}
+% PURPOSE: Name the methods. For governance, one sentence each suffices.
+% For scientists, the Technical Box gives architecture detail.
+% The key message for governance is: you did not rely on one approach —
+% you tested multiple and compared them.
+
+We did not settle on a single generative modelling approach at the outset. We first explored deep learning methods that have shown promise elsewhere, found them wanting for this data, and only then converged on the approach carried forward into the fidelity, utility, and privacy evaluation in Section~\ref{sec:results}. Table~\ref{tab:models} summarizes each approach evaluated and what we learned from it.
+
+\begin{table*}[!t]
+\caption{Generative models evaluated in this study\label{tab:models}}
+\begin{tabular}{L{3.5cm} L{4.5cm} L{5.5cm}}
+  \toprule
+  \textbf{Method} & \textbf{Plain description} & \textbf{Key strength / limitation} \\
+  \midrule
+  Deep learning generators (GAN-based and diffusion-based) &
+    Neural network models purpose-built for generating bulk RNA-seq data,
+    similar in spirit to models used for image generation &
+    Computationally intensive and slow to adapt; produced synthetic data
+    with weak biological structure (e.g., only about 20\% accuracy on a
+    tissue-of-origin prediction task on TCGA-COMBINED, versus over 95\%
+    when the same task is run on real data) \\
+  Large language model (GPT-4) &
+    Adapting a general-purpose language model to generate gene expression
+    values as if they were text &
+    A gene expression profile is long ($\sim$20{,}000 values); the
+    model's limited context window made this costly to run and produced
+    low-quality output at the scale bulk RNA-seq requires \\
+  Private-PGM (marginals-based, differentially private) &
+    Builds a compact statistical model of how genes relate to each other
+    and to diagnostic labels, then adds calibrated statistical noise to
+    that model before generating new samples &
+    The only method tested that provides a formal, mathematically
+    provable privacy guarantee; utility approaches that of non-private
+    methods as the privacy budget is relaxed (see below) \\
+  \botrule
+\end{tabular}
+\end{table*}
+
+Motivated by these findings, and by related work showing that marginals-based approaches can outperform neural-network-based generators on tabular data while also offering formal privacy guarantees, we adopted Private-PGM \citep{mckenna2019graphical} as the primary method carried through the rest of this evaluation.
+
+\begin{technicalbox}[title={How Private-PGM works, and what ``differential privacy'' means}]
+  \begin{itemize}
+    \item \textbf{Differential privacy (DP)} is a mathematical guarantee,
+          not just a design intention: informally, it guarantees that
+          whether or not any single person's data was included in the
+          real dataset used for training, the released synthetic data
+          would have looked almost the same either way. The strength of
+          this guarantee is controlled by a privacy budget, denoted
+          $\varepsilon$: smaller $\varepsilon$ means a stronger guarantee
+          (and, typically, lower utility), while larger $\varepsilon$
+          trades some of that guarantee back for higher-fidelity data.
+    \item Private-PGM first converts each gene's expression values into a
+          small number of discrete bins (a coarser representation of
+          ``low, medium, high'' rather than an exact number), then
+          computes statistical summaries (marginals) describing how
+          individual genes, and pairs of genes, relate to each other and
+          to diagnostic labels.
+    \item Calibrated random noise is added directly to those summaries
+          before they are used, which is what provides the formal DP
+          guarantee. A statistical model is then built from the
+          noised summaries, and new synthetic samples are drawn from it.
+    \item Because the noise is added to compact summaries rather than to
+          individual patient records, this approach scales to
+          high-dimensional data such as bulk RNA-seq more gracefully than
+          adding noise sample by sample would.
+  \end{itemize}
+\end{technicalbox}
+
+\subsection{Blue Teaming: Fidelity and Utility Evaluation}
+% PURPOSE: Explain what "blue teaming" means in this context —
+% that you were testing whether the synthetic data is GOOD (useful,
+% faithful to the biology). This is the "does it work?" question.
+% Governance needs to understand that utility was a prerequisite,
+% not an afterthought.
+
+Blue teaming assessed whether synthetic data preserves the biological signal of the original data, in other words, whether it is actually good enough to be useful. We evaluated three dimensions: does the synthetic data statistically resemble the real data (fidelity), does it support the same scientific conclusions as the real data (utility), and does it reflect genuine biological structure rather than an average that looks right numerically but is biologically meaningless (biological plausibility).
+
+\subsubsection{Fidelity}
+
+Fidelity asks a narrow, statistical question: treating the real dataset and the synthetic dataset each as a cloud of data points, how similar are those two clouds? We used two complementary measures. Maximum Mean Discrepancy (MMD) measures the distance between the overall statistical distributions of the real and synthetic data; lower values mean the synthetic data's distribution sits closer to the real data's. The discriminative score takes a more adversarial approach: it trains a classifier whose job is to tell real and synthetic samples apart, and reports how well that classifier succeeds. If the synthetic data is a good statistical match, a classifier should perform close to random guessing, so lower discriminative scores indicate better fidelity.
+
+\begin{technicalbox}[title={Fidelity metrics used}]
+  \begin{itemize}
+    \item \textbf{Maximum Mean Discrepancy (MMD):} distance between the
+          probability distributions of real and synthetic gene expression
+          profiles. Lower is better.
+    \item \textbf{Discriminative score:} F1 score of a classifier trained
+          to distinguish synthetic samples from real ones. Lower (closer
+          to random) is better.
+  \end{itemize}
+\end{technicalbox}
+
+\subsubsection{Utility}
+% Metrics that ask: if a scientist uses synthetic data instead of real data,
+% do they get the same biological conclusions?
+
+Utility asks a more practical question than fidelity: if a researcher used the synthetic data instead of the real data, would they reach the same scientific conclusions? We measured this two ways:
+
+\begin{itemize}
+  \item \textbf{Downstream prediction transfer:} a classifier is trained
+        on synthetic data and then tested on real data, using accuracy
+        and area under the precision-recall curve (AUPRC) to measure how
+        well conclusions learned from synthetic data transfer to the real
+        world.
+  \item \textbf{Differential expression (DE) gene overlap:} whether the
+        genes flagged as biologically significant when analyzing the real
+        data are also flagged as significant when the same analysis is
+        run on the synthetic data. High overlap means a scientist would
+        be pointed toward the same genes of interest either way.
+\end{itemize}
+
+\subsubsection{Biological Plausibility}
+% Metrics that ask: if a scientist uses synthetic data instead of real data,
+% do they get the same biological conclusions?
+
+Fidelity and utility scores can look good on paper while still missing whether the synthetic data captures genuine biological structure, for example, whether samples from the same cancer subtype or tissue type cluster together the way real samples do. We assessed this visually, using principal component analysis (PCA) to compress the data down to two dimensions and compare, side by side, how real and synthetic samples cluster. This provides an intuitive, visual check that complements the numerical fidelity and utility scores, and can catch problems, such as synthetic data collapsing into a few overly tight clusters rather than spreading out the way real biological variation does, that a single summary number might miss.
+
+\begin{itemize}
+  \item Visual comparison of real vs. synthetic sample clustering via PCA
+\end{itemize}
+
+\subsection{Red Teaming: Privacy Risks}
+% PURPOSE: This is the most important subsection for governance.
+% Red teaming means you actively tried to BREAK the privacy guarantee —
+% you played the role of an adversary. Explain this clearly.
+% The message is: we tried to find the worst case, not just the average case.
+
+Red teaming placed our team in the role of a potential adversary attempting to re-identify individuals from released synthetic data. This is a deliberately adversarial exercise: the goal is to find the worst case an attacker could achieve, not just report that the average synthetic sample looks safe. We evaluated two attack classes.
+
+\subsubsection{Membership Inference}
+% Can an attacker determine whether a specific individual's data
+% was in the training set?
+
+A membership inference attack (MIA) asks a narrower, but arguably more consequential, question than trying to reconstruct someone's full record: given only the released synthetic data, can an attacker determine whether one specific real person's data was used to help generate it? This matters even when no individual record is ever directly exposed, because for a dataset tied to a specific health condition, simply confirming that someone's data was used to train the model can itself reveal sensitive information, for instance, that they have that condition. We report attack success as an accuracy or AUC score relative to a random-guessing baseline; success rates meaningfully above that baseline indicate real leakage, not just noise.
+
+\subsubsection{Distance to Closest Record}
+% Can an attacker find the real sample that a synthetic sample is
+% ``closest to'', using some distance metric?
+
+Distance to Closest Record (DCR) measures, for each synthetic sample, how far it lies from its nearest real sample. In principle, if a synthetic sample sits suspiciously close to one specific real record, that record may have been memorized rather than generalized from. Higher average distances are generally taken to suggest the synthetic data is not simply echoing real records with minor noise added. In practice, however, we found DCR to be a less reliable privacy indicator than it first appears: in our CAMDA evaluation, the non-private baseline method actually showed \emph{higher} DCR than the differentially private methods, and DCR did not consistently improve as the formal privacy guarantee was strengthened. We report DCR in this white paper as a useful heuristic, not as conclusive evidence of privacy on its own; membership inference results are the more rigorous test, and where the two disagree, we defer to membership inference.
+
+% ===== Risk analysis and governance skeleton =====
+\section{Risk Analysis}
+\label{sec:risk}
+
+\subsection{Residual Privacy Risks}
+% PURPOSE: Name the risks that remain even after synthetic data generation.
+% These are not failures — they are known limitations that inform
+% release conditions. Framing matters: "here are the guardrails needed"
+% is more useful than "here is what could go wrong."
+
+\begin{riskbox}[title={Small cohort amplification}]
+  The NF1 dataset contains $n = $  samples.
+  Rare disease cohorts provide less ``crowd cover'' for any individual.
+  Even synthetic data generated from a small cohort may carry
+  statistical traces of the training individuals.
+  \textbf{Mitigation:} 
+\end{riskbox}
+
+\begin{riskbox}[title={Auxiliary information attacks}]
+  An adversary with access to partial clinical data about an NF1 patient
+  (e.g., age, sex, NF1 mutation type) may use synthetic data
+  to narrow re-identification candidates.
+  \textbf{Mitigation:} 
+\end{riskbox}
+
+
+
+\subsection{Risk in Context: Synthetic vs. No Release}
+% PURPOSE: Critical framing for governance.
+% The alternative to releasing synthetic data is often that the data
+% is not shared at all — which also has costs (no scientific progress,
+% no external validation). The decision is not "risk vs. no risk"
+% but "which risk is more acceptable."
+
+Withholding data also carries risk:
+\begin{itemize}
+  \item Slower scientific progress on a disease affecting [N] patients
+        globally
+  \item Inability for external researchers to replicate or build on
+        internal findings
+  \item Missed opportunity to establish NF1 genomic benchmarks
+\end{itemize}
+
+The relevant governance question is therefore:
+\textbf{is the residual re-identification risk of synthetic release lower
+than the opportunity cost of no release?}
+Our analysis indicates .
+
+\subsection{Comparison with Prior Art}
+% PURPOSE: Show governance that this risk level is consistent with
+% (or better than) what has been accepted in comparable contexts.
+% This builds confidence that your recommendations are calibrated.
+
+
+
+% =============================================================================
+% SECTION 6 — GOVERNANCE RECOMMENDATIONS
+% PURPOSE: This is the most important section for the governance audience.
+%          Write it as a decision tool, not a wish list.
+%          Each recommendation must be: specific, actionable, and traceable
+%          to evidence in the preceding sections.
+%          Use numbered recommendations so they can be referenced in meetings.
+%          Group recommendations into logical themes.
+%          Aim: ~1.5 pages.
+% =============================================================================
+\section{Governance Recommendations}
+\label{sec:governance}
+
+The following recommendations are grounded in our evaluation results
+(Section~\ref{sec:results} and Section~\ref{sec:risk}) and are intended
+to guide the governance committee in deciding the conditions under which
+synthetic NF1 RNA-seq data may be released.
+
+\subsection{R1--R3: Release Conditions}
+
+
+
+\subsection{R4--R5: Access and Oversight}
+
+
+
+\subsection{R6: Future Work to Strengthen the Framework}
+
+\begin{recbox}[title={Recommendation  — Differential privacy integration}]
+  Future iterations of the synthetic data generation pipeline should
+  integrate formal differential privacy guarantees ($\varepsilon$-DP)
+  to provide mathematically quantifiable privacy bounds, replacing
+  empirical-only evaluation.
+  \textit{This is particularly important for cohort sizes below $n = $}.
+\end{recbox}
+
+% ===== Glossary =====
+\section{Glossary}
+\label{app:glossary}
+% Essential for governance readers who are not bioinformaticians.
+% Define every technical term used in the main body.
+
+\begin{description}[leftmargin=3.5cm, style=nextline]
+  \item[Bulk RNA-seq]
+    A technology that measures the activity (expression) of all
+    $\sim$20,000 human genes simultaneously in a tissue sample.
+  \item[Synthetic data]
+    Computationally generated data that mimics the statistical
+    properties of real data without directly copying any real record.
+  \item[Blue teaming]
+    In this context, the process of evaluating whether synthetic data
+    is a faithful and useful substitute for real data.
+  \item[Red teaming]
+    The process of actively attempting to breach the privacy guarantees
+    of synthetic data — taking the role of an adversary.
+  \item[Membership inference]
+    An attack that tests whether a specific individual's data was
+    used to train the generative model.
+  \item[Differential privacy (DP)]
+    A mathematical framework that provides formal, quantifiable
+    guarantees that a dataset cannot be used to identify individuals.
+  \item[MMD (Maximum Mean Discrepancy)]
+    A statistical measure of how similar two distributions are.
+    Lower values indicate the synthetic data is more similar
+    to the real data.
+  \item[NF1 (Neurofibromatosis Type 1)]
+    A rare genetic disorder affecting approximately 1 in 3,000 people,
+    caused by mutations in the \textit{NF1} gene.
+\end{description}
+
+% ===== Conclusion draft and recommendation boxes =====
+This white paper has presented a rigorous evaluation of synthetic bulk
+RNA-seq data generation applied to the NF1 rare disease dataset.
+Using benchmark validation on CAMDA challenge data and adversarial
+privacy testing through red team exercises, we demonstrated that
+.
+
+The governance recommendations in Section~6 define a practical path
+for responsible data release: one that does not require choosing between
+scientific openness and patient privacy, but instead establishes the
+conditions under which both can be honoured simultaneously.
+
+We believe that adopting this framework will position [Organisation Name]
+as a leader in responsible synthetic omics data sharing — enabling
+NF1 research at scale while maintaining the highest standards of
+patient data protection.
+
+
+
+\begin{recbox}[title={Recommendation 1 — Minimum quality threshold before release}]
+  Synthetic data should only be released if it meets the following
+  minimum quality criteria: MMD $\leq$,
+  DE gene overlap $\geq$ \%, and membership inference accuracy
+  $\leq$ random baseline $+$ \%.
+  \textit{Rationale: Section~4 results show these thresholds correspond
+  to [describe quality level].}
+\end{recbox}
+
+\begin{recbox}[title={Recommendation 2 — Cohort size floor}]
+  Synthetic data derived from cohorts smaller than $n = $ 
+  samples should not be released publicly.
+  Below this size, re-identification risk increases substantially
+  (see Section~5.1).
+  \textit{If current NF1 cohort is below this threshold, release should be
+  conditional on data augmentation or restricted to a consortium-only access tier.}
+\end{recbox}
+
+\begin{recbox}[title={Recommendation 3 — Metadata separation}]
+  Synthetic expression data should not be released with linked clinical
+  metadata (age, sex, mutation type) unless the combined dataset passes
+  a separate joint privacy audit.
+\end{recbox}
+
+\begin{recbox}[title={Recommendation 4 — Tiered access model}]
+  We recommend a tiered release structure:
+  \begin{enumerate}
+    \item \textbf{Open tier:} Aggregate summary statistics and
+          quality evaluation reports.
+    \item \textbf{Registered tier:} Full synthetic dataset, available
+          to approved researchers with a signed data use agreement.
+    \item \textbf{Controlled tier:} Original real data, under full
+          existing governance controls.
+  \end{enumerate}
+\end{recbox}
+
+\begin{recbox}[title={Recommendation 5 — Periodic re-evaluation}]
+  As re-identification attack methods evolve, synthetic data previously
+  deemed safe may become vulnerable. The governance committee should
+  mandate re-evaluation of any released synthetic dataset at a defined
+  interval (suggested: every 24 months) or following any major advance
+  in genomic privacy attacks.
+\end{recbox}

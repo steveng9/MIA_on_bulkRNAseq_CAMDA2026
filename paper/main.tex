@@ -1,0 +1,558 @@
+\PassOptionsToPackage{dvipsnames}{xcolor}
+\documentclass[webpdf,contemporary,large]{oup-authoring-template}
+
+\graphicspath{{Fig/}}
+\newcommand{\societylogo}{}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% ---- Draft annotations: one colour per co-author, plus TODO and TOCITE ----
+% Set \drafttrue to \draftfalse to hide every annotation at once.
+\newif\ifdraft \drafttrue
+\newcommand{\annot}[3]{\ifdraft\textcolor{#1}{\textbf{[#2:]} #3}\fi}
+\newcommand{\steven}[1]{\annot{Periwinkle}{Steven}{#1}}
+\newcommand{\sikha}[1]{\annot{blue}{Sikha}{#1}}
+\newcommand{\martine}[1]{\annot{magenta}{Martine}{#1}}
+\newcommand{\hakime}[1]{\annot{ForestGreen}{Hakime}{#1}}
+\newcommand{\teju}[1]{\annot{BurntOrange}{Teju}{#1}}
+\newcommand{\ruixuan}[1]{\annot{Plum}{Ruixuan}{#1}}
+\newcommand{\jineta}[1]{\annot{TealBlue}{Jineta}{#1}}
+\newcommand{\todo}[1]{\annot{red}{TODO}{#1}}
+\newcommand{\tocite}[1]{\annot{Brown}{TOCITE}{#1}}
+
+% ---- Notation ----
+\newcommand{\Dtrain}{D_{\mathrm{train}}}
+\newcommand{\Dtest}{D_{\mathrm{test}}}
+\newcommand{\Dsyn}{D_{\mathrm{syn}}}
+\newcommand{\Daux}{D_{\mathrm{aux}}}
+\newcommand{\musyn}{\mu_{\mathrm{syn}}}
+\newcommand{\Sigsyn}{\Sigma_{\mathrm{syn}}}
+\newcommand{\mahala}{\textsc{MahalaMIA}}
+\newcommand{\melo}{\textsc{MeLoMIA}}
+\newcommand{\mama}{\textsc{MAMA-MIA}}
+\newcommand{\redsigma}{\textsc{RedSigma}}
+
+\begin{document}
+
+\journaltitle{Bioinformatics}
+\DOI{DOI added during production}
+\copyrightyear{YEAR}
+\pubyear{YEAR}
+\vol{XX}
+\issue{x}
+\access{Published: Date added during production}
+\appnotes{Original Paper}
+
+\firstpage{1}
+
+\subtitle{Gene expression}
+
+\title[Does synthetic bulk RNA-seq protect donors?]{Does Synthetic Bulk RNA-seq Data Protect Donors? Mechanism-Aware Membership Inference and Recommendations for Release}
+
+\author[1,$\ast$]{Steven Golob}
+\author[1]{Sikha Pentyala}
+\author[2]{Hakime \"{O}zt\"{u}rk}
+\author[3]{Tejumade Afonja}
+\author[4]{Ruixuan [surname]}
+\author[5]{Jineta Banerjee}
+\author[1]{Martine De Cock}
+
+\address[1]{\orgname{University of Washington Tacoma}, \orgaddress{\state{WA}, \country{USA}}}
+\address[2]{\orgname{European Molecular Biology Laboratory (EMBL)}, \orgaddress{\state{Heidelberg}, \country{Germany}}}
+\address[3]{\orgname{CISPA Helmholtz Center for Information Security}, \orgaddress{\state{Saarbr\"{u}cken}, \country{Germany}}}
+\address[4]{\orgname{[affiliation]}}
+\address[5]{\orgname{Sage Bionetworks}, \orgaddress{\state{Seattle, WA}, \country{USA}}}
+
+\corresp[$\ast$]{Corresponding author. \href{mailto:golobs@uw.edu}{golobs@uw.edu}}
+
+\abstract{\textbf{Motivation:}
+Synthetic data generation is proposed as a way to share bulk RNA-seq cohorts without exposing the donors.
+Whether it does is tested with membership inference attacks (MIAs), in which an adversary tries to tell whether a given donor's profile was used to train the generator.
+The attacks of the CAMDA 2025 Health Privacy Challenge benchmark reach an AUC of 0.71 against one of the four generators later chosen for the 2026 red-team task, and at most 0.57 against the other three.
+Those attacks are generic, in that none of them uses knowledge of how the generator under attack works.
+So they cannot separate a generator that protects its donors from one that has not yet been attacked well.\\
+\textbf{Results:}
+We present three MIAs, each built around the place where one family of generators stores what it learned from its training data: \mahala{} reads the covariance of the synthetic data, \melo{} reads the losses of models that the adversary trains on synthetic data, and \mama{} reads the low-order marginals that a differentially private graphical model measures.
+All three assume a black-box adversary who holds the released synthetic data and the public code of the generator, and they won the red-team track of the CAMDA 2026 Health Privacy Challenge.
+On TCGA-BRCA (1,089 donors, 978 genes) they reach an AUC of 1.00 against a multivariate normal generator, 0.996 against a conditional variational autoencoder and 0.97 against a diffusion model, where the strongest generic attack reaches 0.56, 0.71 and 0.54.
+Against the challenge's differentially private graphical model ($\varepsilon=10$), every attack is at chance except \mama{}, which reaches 0.64.
+\todo{One sentence each, once the results are final: (i) the state-of-the-art generators (TabSyn, TabPFN, DPSynth, DP-CVAE); (ii) the privacy/fidelity result for the end-to-end DP graphical model; (iii) the headline governance recommendation.}\\
+\textbf{Availability and implementation:}
+\todo{Repository URL, licence, and an archived release (Zenodo DOI) for the attacks, the generator wrappers and the per-run results.}\\
+\textbf{Contact:} \href{mailto:golobs@uw.edu}{golobs@uw.edu}\\
+\textbf{Supplementary information:} Supplementary data are available at \textit{Bioinformatics} online.}
+
+\keywords{synthetic data, bulk RNA-seq, membership inference, differential privacy, data sharing, privacy auditing}
+
+\maketitle
+
+\steven{Open points on the front matter. (1) Title: this keeps the CAMDA 2026 abstract's question and adds the two things the full paper adds. Alternatives: ``Auditing the Privacy of Synthetic Bulk RNA-seq Data with Mechanism-Aware Membership Inference''; ``Synthetic Bulk RNA-seq Data Does Not Protect Donors by Default''. (2) Author list, order, and affiliations are placeholders; the CAMDA 2026 abstract's authors (Jarrell, Filienko, Kim, Szebenyi) are not listed here yet. (3) The abstract's 1.00 and 0.996 are \mahala{} with a ridge-conditioned covariance; as submitted to the challenge (pseudo-inverse) they are 0.93 and 0.92. Which variant is the headline is your call (Section~\ref{sec:mahalamia}). (4) ``Won the red-team track'': please confirm the exact wording, since \redsigma{} is also described as a winning entry.}
+
+% =============================================================================
+\section{Introduction}
+\label{sec:intro}
+
+\subsection{The data-sharing problem}
+
+Genomic data is among the most valuable data for biomedical research, and among the most difficult to share. Sequencing data such as bulk RNA-seq is inherently identifying, and can be traced back to individuals even from derived or aggregate statistics \citep{erlich2018identity,homer2008resolving}. Real-world incidents show this at scale. The 2023 23andMe breach exposed ancestry data for millions of users \citep{andme2023breach}, and in 2026 UK Biobank, one of the most tightly governed biobanks in the world, suspended researcher access for nearly five months after participant data was found for sale online \citep{kwon2026ukbiobank}. This is why sequencing data such as bulk RNA-seq is, rightly, subject to strict privacy regulations such as HIPAA.
+
+But that protection has a cost of its own. In practice, it means the data ends up siloed within individual research centers and health systems. Even when advertised as ``open,'' using it typically requires lengthy approvals, data use agreements, or access restricted to specific enclaves. The result is data that technically exists but is functionally unusable, often called ``dark data'' \citep{watson2023delivering,mcdermott2021reproducibility}. This leads to findings that cannot be verified, research efforts duplicated across silos, and, in silos with limited data, questions that remain unanswered. Dark data remains one of the central barriers to reproducibility and progress in biomedical research.
+
+This problem is significantly amplified for rare diseases. Rare diseases collectively affect over 300 million people worldwide \citep{lancetgh2024rarediseases}, yet no single clinical site treats enough patients with any one of them to power robust analysis alone, so progress depends on pooling data across institutions far more than for common diseases. Pooling worsens the privacy problem, because a combined cohort is still built from many small local populations, and small cohorts offer less ``crowd cover'', making a single genomic profile more identifying and standard de-identification less reliable. Neurofibromatosis type 1 (NF1) is a clear example. It affects roughly 1 in 3{,}000 people and predisposes them to tumors of the peripheral nerves and skin, and its causes and occasional progression to malignancy remain poorly understood \citep{rasmussen2000nf1}, in part because the data needed to study it is scattered thinly and hard to combine safely. Rare diseases therefore sit at the worst point of the tradeoff: they need cross-institutional sharing the most, and current mechanisms protect them the least.
+
+\subsection{Synthetic data as a solution}
+
+A promising mechanism to break this genomic data logjam is synthetic data generation (SDG). This approach involves generating artificial data using a synthesizer trained on real data. When done well, synthetic data has the same characteristics as the original data but, crucially, without replicating personal information, making it suitable for open publication and for fostering the kind of cross-institutional research that otherwise stalls behind access barriers \citep{hu2023sok,jordon2022synthetic}.
+
+But whether synthetic data is done well is not something to take on faith, and the mechanics of how it works explain why. State-of-the-art SDG methods provide their privacy guarantee, when they have one at all, through differential privacy (DP): calibrated noise is added during the generation process so that the output does not reveal whether any specific individual's data was used to train it \citep{dwork2014algorithmic}. That noise is also what creates the tradeoff at the heart of this paper: the more noise added, the better the synthetic data can withstand attacks such as membership inference, but the lower its fidelity and utility become. Generators that skip this step, or apply it loosely, can produce data that looks statistically convincing while still leaking information about the individuals it was trained on \citep{stadler2022synthetic}. So this paper does not treat SDG as inherently safe; it treats the privacy-utility tradeoff as something that has to be measured directly for the specific data and models in question.
+
+The standard way to measure the privacy side is a membership inference attack (MIA) \citep{shokri_membership_2017}. An adversary is given the released synthetic data and a set of real profiles, and has to say which of those profiles were in the generator's training set. If a profile can be placed in the training set of a synthetic breast cancer cohort, the adversary has learned that its donor has breast cancer \citep{zhang_membership_2022}. Membership is also the least an adversary can learn about a record, which is why MIAs are the standard empirical test of a release \citep{carlini2022membership}. A generator that gives away membership has not protected its donors.
+
+\subsection{What has been measured so far}
+
+The CAMDA 2025 Health Privacy Challenge was the first community effort to run this measurement on bulk RNA-seq. Blue teams generated synthetic versions of two TCGA cohorts, and the overview of the challenge benchmarked 11 generators for fidelity, utility, biological plausibility and privacy \citep{ozturk2026towards}. It sorted the generators into three groups: differentially private methods, against which attacks did no better than guessing; a multivariate normal baseline and a diffusion model, with moderate exposure; and a conditional variational autoencoder (CVAE), with the highest. In terms of AUC even the highest was modest. On the four generators that the 2026 challenge later selected for its red-team task, the strongest of the benchmark's attacks, GAN-leaks \citep{chen2020gan}, reaches 0.71 against the CVAE, and no attack exceeds 0.57 against the other three (Table~\ref{tab:grid}). The authors of the diffusion-based entry, NoisyDiffusion, reported MIA AUCs close to 0.5 for their own model and read them as good resilience \citep{kreuer2025noisydiffusion}.
+
+Those numbers describe the attacks at least as much as the generators. Every attack in the benchmark is generic. It compares a candidate profile with the synthetic profiles by distance or by estimated density, and it would run unchanged against any generator. The overview says so itself, noting that its attacks ``do not represent worst-case adversaries'' \citep{ozturk2026towards}. A generator can be untouched by such an attack for two different reasons. Either the synthetic data carries no trace of the individual training records, or the trace is somewhere the attack does not look.
+
+In this paper we show that, for these generators, it is usually the second reason. Each family of generators keeps what it learned from its training data in a specific place. A multivariate normal generator keeps it in a covariance matrix, a neural generator in its loss surface, and a marginal-based DP generator in the handful of noisy tables it measures. An attack that reads that place does far better than one that does not. On TCGA-BRCA, GAN-leaks reaches an AUC of 0.54 against NoisyDiffusion and identifies 3\% of training donors at a 1\% false-positive rate; our attack \melo{} reaches 0.97 and identifies 70\% of them. The converse holds too. \mahala{}, which separates members from non-members perfectly against the multivariate normal generator, is at chance (0.50) against the DP graphical model, where \mama{} is the only attack that sees anything (0.64). A privacy audit therefore has to match the attack to the mechanism, and a low score from a mismatched attack is not evidence of privacy.
+
+\subsection{Scope and contributions}
+\label{sec:scope}
+
+This paper is the write-up of our winning entry to the red-team track of the CAMDA 2026 Health Privacy Challenge, and a follow-up to the CAMDA 2025 overview \citep{ozturk2026towards}. It revisits that benchmark's privacy conclusions with stronger attacks, and its fidelity and utility conclusions with more generators. We make the following contributions.
+
+\begin{itemize}
+  \item \textbf{Three mechanism-aware attacks} (Section~\ref{sec:attacks}). \mahala{} scores a candidate by its Mahalanobis distance to the synthetic data. \melo{} trains shadow generators on synthetic data, so that the models it learns from match the one model the adversary can build at attack time. \mama{} \citep{golob_privacy_2025}, adapted here to continuous expression data, scores a candidate on exactly the marginals a DP graphical model measured.
+  \item \textbf{A full attack $\times$ generator grid} (Section~\ref{sec:experiments}). Every attack is run against every generator on two TCGA cohorts and five train/test splits, so the table shows both how exposed each generator is and how much of each attack's power comes from knowing the mechanism.
+  \item \textbf{An explicit threat model} (Section~\ref{sec:threat}), with the real-world situation it corresponds to, and experiments that vary what the adversary knows.
+  \item \textbf{Recommendations for release} (Section~\ref{sec:governance}), drawn from the experiments, for data custodians deciding whether and how to publish synthetic bulk RNA-seq.
+\end{itemize}
+
+\todo{Add contribution bullets as they are confirmed for the main text. Candidates with results in hand: (a) the audit of the challenge's DP graphical model (its release was not DP end to end, and a corrected accounting with $\sqrt{k}$ composition changes both its utility and its exposure); (b) preprocessing as an attack surface (NoisyDiffusion's inverse quantile transform alone gives AUC 0.9996); (c) exposure as a function of donors per gene ($n/p$); (d) generators beyond the challenge (TabSyn, TabPFN, DPSynth, DP-CVAE).}
+
+We study bulk RNA-seq restricted to the 978 LINCS L1000 landmark genes, on two cancer cohorts from TCGA, as distributed by the challenge. We do not cover single-cell RNA-seq, which we treat elsewhere \citep{golob2026a}, the synthesis of clinical metadata, or attacks beyond membership inference.
+
+% =============================================================================
+\section{Background}
+\label{sec:background}
+
+\subsection{Bulk RNA-seq}
+\label{sec:bulk}
+
+Every cell in the body carries the same DNA, but not every gene in that DNA is switched on at the same time or to the same degree. Which genes are active, and how strongly, is what makes a skin cell different from a nerve cell, and a healthy cell different from a tumor cell. Bulk RNA-sequencing (RNA-seq) is a laboratory technique that measures exactly this: how active each of roughly 20{,}000 human genes is within a tissue sample, all at once. The result of a bulk RNA-seq experiment is, in effect, a long list of numbers, one activity level per gene, that together form a detailed snapshot of what that tissue was doing biologically at the time it was sampled. The word ``bulk'' distinguishes this from newer single-cell methods, which measure gene activity in individual cells rather than averaged across a whole tissue sample.
+
+\hakime{A short paragraph here on why bulk RNA-seq remains important alongside single-cell (cost per donor, cohort sizes, clinical use, the volume of existing bulk data in TCGA, GTEx, GEO), with the citations you would use.}
+
+\paragraph{Formal description.}
+A bulk RNA-seq experiment on $n$ donors produces a count matrix $C \in \mathbb{N}^{n \times G}$, where $c_{ig}$ is the number of sequencing reads from donor $i$'s sample that map to gene $g$. Counts are not comparable across donors as they stand, because the total number of reads differs from sample to sample, and their variance grows with their mean. So before analysis the counts are filtered and normalised (Section~\ref{sec:preprocessing}). In the cohorts we use, genes with few reads are removed, the remaining counts are passed through the variance-stabilising transformation (VST) of DESeq2 \citep{love2014deseq2}, and the result is restricted to $p = 978$ landmark genes \citep{subramanian2017l1000}. Each donor is then a vector $x_i \in \mathbb{R}^{p}$ of log-scale expression values, together with a class label $y_i$ (a cancer subtype or a tissue of origin). We write the cohort as $D = \{(x_i, y_i)\}_{i=1}^{n}$.
+
+\paragraph{Why it is sensitive.}
+Because gene activity reflects tissue type, disease state, and even a person's sex and ancestry, a bulk RNA-seq profile is a rich, detailed readout of a person's underlying biology, not unlike a very fine-grained biological signature. And unlike a name or a mailing address, that signature cannot be changed after the fact: if a genomic profile is ever linked back to a person, that link cannot be undone the way a leaked password can be reset. Expression data can also be linked to DNA. The expression of many genes depends on nearby genetic variants, so an expression profile predicts part of its donor's genotype, well enough to match the profile against a genotype database \citep{schadt2012bayesian,harmanci2016quantification}. A genotype in turn identifies the donor and says something about their relatives \citep{erlich2018identity}.
+\tocite{Consequences of genomic disclosure for employment, insurance and stigma; the limits of GINA (it covers health insurance and employment, and does not cover life, disability or long-term-care insurance); a survey of genomic privacy such as Bonomi et al.\ \citep{bonomi_privacy_2020} or Erlich and Narayanan (2014).}
+
+\paragraph{Why it is a demanding setting for privacy.}
+Four properties of bulk RNA-seq make it harder to protect than the tabular data on which most synthetic data methods are developed.
+
+First, there are more features than donors. The TCGA-BRCA training split has 871 donors and 978 genes, and that is after restricting to landmark genes; the full transcriptome has about twenty times as many. A generator has to estimate a distribution in a space where its training data fills only a thin slice, and Section~\ref{sec:mahalamia} shows that this slice can be read back from the synthetic data.
+
+Second, the data is dense and continuous. Single-cell counts are mostly zeros; a bulk profile has a real-valued measurement for every gene. No two donors share a profile, so every record is unique before any attack begins, and there is no natural coarse representation in which donors blend together.
+
+Third, preprocessing is part of the pipeline. Filtering, normalisation and gene selection are fitted on the cohort, and most generators add steps of their own, such as standardising, quantile-transforming or binning each gene. Each of these steps is computed from the training data and sits outside the model.
+
+Fourth, auxiliary data is plentiful. Public repositories hold expression profiles for hundreds of thousands of human samples \citep{wilks2021recount3,gtex2020}, so an adversary can assemble a reference population for almost any tissue, and can hold several datasets that overlap the one under attack.
+
+\hakime{Please check this list against the arguments you had in mind, and add what is missing.}
+
+\subsection{Synthetic data generation and differential privacy}
+\label{sec:sdg}
+
+Synthetic data generation works by training a statistical model on real data until that model has learned the patterns, correlations, and overall shape of the data, its statistical fingerprint, and then using that model to generate new, artificial samples that follow the same fingerprint without corresponding to any single real record.
+
+A useful analogy: imagine describing a crowd of people not by naming each person, but by describing the crowd as a whole, its typical age range, height distribution, and so on. A generative model works similarly. It learns the overall shape of the real dataset, and then draws new samples from that learned shape, so that the synthetic dataset looks and behaves like the real one in aggregate, without any single synthetic sample being a copy of, or a close stand-in for, any real person's data.
+
+Formally, a generator is a randomised procedure $\mathcal{G}$ that takes a training set $\Dtrain \subset D$ and returns a synthetic dataset $\Dsyn = \mathcal{G}(\Dtrain)$ of the same shape. Throughout this paper $\Dsyn$ has as many rows as $\Dtrain$.
+
+\paragraph{Differential privacy.}
+$\mathcal{G}$ is $(\varepsilon,\delta)$-differentially private if, for any two training sets $D_1$ and $D_2$ that differ in one donor, and any set $S$ of possible outputs,
+\begin{equation}
+  \Pr[\mathcal{G}(D_1) \in S] \;\le\; e^{\varepsilon}\, \Pr[\mathcal{G}(D_2) \in S] + \delta .
+  \label{eq:dp}
+\end{equation}
+That is, whether or not any one donor took part, the released data would have looked almost the same. The privacy budget $\varepsilon$ controls how close ``almost'' is. A smaller $\varepsilon$ is a stronger guarantee and requires more noise \citep{dwork2014algorithmic}. Two consequences of the definition matter in what follows. Anything computed from a DP output is itself DP, at no extra cost. And the guarantee covers only the steps that were accounted for. If a pipeline computes anything from the training data without noise, such as bin edges or a scaling transform, then $\varepsilon$ describes the noisy steps and says nothing about the rest.
+
+\subsection{Generators}
+\label{sec:generators}
+
+Table~\ref{tab:generators} lists the generators we attack. The first four produced the synthetic datasets of the CAMDA 2026 red-team task. For each one we say where in the released data the training records leave their mark, since that is what the attacks in Section~\ref{sec:attacks} are built on.
+
+\begin{table*}[!t]
+\caption{Generators studied. The first four produced the challenge's synthetic datasets; the rest are added in this paper. ``DP'' is the guarantee the method claims; Section~\ref{sec:noise} examines what it covers.\label{tab:generators}}
+\begin{tabular}{L{3.0cm} L{4.6cm} L{1.6cm} L{6.0cm}}
+  \toprule
+  \textbf{Generator} & \textbf{Family} & \textbf{DP} & \textbf{Source} \\
+  \midrule
+  MVN & Per-class Gaussian & no & CAMDA 2025 baseline \citep{ozturk2026towards} \\
+  CVAE & Conditional variational autoencoder & no & CAMDA 2025 baseline \citep{sohn2015learning,ozturk2026towards} \\
+  NoisyDiffusion (ND) & Conditional diffusion model & no$^{\ast}$ & CAMDA 2025 blue team \citep{kreuer2025noisydiffusion} \\
+  DP-PGM & Noisy marginals and a graphical model & $\varepsilon=10$ & CAMDA 2025 blue team \citep{menzies2025,chen2024biologically,mckenna2019graphical} \\
+  \midrule
+  TabSyn & Latent diffusion over a transformer VAE & no & \citep{zhang2023mixed} \\
+  TabPFN & In-context generation from a tabular foundation model & no & \citep{hollmann2025tabpfn} \\
+  DPSynth & Noisy marginals and a graphical model & yes & \todo{cite the library} \\
+  DP-CVAE & CVAE trained with DP-SGD & yes & CAMDA 2025 baseline \citep{abadi_deep_2016,ozturk2026towards} \\
+  \botrule
+\end{tabular}
+\begin{tablenotes}
+\item $^{\ast}$ND adds Gaussian noise to its gradients at a multiplier of $10^{-5}$ and reports no privacy accounting, so we treat it as non-private.
+\end{tablenotes}
+\end{table*}
+
+\paragraph{Multivariate normal (MVN).}
+For each class $c$, MVN computes the mean $\mu_c$ and covariance $\Sigma_c$ of the training profiles in that class, and draws synthetic profiles from $\mathcal{N}(\mu_c, (1+\alpha)\Sigma_c)$. The challenge used $\alpha = 0.7$. The extra variance widens the distribution but does not change its shape, so the synthetic data's mean and covariance are direct estimates of the training set's.
+
+\paragraph{Conditional VAE (CVAE).}
+The CVAE \citep{sohn2015learning} encodes a profile and its label into a Gaussian over a 128-dimensional latent space, and decodes a latent sample and a label back into a profile. Synthetic profiles are decoded from samples of the prior. What the network learned about individual training profiles is held in its weights, and shows up as lower reconstruction error on profiles it was trained on.
+
+\paragraph{NoisyDiffusion (ND).}
+ND \citep{kreuer2025noisydiffusion} is a denoising diffusion model conditioned on the class label. It balances the classes by oversampling with SMOTE \citep{chawla2002smote}, maps each gene to a normal distribution with a quantile transform fitted on the training split, trains a network to predict the noise added to a profile at each of 1{,}000 diffusion steps, and inverts the quantile transform on the generated profiles. As with the CVAE, the training profiles show up as lower loss, here the error of the predicted noise.
+
+\paragraph{Differentially private graphical model (DP-PGM).}
+DP-PGM is the winning blue-team entry of CAMDA 2025 \citep{menzies2025}. \sikha{Please confirm the citation and this description of the submission.} It applies Private-PGM \citep{mckenna2019graphical}, following its earlier use on gene expression \citep{chen2024biologically}. Each gene is cut into four bins at the quartiles of the training data. The method then counts how many training donors fall in each bin of each gene (978 one-way marginals), in each class, and in each combination of gene bin and class (978 two-way marginals), and adds Gaussian noise to every count, calibrated to $\varepsilon = 10$. A graphical model is fitted to the noisy counts, synthetic bin assignments are sampled from it, and each bin is decoded to the mean of the training values in that bin. Everything the synthetic data says about the training donors passes through those noisy counts, with two exceptions: the quartile edges and the bin means are computed from the training data without noise.
+
+\paragraph{Generators beyond the challenge.}
+\todo{Two or three sentences each for TabSyn, TabPFN, DPSynth and DP-CVAE, once their configurations are final: what the method is, how it was adapted to 978 continuous genes (TabSyn's tuned recipe; TabPFN gene by gene; DPSynth on the 200 most variable genes), and where the training data leaves its mark. Source material: \texttt{docs/SOTA\_GENERATORS.md}.}
+
+\todo{``Discussion on quality'' from the outline: a short paragraph on what CAMDA 2025 found about each family's fidelity, utility and biological plausibility (MVN competitive with deep models; DP-PGM the best DP method but weak on co-expression), as the baseline that Section~\ref{sec:quality} updates.}
+
+\subsection{The CAMDA Health Privacy Challenge}
+\label{sec:camda}
+
+The CAMDA (Critical Assessment of Massive Data Analysis) Health Privacy Challenge is a public, community-run benchmark for evaluating privacy-preserving methods on genomic data, open to research groups worldwide, and organised within the European Lighthouse on Safe and Secure AI (ELSA). Because CAMDA provides well-characterized, real bulk RNA-seq datasets alongside a standardized evaluation pipeline, it offers a controlled setting in which to test synthetic data generation methods against known ground truth, before ever applying them to sensitive, harder-to-validate data such as a rare disease cohort. Table~\ref{tab:camda_datasets} summarizes the two datasets, both derived from The Cancer Genome Atlas (TCGA) \citep{weinstein2013tcga}.
+
+\begin{table}[!t]
+\caption{The two CAMDA cohorts, as distributed for the 2026 red-team task. Each of the five splits trains on 80\% of the donors.\label{tab:camda_datasets}}
+\begin{tabular}{L{2.3cm} C{1.2cm} C{1.2cm} C{1.0cm} C{1.2cm}}
+  \toprule
+  \textbf{Cohort} & \textbf{Donors} & \textbf{Training donors} & \textbf{Genes} & \textbf{Classes} \\
+  \midrule
+  TCGA-BRCA     & 1{,}089 & 871     & 978 & 5  \\
+  TCGA-COMBINED & 4{,}323 & 3{,}458 & 978 & 12 \\
+  \botrule
+\end{tabular}
+\end{table}
+
+TCGA-BRCA contains breast tumours labelled with one of five molecular subtypes (LumA, LumB, Basal, Her2, Normal), from 562 donors in the largest class down to 40 in the smallest. TCGA-COMBINED contains primary tumours of 12 cancer types from 10 tissues, from 920 donors down to 86. For TCGA-COMBINED the challenge also provides a reference set of 824 further donors who are in no training set.
+
+The 2025 edition ran a blue-team task, in which participants generated synthetic versions of both cohorts, and a red-team task, in which participants attacked them \citep{ozturk2026towards}. The 2026 edition kept the cohorts and asked red teams to ``launch membership inference attacks against selected blue teams' solutions from the Health Privacy Challenge 2025'': the four generators in the upper half of Table~\ref{tab:generators}, applied to both cohorts, for eight synthetic datasets in total.
+
+\subsection{Membership inference attacks}
+\label{sec:mia}
+
+\paragraph{The membership game.}
+We evaluate attacks with the game the challenge uses.
+\begin{enumerate}
+  \item The cohort $D$ is split at random into $\Dtrain$ (80\% of donors) and $\Dtest$ (20\%), and the generator releases $\Dsyn = \mathcal{G}(\Dtrain)$.
+  \item The adversary receives $\Dsyn$ and every profile in $D$, without being told which profiles are in $\Dtrain$.
+  \item The adversary returns a score $s(x)$ for each $x \in D$, higher for profiles it believes are members of $\Dtrain$.
+\end{enumerate}
+Section~\ref{sec:threat} says what else the adversary may use, and what this game corresponds to outside a challenge.
+
+\paragraph{Measuring success.}
+We report the area under the ROC curve (AUC), which is 0.5 for random guessing, and the true-positive rate at false-positive rates of 1\% and 10\%. The second kind of number is the one that describes harm to a person. An attack with a modest AUC can still name a small set of donors with near certainty, and an attack with a high AUC can be unsure about every one of them \citep{carlini2022membership}. Because 80\% of the candidates are members, a precision-based score starts at 0.8 for random guessing, so we use it only where we compare with earlier tables.
+
+\paragraph{Attacks on synthetic data.}
+Membership inference was introduced for classifiers, using shadow models: the adversary trains models of its own on data whose membership it controls, and learns what a member looks like to such a model \citep{shokri_membership_2017,carlini2022membership}. Against synthetic data the adversary usually has no model to query, only the released dataset, and attacks fall into three groups. Distance and density attacks score a candidate by how close it lies to synthetic records, or by how much denser the synthetic data is around it than a reference population is \citep{chen2020gan,hilprecht2019monte,hayes2017logan,van2023membership}. Shadow-modelling attacks run the generator many times on datasets with and without the candidate and train a classifier on features of the outputs \citep{stadler2022synthetic,houssiau2022tapas,meeus2023achilles,guepin2023synthetic}. Mechanism-aware attacks use the structure of one family of generators, such as the marginals selected by DP graphical-model methods \citep{golob_privacy_2025} or the loss of a diffusion model across noise levels \citep{wu2025winning}. Our three attacks belong to the third group.
+
+\paragraph{Privacy of synthetic omics.}
+For genomic data, membership inference goes back to the finding that a person's presence in a pool of DNA can be detected from the pool's allele frequencies \citep{homer2008resolving}. Synthetic genotype data has been shown to trade privacy against utility with no method doing well on both \citep{oprisanu_utility_2022}. For gene expression, differentially private generators have been found to lose much of the biological signal \citep{chen2024biologically}, and the CAMDA 2025 overview is the first benchmark to set that loss beside measured attack success \citep{ozturk2026towards}. For single-cell data, raw count matrices leak donor identity through expression quantitative trait loci \citep{walker_private_2024}, and synthetic single-cell data from copula-based simulators is open to a Mahalanobis-distance attack related to the one we use here \citep{golob2026a}.
+
+\paragraph{Distance to closest record.}
+Many synthetic data releases are assessed with similarity metrics such as the distance from each synthetic record to its closest real record (DCR), in place of an attack. The CAMDA 2025 overview found DCR to be correlated with the success of distance-based attacks and unrelated to the others \citep{ozturk2026towards}, and recent work shows that datasets which pass such metrics can be highly vulnerable to MIAs \citep{yao2025dcr,ganev2023inadequacy}. We therefore report attacks only.
+
+\tocite{Related work still to place: the MIDST challenge on tabular diffusion models; difficulty calibration (Watson et al., ICLR 2022); biologically informed MIAs on generative genomic models (arXiv:2511.07503); federated generation of synthetic RNA-seq (arXiv:2604.27456); Private-PGM descendants MST and AIM \citep{mckenna2021winning,mckenna2022aim}; DOMIAS; TAPAS; legal framing of anonymisation and synthetic data (GDPR Recital 26, European Health Data Space, NIH request for information on generative AI and controlled-access data).}
+
+% =============================================================================
+\section{Threat model}
+\label{sec:threat}
+
+\paragraph{What the adversary has.}
+We assume a black-box adversary. It holds (i) the released synthetic dataset $\Dsyn$; (ii) the candidate profiles, here all of $D$, with their class labels; and (iii) the public description of the generator: its code, its hyperparameters, and for a DP method its privacy parameters. It does not hold the trained generator, any intermediate quantity computed during training, or any knowledge of which candidates are members. This is the setting of the CAMDA 2026 red-team task, and it is the least a data custodian should assume, since a synthetic dataset published for research is usually accompanied by a paper and code that describe how it was made.
+
+\paragraph{The situation this models.}
+A hospital, biobank or consortium holds expression profiles for a disease cohort and publishes a synthetic version in place of the real data. The adversary holds the real expression profile of a person of interest and wants to know whether that person is in the cohort, because being in the cohort means having the disease, having been treated at that institution, or having taken part in that study. The adversary could be a party that already holds expression data for legitimate reasons, such as a second research group, a commercial testing laboratory or an insurer, or anyone who obtains a copy of such data through a breach.
+\steven{This paragraph is the place for the ``real-life scenario'' you want to feature. Two points need your judgement before more is written. (1) The game gives the adversary the exact profile that was (or was not) used in training. Outside a challenge, the adversary's profile of a person would more often come from a different sample or a different laboratory. Do we state this as a limitation, or run an experiment (for example, attack with a noised or re-normalised copy of each profile)? (2) Do we want a named, concrete case (for example, TCGA expression data is open access while its germline data is controlled) to make the scenario specific?}
+
+\paragraph{Variations we study.}
+The black-box adversary is our default, and every number in this paper is for it unless stated otherwise. We vary it in two directions.
+
+\emph{White box.} The adversary additionally holds the trained generator. This is the situation when a model is published in place of, or alongside, its samples, and it is the natural upper reference for how much the black-box adversary loses by having to rebuild the model from $\Dsyn$.
+
+\emph{Auxiliary data.} The adversary additionally holds $\Daux$, a set of profiles from the same population that are known not to be in $\Dtrain$. The challenge provides such a set for TCGA-COMBINED and none for TCGA-BRCA.
+
+\todo{State, once Section~\ref{sec:exp-threat} is written, exactly which results use which variation, and how the BRCA experiments that need a reference population obtain one.}
+
+% =============================================================================
+\section{Attacks}
+\label{sec:attacks}
+
+Each of our three attacks starts from the same question: where in $\Dsyn$ would a training profile leave a mark that a non-member would not? The answer differs by generator family, and so does the attack.
+
+\subsection{\mahala{}: reading the covariance}
+\label{sec:mahalamia}
+
+\mahala{} scores a candidate $x$ by its Mahalanobis distance \citep{de_maesschalck_mahalanobis_2000} to the synthetic data,
+\begin{equation}
+  d_{\mathrm{syn}}(x) \;=\; \sqrt{(x - \musyn)^{\top}\, \widehat{\Sigma}_{\mathrm{syn}}^{-1}\, (x - \musyn)} ,
+  \label{eq:mahala}
+\end{equation}
+where $\musyn$ is the mean of $\Dsyn$ and $\widehat{\Sigma}_{\mathrm{syn}}$ is an invertible estimate of its covariance. A smaller distance gives a higher membership score. The attack needs no shadow models and no training, and runs in seconds.
+
+The reason it works is easiest to see for MVN on TCGA-BRCA. The training split has 871 donors and 978 genes, so the 871 training profiles lie in a flat sheet of at most 870 dimensions inside the 978-dimensional gene space. MVN's covariances are computed from those profiles, so every synthetic profile it draws lies in the same sheet. A training profile is in the sheet by construction. A non-member is a new point in 978 dimensions and almost surely has a component that sticks out of it. The Mahalanobis distance measures distance in units of the synthetic data's spread, and in the directions that leave the sheet that spread is zero. So any component out of the sheet counts as very far, and members and non-members separate.
+
+This also explains why the choice of $\widehat{\Sigma}_{\mathrm{syn}}$ decides the result. The empirical covariance $\Sigsyn$ is singular and has to be regularised before it is inverted. Our challenge submission used the pseudo-inverse, which inverts $\Sigsyn$ inside the sheet and ignores every direction out of it, and so discards the strongest part of the signal. Adding a small ridge,
+\begin{equation}
+  \widehat{\Sigma}_{\mathrm{syn}} \;=\; \Sigsyn + \lambda\, \bar{\sigma}^2 I , \qquad \bar{\sigma}^2 = \tfrac{1}{p}\operatorname{tr}(\Sigsyn),
+  \label{eq:ridge}
+\end{equation}
+keeps those directions and weights them by $1/(\lambda \bar{\sigma}^2)$. On TCGA-BRCA against MVN, the pseudo-inverse gives an AUC of 0.928 and the ridge gives 1.000, for any $\lambda \le 10^{-4}$.
+
+\mahala{} has two further options. When the generator models each class separately, as MVN does, the distance can be computed to the candidate's own class in place of the pooled data. And when auxiliary data is available, the score becomes the ratio $d_{\mathrm{aux}}(x)/d_{\mathrm{syn}}(x)$, where $d_{\mathrm{aux}}$ is the same distance measured to $\Daux$. The ratio removes the part of $d_{\mathrm{syn}}$ that only reflects how unusual the profile is in the population.
+
+\steven{Decision needed before the experiments are written: which \mahala{} is the headline (pseudo-inverse as submitted, ridge, or class-conditional ridge), and whether the others are ablations (Appendix~\ref{app:mahala}). The geometry sweep found that the best conditioner changes with $n/p$ (ridge below 1, Ledoit--Wolf shrinkage above), and that class-conditional scoring takes MVN on TCGA-COMBINED from 0.89 to 1.00 while lowering CVAE and ND.}
+
+\subsection{\melo{}: reading losses from synth-shadows}
+\label{sec:melomia}
+
+A neural generator fits the profiles it was trained on a little better than profiles it has not seen, and a loss-based attack looks for that difference. \melo{} (\underline{Me}asurement of \underline{Lo}sses) follows the loss-trajectory attack that won the MIDST challenge on tabular diffusion models \citep{wu2025winning}: train shadow generators on data whose membership is known, record for every candidate a vector of losses under each shadow, and train a classifier to tell a member's losses from a non-member's.
+
+The black-box setting breaks this recipe in one place. The adversary cannot compute a candidate's loss under the target generator, because it does not have the target. The only model it can build at attack time is a \emph{proxy}: a generator that it trains itself on $\Dsyn$. A proxy has never seen a real profile, so its losses on real profiles are distributed differently from those of a shadow trained on real data, and a classifier trained on one does poorly on the other.
+
+\paragraph{Synth-shadow modelling.}
+We close this gap by putting every model the classifier learns from in the proxy's position (Algorithm~\ref{alg:melomia}). The adversary draws $K$ random 80/20 splits of the candidates. On the training part of split $k$ it trains a \emph{base shadow}, configured exactly like the target, and samples an internal synthetic dataset from it. It then trains a \emph{synth-shadow} on that internal synthetic dataset alone. A candidate $x$ is labelled a member for synth-shadow $k$ if $x$ was in the training part of split $k$, although the synth-shadow itself never saw $x$. The label is inherited through the synthetic data, because whatever the base shadow retained about its training profiles is passed on in its samples, and the synth-shadow learns it again from them. At attack time the proxy is built the same way from $\Dsyn$, so the classifier is applied to losses of the same kind as those it was trained on. Base shadows copy the target's hyperparameters so that their synthetic data resembles $\Dsyn$. Synth-shadows and the proxy are free to use more capacity and longer training, since their job is to fit the synthetic data as tightly as possible.
+
+\begin{algorithm}[!t]
+\caption{\melo{}}\label{alg:melomia}
+\begin{algorithmic}[1]
+\Require candidates $D$; released data $\Dsyn$; generator code $\mathcal{G}$; number of shadows $K$
+\For{$k = 1, \dots, K$}
+  \State draw a random 80/20 split $(D^{k}_{\mathrm{in}}, D^{k}_{\mathrm{out}})$ of $D$
+  \State $D^{k}_{\mathrm{syn}} \gets \mathcal{G}(D^{k}_{\mathrm{in}})$ \Comment{base shadow, configured like the target}
+  \State train synth-shadow $h_k$ on $D^{k}_{\mathrm{syn}}$
+  \State $\phi_k(x) \gets$ loss features of $x$ under $h_k$, for every $x \in D$
+\EndFor
+\State $z_k(x) \gets \bigl(\phi_k(x) - \operatorname{mean}_{j \neq k}\phi_j(x)\bigr) \,/\, \operatorname{sd}_{j \neq k}\phi_j(x)$ \Comment{per-record calibration}
+\State train classifier $\mathcal{M}$ on pairs $\bigl(z_k(x),\; \mathbf{1}[x \in D^{k}_{\mathrm{in}}]\bigr)$ over all $k$ and $x$
+\State train proxy $h^{\ast}$ on $\Dsyn$; \; $\phi^{\ast}(x) \gets$ loss features of $x$ under $h^{\ast}$
+\State $z^{\ast}(x) \gets \bigl(\phi^{\ast}(x) - \operatorname{mean}_{j}\phi_j(x)\bigr) \,/\, \operatorname{sd}_{j}\phi_j(x)$
+\State \Return $s(x) = \mathcal{M}(z^{\ast}(x))$ for every $x \in D$
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Loss features.}
+The features $\phi(x)$ depend on the family of the generator, and \melo{} has one backend per family. For diffusion models (\melo{}-ND), we add noise to $x$ at each of 15 diffusion steps using 600 fixed noise vectors, ask the model to predict the noise, and record the squared error, which gives a $15 \times 600$ grid of losses. For the CVAE (\melo{}-CVAE) there are no diffusion steps, so we sweep the width of the encoder's posterior. We encode $x$, sample the latent at six temperatures from 0 to 3 using 50 fixed noise vectors, decode, and record the reconstruction error, and we add the contribution of each of the 128 latent dimensions to the KL term. In both cases the grid is reduced to summary statistics over the noise vectors at each step or temperature (mean, standard deviation, minimum, maximum, median, skewness) and the differences of the means between adjacent steps.
+
+\paragraph{Per-record calibration.}
+A profile's loss mostly reflects how hard that profile is for any model to fit, and this varies across profiles far more than membership does. An unusual tumour has a high loss whether or not it was in the training set. Because every synth-shadow has scored every candidate, the adversary can remove this effect. Each feature of a profile under one model is replaced by its distance from the same profile's average under the other synth-shadows, in units of that profile's spread across them (line 7 of Algorithm~\ref{alg:melomia}). The losses are first put on a log scale, and each model's features are standardised over the candidates so that a proxy with a different overall loss level is comparable with the synth-shadows. This is difficulty calibration \citep{watson2022difficulty}, in the form used by likelihood-ratio attacks \citep{carlini2022membership}, applied to every loss feature. It uses only the candidates and the adversary's own models.
+
+\paragraph{Classifier.}
+$\mathcal{M}$ is an ensemble of five classifiers (a multilayer perceptron, a random forest, XGBoost, LightGBM \citep{ke2017lightgbm} and CatBoost). Each candidate contributes $K$ rows with $K$ different labels, so every internal split is grouped by candidate, which stops a classifier from recognising profiles in place of membership. Hyperparameters, and the subset of steps or temperatures each classifier uses, are chosen by Bayesian optimisation.
+\todo{Appendix~\ref{app:melo} gives the search space, the number of shadows per cohort, and the ensemble weights.}
+
+\subsection{\mama{}: reading the measured marginals}
+\label{sec:mamamia}
+
+A marginal-based generator such as DP-PGM never looks at a whole training profile. It looks at a fixed list of small tables of counts, adds noise to them, and builds everything else from the noisy tables. A training donor adds exactly one count to one cell of each table, and that is the only trace it leaves. \mama{} \citep{golob_privacy_2025} is built on this observation. It scores a candidate on the tables the generator measured, using the generator's own bins, and on nothing else.
+
+Let $\mathcal{T}$ be the set of measured tables. For a table $t \in \mathcal{T}$, let $x_t$ be the cell of $t$ that a candidate $x$ falls in, let $\hat{p}^{\,t}_{\mathrm{syn}}$ be the table computed from $\Dsyn$, and let $\hat{p}^{\,t}_{\mathrm{ref}}$ be the same table computed from a reference population. The score is
+\begin{equation}
+  s(x) \;=\; \sum_{t \in \mathcal{T}} \Bigl[ \log \hat{p}^{\,t}_{\mathrm{syn}}(x_t) - \log \hat{p}^{\,t}_{\mathrm{ref}}(x_t) \Bigr] .
+  \label{eq:mama}
+\end{equation}
+A candidate scores high when the cells it occupies are more common in the synthetic data than in the population, which is what one extra count per table produces. Dividing by the reference stops the score from simply rewarding common values. Each term is small, since one count competes with the DP noise on its cell, and the sum over roughly 2{,}000 tables is what makes the signal usable.
+
+\mama{} was designed for categorical tables and for generators that choose their marginals at random, where shadow runs are needed to work out which marginals were chosen. Two things change for expression data. First, the genes are continuous, so the adversary needs the generator's bin edges as well as its tables. Second, for the DP-PGM of the challenge the list of tables is fixed by the public configuration (every gene, the class, and every gene with the class), so nothing has to be discovered and no shadow runs are needed. The adversary cuts each gene at the quartiles of the candidate profiles, which approximates the generator's quartile edges, and uses the candidates as the reference population.
+
+\steven{Three things to settle before this subsection is finished. (1) Naming: the draft calls the full-paper attack \mama{} and does not distinguish ``v1'' (the CAMDA abstract's ratio average on fixed bins) from ``v2''; v1 would then appear only as an ablation. (2) Class-centring (subtracting each subtype's mean score before ranking) as part of the headline attack or as an ablation. (3) How much of the black-box recovery of data-dependent tables and bin edges belongs in the main text, which depends on which end-to-end DP graphical model the paper uses.}
+
+\subsection{Comparison attacks}
+\label{sec:baselines}
+
+\paragraph{\redsigma{}.}
+\redsigma{} \citep{tucker2026redsigma} is the other winning entry of the CAMDA 2026 red-team track. It is also shadow-free and also chooses its scoring rule by generator. Against MVN it uses the likelihood of the candidate under a Gaussian fitted to the synthetic data. Against ND and DP-PGM it uses the mean cosine distance to the 200 or 500 nearest synthetic profiles. Against the CVAE it uses the distance to the nearest synthetic profile, with genes weighted by how differently they are distributed in the synthetic and reference data, or computed after removing the leading principal components. We run the authors' code with the settings of their submission.
+\ruixuan{Please check this description, and supply the reference and anything about the design that should be said in your words.}
+
+\paragraph{Generic attacks.}
+We include the seven attacks of the challenge's starter kit, which are the attacks of the CAMDA 2025 overview \citep{ozturk2026towards}. Four need only the synthetic data: Monte Carlo set membership (MC) \citep{hilprecht2019monte}, GAN-leaks \citep{chen2020gan}, and two confidence attacks that train a classifier on the labelled synthetic data and score a candidate by the classifier's confidence in its label (Conf-LR, Conf-RF). Three also need an auxiliary set, so they run on TCGA-COMBINED only: LOGAN \citep{hayes2017logan}, calibrated GAN-leaks \citep{chen2020gan} and DOMIAS \citep{van2023membership}.
+
+% =============================================================================
+\section{Preprocessing bulk RNA-seq}
+\label{sec:preprocessing}
+
+The cohorts reach us already processed. TCGA STAR counts were obtained from the Genomic Data Commons, one sample per donor. Genes with a count of at least 1 in fewer than 10\% of samples were removed. The remaining counts were transformed with DESeq2's VST, and the result was restricted to the 978 LINCS L1000 landmark genes \citep{ozturk2026towards}. Expression values range from about 2.6 to 22.4 on the VST scale.
+
+\todo{This section is reserved. Planned content:}
+\begin{itemize}
+  \item \todo{\textbf{Filtering genes.} Why 978 landmark genes; what changes with a different gene set or number of genes (the gene-subset ablation, and the 200 most variable genes used for DPSynth, which cannot fit 978).}
+  \item \todo{\textbf{Normalisation.} Cohort-level (counts, CPM, log, VST) and model-level (standardise, clip, quantile transform, PCA) preprocessing, swept as one parameter per generator; its effect on fidelity and on attack success.}
+  \item \todo{\textbf{Preprocessing as an attack surface.} ND's inverse quantile transform: with as many quantiles as training donors, the released values interpolate between training values, and a per-gene nearest-value score reaches AUC 0.9996 on TCGA-BRCA. DP-PGM's quartile edges and bin means, computed without noise. The general rule: a transform fitted on the training data and inverted on the output is outside the model and outside any DP accounting.}
+\end{itemize}
+\steven{Question: the VST is fitted on the whole cohort, members and non-members together, before the split. Is that worth a sentence as a limitation of the benchmark, or an experiment?}
+
+% =============================================================================
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Setup}
+\label{sec:setup}
+
+\paragraph{Splits.}
+Each cohort is split five times into 80\% training donors and 20\% held-out donors, using the splits published by the NoisyDiffusion blue team. Every generator is trained on the same five training sets, so a donor has the same membership label in every cell of a table, and differences between cells are differences between attacks and generators. All results are means over the five splits.
+
+\paragraph{Targets.}
+For MVN, the CVAE and DP-PGM we rebuild the challenge's generators from their published code on each of the five splits. For ND we use the synthetic datasets that the blue team published for the same splits.
+\todo{State the check that our rebuilt targets match the challenge's releases (the generic attacks reproduce the CAMDA 2026 abstract's rows within 0.01; the rebuilt DP-PGM matches the release on per-gene spread, distinct values per gene and correlation structure).}
+
+\paragraph{Attack configuration.}
+\melo{} uses $K = 30$ shadows on TCGA-BRCA and $K = 20$ on TCGA-COMBINED, with shadow splits drawn independently of the five target splits. \mahala{} and \mama{} have no trained components.
+\todo{Compute cost per attack, as a comparison (for example, seconds for \mahala{} against GPU-hours for a \melo{} shadow stack).}
+
+\subsection{Attacks against generators}
+\label{sec:grid}
+
+Table~\ref{tab:grid} gives the AUC of every attack against each of the challenge's four generators.
+
+\begin{table*}[!t]
+\caption{AUC of each attack against each generator of the CAMDA 2026 red-team task, black-box adversary, mean of five splits. The attack designed for a generator is in bold. Mechanism-aware attacks reach 0.80 to 1.00 against the three non-private generators, where the best generic attack reaches 0.52 to 0.71. Against DP-PGM only \mama{} is above chance.\label{tab:grid}}
+\begin{tabular}{L{4.6cm} C{1.25cm} C{1.25cm} C{1.25cm} C{1.6cm} C{1.25cm} C{1.25cm} C{1.25cm} C{1.6cm}}
+  \toprule
+  & \multicolumn{4}{c}{\textbf{TCGA-BRCA}} & \multicolumn{4}{c}{\textbf{TCGA-COMBINED}} \\
+  \cline{2-5}\cline{6-9}
+  \textbf{Attack} & MVN & CVAE & ND & DP-PGM & MVN & CVAE & ND & DP-PGM \\
+  \midrule
+  \mahala{} (pseudo-inverse, as submitted) & \textbf{0.928} & 0.917 & 0.806 & 0.504 & \textbf{0.900} & 0.619 & 0.770 & 0.504 \\
+  \mahala{} (ridge)                        & \textbf{1.000} & 0.996 & 0.826 & 0.509 & \textbf{0.888} & 0.780 & 0.765 & 0.504 \\
+  \melo{}-CVAE                             & 0.560 & \textbf{0.807} & 0.574 & 0.492 & 0.551 & \textbf{0.870} & 0.561 & 0.499 \\
+  \melo{}-ND                               & 0.929 & 0.823 & \textbf{0.969} & 0.504 & 0.714 & 0.694 & \textbf{0.802} & 0.503 \\
+  \mama{}                                  & 0.516 & 0.539 & 0.613 & \textbf{0.639} & 0.508 & 0.517 & 0.547 & \textbf{0.659} \\
+  \midrule
+  \redsigma{}                              & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+  Best generic attack                      & 0.564 & 0.709 & 0.544 & 0.507 & 0.566 & 0.642 & 0.522 & 0.507 \\
+  \botrule
+\end{tabular}
+\begin{tablenotes}
+\item The best generic attack is Conf-LR, GAN-leaks, GAN-leaks and Conf-LR on TCGA-BRCA, and calibrated GAN-leaks, GAN-leaks, calibrated GAN-leaks and Conf-RF on TCGA-COMBINED. Per-attack rows are in Appendix~\ref{app:tables}.
+\end{tablenotes}
+\end{table*}
+
+\todo{This table is generated from \texttt{results/SLIDE\_TABLE.md} (state of 2026-10-07) and will be regenerated. Still to add: the \redsigma{} row (as submitted: BRCA 1.000 / 0.795 / 0.52 / 0.50; COMBINED 0.681 / 0.847 / 0.51 / 0.50, pending the decision on which rule choices to report); columns for the end-to-end DP graphical model, TabSyn, TabPFN, DPSynth and DP-CVAE; a companion table of TPR at 1\% FPR; standard deviations over splits.}
+
+Three things can be read from the table.
+
+\emph{The non-private generators do not protect their donors.} Against MVN, the CVAE and ND on TCGA-BRCA, the best mechanism-aware attack reaches an AUC of 1.000, 0.996 and 0.969. The best generic attack against the same three reaches 0.564, 0.709 and 0.544. So the picture from generic attacks, in which only the CVAE is clearly exposed, changes to one in which all three are.
+
+\emph{An attack sees a generator only if it reads the right place.} \mahala{} is the strongest attack against MVN and is at chance against DP-PGM (0.50 on both cohorts). \mama{} is close to chance against MVN (0.52 and 0.51) and is the only attack above chance against DP-PGM (0.64 and 0.66). Each \melo{} backend is strongest against its own family. The exception is \melo{}-ND, which also does well against MVN and the CVAE on TCGA-BRCA (0.929 and 0.823), while \melo{}-CVAE does not transfer (0.56 and 0.57 against MVN and ND).
+
+\emph{The larger cohort is less exposed, and unevenly so.} Moving from 871 to 3{,}458 training donors lowers \melo{}-ND against ND from 0.969 to 0.802 and \mahala{} with a ridge against the CVAE from 0.996 to 0.780. It does not lower \melo{}-CVAE against the CVAE (0.807 and 0.870) or \mama{} against DP-PGM (0.639 and 0.659).
+
+\todo{Remaining discussion of the grid, once the table is final: true-positive rates at low false-positive rates; why \melo{}-ND transfers and \melo{}-CVAE does not; where our numbers differ from the CAMDA 2026 abstract and why (number of shadows, per-record calibration, the abstract's ND protocol, \mahala{} against ND).}
+
+\subsection{What the adversary knows}
+\label{sec:exp-threat}
+
+\todo{Reserved. (i) Black box against white box: \melo{} with the target's own weights and real-data shadows, against the synth-shadow pipeline; \mama{} given the generator's true tables and bin edges, against tables and edges recovered from the release. (ii) With and without auxiliary data: \mahala{}'s ratio score and the reference-based generic attacks on TCGA-COMBINED; how BRCA is handled.}
+
+\subsection{What makes the attacks work}
+\label{sec:exp-ablations}
+
+\todo{Reserved: a short summary of the ablations, each pointing to Appendix~\ref{app:ablations}. Results in hand: synth-shadows against real-data shadows; per-record calibration (five calibrated shadows beat thirty uncalibrated ones); number of shadows; covariance conditioning and class-conditional scoring for \mahala{}; aggregation, bins and class-centring for \mama{}; exposure as a function of $n/p$.}
+
+\subsection{Tuning the privacy-protecting noise}
+\label{sec:noise}
+
+\todo{Reserved. What $\varepsilon$ covers in the challenge's DP-PGM and what it does not (bin edges, bin means, row count). Composition: splitting $\varepsilon$ evenly over $k$ marginals costs a factor $\sqrt{k}$ in noise relative to zCDP composition, which is about 40 at $k = 1{,}956$. The end-to-end DP variant (DP bin edges, estimated row count) and its $\varepsilon$ sweep: attack AUC, the theoretical bound on any attack at each $\varepsilon$, and utility on the same axes. The number of bins as the knob that trades fidelity against exposure. MVN's noise level $\alpha$. DP-CVAE across $\varepsilon$.}
+
+\subsection{Fidelity, utility and biological plausibility}
+\label{sec:quality}
+
+\todo{Reserved. Metrics shared with the CAMDA 2025 overview so that the two can be compared: train-on-synthetic, test-on-real utility; per-gene distribution distance; gene--gene correlation error; a real-versus-synthetic discriminator; differential expression and co-expression recovery; PCA and UMAP of real against synthetic. New relative to 2025: the additional generators, and each generator's quality set beside its exposure to the strongest attack.}
+\hakime{Which of the 2025 biological-plausibility analyses (differential expression recovery, co-expression networks) should be rerun for the new generators, and can the 2025 pipeline be reused as is?}
+
+% =============================================================================
+\section{Recommendations for release}
+\label{sec:governance}
+
+\todo{This section is reserved for the governance discussion (Sikha, Martine, Hakime, Teju, Jineta). The subsections below follow the planned outline. Each recommendation should point to the experiment that supports it.}
+
+\steven{Candidate through-lines for ``which generator for bulk RNA-seq?'', from the results in hand. None is final. (1) Every non-private generator we tested on the challenge data is exposed (AUC 0.80 to 1.00), including the simplest one, so fidelity without a guarantee should not be released openly. (2) The marginal-based DP generator is the only one against which mismatched attacks all fail, and the attack that does see it is bounded by $\varepsilon$ once the pipeline is DP end to end; its cost is gene--gene structure, and that cost shrinks with cohort size (utility ratio 0.68 on BRCA, 0.92 on COMBINED). (3) Exposure falls as donors per gene rises, so small cohorts and wide gene panels are the risky corner. (4) A privacy claim is only as strong as the attack that was matched to the mechanism, and DCR-style metrics are not a substitute. (5) Preprocessing fitted on the training data can undo the model's privacy. TabPFN (most faithful so far, weakly attacked so far) may change (1) once \melo{}-style attacks have been run on it.}
+
+\subsection{Release conditions}
+\label{sec:gov-release}
+
+\subsection{Access and oversight}
+\label{sec:gov-access}
+
+\subsection{What an audit should include}
+\label{sec:gov-audit}
+
+\todo{Proposed addition to the outline: a short checklist for custodians and reviewers of synthetic omics releases (attack matched to the mechanism; true-positive rate at low false-positive rate reported; end-to-end accounting of every data-dependent step; the audit repeated as attacks improve).}
+
+\subsection{Is differential privacy appropriate for genomic data?}
+\label{sec:gov-dp}
+
+\tocite{Related work on DP for genomic and transcriptomic data, the choice of $\varepsilon$ in practice, and why large $\varepsilon$ can still defeat practical attacks (for example Lowy et al.\ \citep{lowy2024does}); donor-level versus sample-level privacy units; relatives.}
+
+\subsection{Limitations and future work}
+\label{sec:gov-future}
+
+\todo{Planned content: two TCGA cancer cohorts and 978 genes only; the exact-profile assumption of the membership game (Section~\ref{sec:threat}); membership inference only; rare-disease cohorts with tens of donors not yet tested; generators and attacks will both improve.}
+
+% =============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+\todo{To be written last: what a reader should take away, then limitations and next steps.}
+
+\section*{Acknowledgments}
+\todo{Funding as in the CAMDA 2026 abstract, to be confirmed for this author list: NSF \#2451163, NIH 1OT2OD032581, NSF NAIRR 240485 (Cloudbank AWS), NSF NAIRR 240091 (TACC Frontera); Steven Golob is supported by an NSF CSGrad4US Fellowship. Acknowledge the CAMDA and ELSA organisers and the \redsigma{} authors for sharing their code.}
+
+\bibliographystyle{oup-plain}
+\bibliography{references}
+
+% =============================================================================
+\begin{appendices}
+
+\section{Attack ablations}
+\label{app:ablations}
+
+\subsection{\mahala{}}
+\label{app:mahala}
+\todo{Covariance conditioner (pseudo-inverse, ridge, Ledoit--Wolf) by cohort; PCA truncation as an implicit regulariser; dropping leading components (separates the CVAE from ND); class-conditional scoring; the eigenvalue spectrum of MVN and CVAE synthetic data; exposure against $n/p$ on resampled TCGA-COMBINED. Source: \texttt{results/FINDINGS.md} sections 2 and 6.}
+
+\subsection{\melo{}}
+\label{app:melo}
+\todo{Synth-shadows against real-data shadows; per-record calibration on and off; number of shadows; model-disjoint against record-grouped selection; why the adversary's own cross-validation score must not be read as attack success; search space and ensemble details; the end-to-end variant. Source: \texttt{results/MELOMIA\_ABLATIONS.md}.}
+
+\subsection{\mama{}}
+\label{app:mama}
+\todo{Ratio against log-ratio aggregation; one-way against two-way tables; class-centring; number of bins; bin edges from the candidates, from the release, or from the generator (white box); recovery of data-dependent tables. Source: \texttt{results/mamamia\_aggregation.csv}, \texttt{results/mamamia\_v2.csv}.}
+
+\section{Generator details}
+\label{app:generators}
+\todo{Architecture, hyperparameters and deviations from upstream for each generator; the rebuilt targets checked against the challenge's releases. Source: \texttt{docs/SOTA\_GENERATORS.md}.}
+
+\section{Privacy accounting for the graphical model}
+\label{app:accounting}
+\todo{What is and is not covered by $\varepsilon$ in the challenge's DP-PGM; basic against zCDP composition; neighbouring relation and the row count; DP binning; the empirical check of the accounting; the bound on any attack's AUC at a given $\varepsilon$; the comparison of table-selection structures. Source: \texttt{docs/ZCDP\_ACCOUNTING.md}, \texttt{results/PGM\_ARCHITECTURES.md}.}
+
+\section{Extended tables}
+\label{app:tables}
+\todo{Full attack $\times$ generator grids with AUC, TPR at 1\% and 10\% FPR and standard deviations; every generic attack as its own row; ROC curves on a log scale.}
+
+\section{Reproducibility}
+\label{app:repro}
+\todo{Code and data availability, compute, random seeds, negative controls (permuted labels fall to chance; one split's target does not predict another split's labels).}
+
+\end{appendices}
+
+\end{document}
