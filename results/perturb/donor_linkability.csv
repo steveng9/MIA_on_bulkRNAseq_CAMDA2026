@@ -1,0 +1,73 @@
+dataset,tier,n,space,own_is_nearest,own_in_top10,median_rank,n_candidates,median_corr_own
+BRCA,matched normal,111,raw (gene-centred),0.0,0.02702702702702703,392.0,1089,0.07282909046361163
+BRCA,matched normal,111,"class-centred, drop 0 PCs",0.018018018018018018,0.05405405405405406,230.0,1089,0.10797202562839284
+BRCA,matched normal,111,"class-centred, drop 5 PCs",0.018018018018018018,0.10810810810810811,146.0,1089,0.10604019044869814
+BRCA,matched normal,111,"class-centred, drop 10 PCs",0.02702702702702703,0.10810810810810811,128.0,1089,0.09994477715728009
+BRCA,matched normal,111,"class-centred, drop 20 PCs",0.05405405405405406,0.12612612612612611,126.0,1089,0.081267048900833
+BRCA,matched normal,111,"class-centred, drop 50 PCs",0.04504504504504504,0.16216216216216217,136.0,1089,0.06859670517995438
+BRCA,matched normal,111,"class-centred, drop 100 PCs",0.06306306306306306,0.1891891891891892,114.0,1089,0.06682231313311068
+BRCA,matched normal,111,"class-centred, drop 200 PCs",0.0990990990990991,0.1981981981981982,108.0,1089,0.06125181365818683
+BRCA,matched normal,111,"class-centred, drop 400 PCs",0.07207207207207207,0.15315315315315314,164.0,1089,0.0486385845426344
+BRCA,other lesion (metastatic / recurrent / new primary),7,raw (gene-centred),0.5714285714285714,0.5714285714285714,1.0,1089,0.5785024737345965
+BRCA,other lesion (metastatic / recurrent / new primary),7,"class-centred, drop 0 PCs",0.5714285714285714,0.5714285714285714,1.0,1089,0.25694706846477816
+BRCA,other lesion (metastatic / recurrent / new primary),7,"class-centred, drop 5 PCs",0.8571428571428571,0.8571428571428571,1.0,1089,0.3518780119377178
+BRCA,other lesion (metastatic / recurrent / new primary),7,"class-centred, drop 10 PCs",0.8571428571428571,0.8571428571428571,1.0,1089,0.35667572722336405
+BRCA,other lesion (metastatic / recurrent / new primary),7,"class-centred, drop 20 PCs",0.7142857142857143,0.8571428571428571,1.0,1089,0.34133503158212913
+BRCA,other lesion (metastatic / recurrent / new primary),7,"class-centred, drop 50 PCs",0.7142857142857143,0.8571428571428571,1.0,1089,0.38673397604525156
+BRCA,other lesion (metastatic / recurrent / new primary),7,"class-centred, drop 100 PCs",0.7142857142857143,0.7142857142857143,1.0,1089,0.3736419839051605
+BRCA,other lesion (metastatic / recurrent / new primary),7,"class-centred, drop 200 PCs",0.8571428571428571,0.8571428571428571,1.0,1089,0.3071903922581983
+BRCA,other lesion (metastatic / recurrent / new primary),7,"class-centred, drop 400 PCs",0.8571428571428571,0.8571428571428571,1.0,1089,0.2687721882254213
+BRCA,"same tumour sample, other aliquot",3,raw (gene-centred),1.0,1.0,1.0,1089,0.818888333023112
+BRCA,"same tumour sample, other aliquot",3,"class-centred, drop 0 PCs",1.0,1.0,1.0,1089,0.5881664773624636
+BRCA,"same tumour sample, other aliquot",3,"class-centred, drop 5 PCs",1.0,1.0,1.0,1089,0.5805340721654042
+BRCA,"same tumour sample, other aliquot",3,"class-centred, drop 10 PCs",1.0,1.0,1.0,1089,0.6110439183210953
+BRCA,"same tumour sample, other aliquot",3,"class-centred, drop 20 PCs",1.0,1.0,1.0,1089,0.6383714132275765
+BRCA,"same tumour sample, other aliquot",3,"class-centred, drop 50 PCs",1.0,1.0,1.0,1089,0.613231671476367
+BRCA,"same tumour sample, other aliquot",3,"class-centred, drop 100 PCs",1.0,1.0,1.0,1089,0.6318973633830992
+BRCA,"same tumour sample, other aliquot",3,"class-centred, drop 200 PCs",1.0,1.0,1.0,1089,0.5985735034245605
+BRCA,"same tumour sample, other aliquot",3,"class-centred, drop 400 PCs",1.0,1.0,1.0,1089,0.5432561966975513
+BRCA,"same tumour, other vial",6,raw (gene-centred),0.5,0.8333333333333334,1.5,1089,0.6979452794087495
+BRCA,"same tumour, other vial",6,"class-centred, drop 0 PCs",0.3333333333333333,0.5,11.5,1089,0.3489589983639163
+BRCA,"same tumour, other vial",6,"class-centred, drop 5 PCs",0.6666666666666666,1.0,1.0,1089,0.46350431250749047
+BRCA,"same tumour, other vial",6,"class-centred, drop 10 PCs",0.8333333333333334,0.8333333333333334,1.0,1089,0.4940347029251522
+BRCA,"same tumour, other vial",6,"class-centred, drop 20 PCs",0.8333333333333334,0.8333333333333334,1.0,1089,0.44919755085043256
+BRCA,"same tumour, other vial",6,"class-centred, drop 50 PCs",0.8333333333333334,1.0,1.0,1089,0.48090668063504505
+BRCA,"same tumour, other vial",6,"class-centred, drop 100 PCs",1.0,1.0,1.0,1089,0.4541965667070174
+BRCA,"same tumour, other vial",6,"class-centred, drop 200 PCs",1.0,1.0,1.0,1089,0.35463882072677066
+BRCA,"same tumour, other vial",6,"class-centred, drop 400 PCs",0.8333333333333334,0.8333333333333334,1.0,1089,0.23950530131010192
+COMBINED,matched normal,410,raw (gene-centred),0.01707317073170732,0.05121951219512195,331.0,4323,0.3522613848962557
+COMBINED,matched normal,410,"class-centred, drop 0 PCs",0.03170731707317073,0.06341463414634146,844.5,4323,0.11127047457758925
+COMBINED,matched normal,410,"class-centred, drop 5 PCs",0.05853658536585366,0.11219512195121951,601.0,4323,0.0927578695800505
+COMBINED,matched normal,410,"class-centred, drop 10 PCs",0.06097560975609756,0.14146341463414633,385.5,4323,0.09197828616085259
+COMBINED,matched normal,410,"class-centred, drop 20 PCs",0.07804878048780488,0.15365853658536585,299.0,4323,0.09077698820512317
+COMBINED,matched normal,410,"class-centred, drop 50 PCs",0.07073170731707316,0.1951219512195122,272.5,4323,0.08514843212087757
+COMBINED,matched normal,410,"class-centred, drop 100 PCs",0.08780487804878048,0.1975609756097561,195.5,4323,0.0863016845659276
+COMBINED,matched normal,410,"class-centred, drop 200 PCs",0.1073170731707317,0.23414634146341465,213.5,4323,0.07915693353662123
+COMBINED,matched normal,410,"class-centred, drop 400 PCs",0.12439024390243902,0.2658536585365854,210.0,4323,0.0794571203608734
+COMBINED,other lesion (metastatic / recurrent / new primary),25,raw (gene-centred),0.68,0.76,1.0,4323,0.7378438279312587
+COMBINED,other lesion (metastatic / recurrent / new primary),25,"class-centred, drop 0 PCs",0.68,0.72,1.0,4323,0.3528921753101098
+COMBINED,other lesion (metastatic / recurrent / new primary),25,"class-centred, drop 5 PCs",0.8,0.88,1.0,4323,0.38489616106175073
+COMBINED,other lesion (metastatic / recurrent / new primary),25,"class-centred, drop 10 PCs",0.84,0.92,1.0,4323,0.3910357159940815
+COMBINED,other lesion (metastatic / recurrent / new primary),25,"class-centred, drop 20 PCs",0.88,0.96,1.0,4323,0.3958915671258813
+COMBINED,other lesion (metastatic / recurrent / new primary),25,"class-centred, drop 50 PCs",0.96,0.96,1.0,4323,0.3540035377180574
+COMBINED,other lesion (metastatic / recurrent / new primary),25,"class-centred, drop 100 PCs",0.96,0.96,1.0,4323,0.38261866457627647
+COMBINED,other lesion (metastatic / recurrent / new primary),25,"class-centred, drop 200 PCs",0.92,0.96,1.0,4323,0.34307214958918797
+COMBINED,other lesion (metastatic / recurrent / new primary),25,"class-centred, drop 400 PCs",0.96,0.96,1.0,4323,0.3598990334243617
+COMBINED,"same tumour sample, other aliquot",25,raw (gene-centred),0.68,0.92,1.0,4323,0.8127746175866342
+COMBINED,"same tumour sample, other aliquot",25,"class-centred, drop 0 PCs",0.56,0.68,1.0,4323,0.6273391249776914
+COMBINED,"same tumour sample, other aliquot",25,"class-centred, drop 5 PCs",0.8,0.88,1.0,4323,0.6570514765118618
+COMBINED,"same tumour sample, other aliquot",25,"class-centred, drop 10 PCs",0.84,0.88,1.0,4323,0.6511388900398214
+COMBINED,"same tumour sample, other aliquot",25,"class-centred, drop 20 PCs",0.84,0.88,1.0,4323,0.6471409412647915
+COMBINED,"same tumour sample, other aliquot",25,"class-centred, drop 50 PCs",0.84,0.92,1.0,4323,0.6409538821836844
+COMBINED,"same tumour sample, other aliquot",25,"class-centred, drop 100 PCs",0.8,0.92,1.0,4323,0.6231430109497099
+COMBINED,"same tumour sample, other aliquot",25,"class-centred, drop 200 PCs",0.92,0.96,1.0,4323,0.5887502564183718
+COMBINED,"same tumour sample, other aliquot",25,"class-centred, drop 400 PCs",0.92,0.96,1.0,4323,0.5915718779136954
+COMBINED,"same tumour, other vial",47,raw (gene-centred),0.19148936170212766,0.46808510638297873,13.0,4323,0.639340968860252
+COMBINED,"same tumour, other vial",47,"class-centred, drop 0 PCs",0.10638297872340426,0.23404255319148937,361.0,4323,0.19679778422878094
+COMBINED,"same tumour, other vial",47,"class-centred, drop 5 PCs",0.3829787234042553,0.574468085106383,8.0,4323,0.34923877957390587
+COMBINED,"same tumour, other vial",47,"class-centred, drop 10 PCs",0.44680851063829785,0.723404255319149,2.0,4323,0.3657515259315117
+COMBINED,"same tumour, other vial",47,"class-centred, drop 20 PCs",0.5319148936170213,0.7659574468085106,1.0,4323,0.3293378268549131
+COMBINED,"same tumour, other vial",47,"class-centred, drop 50 PCs",0.5319148936170213,0.7446808510638298,1.0,4323,0.369051404074589
+COMBINED,"same tumour, other vial",47,"class-centred, drop 100 PCs",0.5531914893617021,0.8297872340425532,1.0,4323,0.32347853316881825
+COMBINED,"same tumour, other vial",47,"class-centred, drop 200 PCs",0.6382978723404256,0.8723404255319149,1.0,4323,0.34414505256150757
+COMBINED,"same tumour, other vial",47,"class-centred, drop 400 PCs",0.6808510638297872,0.8936170212765957,1.0,4323,0.328899724683612

@@ -23,3 +23,8 @@ results/*.tmp.*
 
 # Claude Code session worktrees (full copies of the repo).
 .claude/
+
+# Per-record score dumps and per-target part files of the perturbation
+# experiments (scripts/perturb/); the CSVs beside them are tracked.
+results/perturb/donor_linked_scores*/
+results/perturb/*_parts*/
