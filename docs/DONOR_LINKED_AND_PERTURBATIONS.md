@@ -12,6 +12,21 @@ was set up and how to read it.
 Nothing here retrains a target. All four experiments change what the attacker
 holds and leave the released synthetic data as it was.
 
+
+> **Decisions of 2026-10-07 (Steven), reflected in `paper/main.tex` Appendix D.**
+> (1) The donor-linked headline excludes re-sequenced samples ("same tumour sample,
+> other aliquot") and pools only other vials and other lesions; the reports now
+> write that group as "separate tumour sample (other vial or other lesion)":
+> COMBINED 72 samples / 62 donors, MahalaMIA (ridge) linked / overlap AUC 0.63 / 0.88
+> on MVN, 0.63 / 0.83 on CVAE, 0.56 / 0.70 on NoisyDiffusion; calibrated redrawn-splits MVN
+> 0.78. Where this document quotes 0.65 or 0.81 for "any second tumour sample",
+> those include the re-sequenced samples.
+> (2) DOMIAS is reported as the corrected version in three columns: all 978
+> genes (`scripts/perturb/domias_full.py`, isotropic kernel; MVN 0.57, CVAE 0.72,
+> NoisyDiffusion 0.54), 100 components, and the best component count. The choice is open.
+> (3) High-priority run not yet done: the attacked profiles themselves in TPM or
+> from another pipeline.
+
 ## 0. Data added
 
 **TCGA raw counts.** The challenge distributed only VST values for 978 genes.

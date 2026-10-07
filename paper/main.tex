@@ -282,6 +282,7 @@ We assume a black-box adversary. It holds (i) the released synthetic dataset $\D
 \paragraph{The situation this models.}
 A hospital, biobank or consortium holds expression profiles for a disease cohort and publishes a synthetic version in place of the real data. The adversary holds the real expression profile of a person of interest and wants to know whether that person is in the cohort, because being in the cohort means having the disease, having been treated at that institution, or having taken part in that study. The adversary could be a party that already holds expression data for legitimate reasons, such as a second research group, a commercial testing laboratory or an insurer, or anyone who obtains a copy of such data through a breach.
 \steven{This paragraph is the place for the ``real-life scenario'' you want to feature. Two points need your judgement before more is written. (1) The game gives the adversary the exact profile that was (or was not) used in training. Outside a challenge, the adversary's profile of a person would more often come from a different sample or a different laboratory. Do we state this as a limitation, or run an experiment (for example, attack with a noised or re-normalised copy of each profile)? (2) Do we want a named, concrete case (for example, TCGA expression data is open access while its germline data is controlled) to make the scenario specific?}
+\todo{Point (1) now has an experiment: Appendix~\ref{app:donor} attacks a different sample of a training donor. A separate tumour sample still identifies the donor (AUC 0.63 against 0.88 for the trained-on sample, \mahala{} against MVN, TCGA-COMBINED), and matched normal tissue does not (0.51). Decide whether this paragraph cites it. The other half of point (1), the same sample processed by a different pipeline, is the high-priority run listed in Appendix~\ref{app:auxmismatch}.}
 
 \paragraph{Variations we study.}
 The black-box adversary is our default, and every number in this paper is for it unless stated otherwise. We vary it in two directions.
@@ -462,6 +463,7 @@ Three things can be read from the table.
 
 \todo{Reserved. (i) Black box against white box: \melo{} with the target's own weights and real-data shadows, against the synth-shadow pipeline; \mama{} given the generator's true tables and bin edges, against tables and edges recovered from the release. (ii) With and without auxiliary data: \mahala{}'s ratio score and the reference-based generic attacks on TCGA-COMBINED; how BRCA is handled.}
 \hakime{Your proposed experiments on mismatched auxiliary data would sit here: (1) an external breast cancer cohort (GSE58135, 84 primary tumours) as auxiliary data for TCGA-BRCA, in TPM and in VST; (2) the TCGA-COMBINED reference set re-normalised to TPM; (3) the attacks run on a reduced set of genes or dimensions.}
+\todo{All three are now run and written up in Appendix~\ref{app:auxmismatch} and Appendix~\ref{app:genes}. In one line each: mismatched auxiliary data (TPM, or another cohort) is worth as much as no auxiliary data, and the adversary can undo the mismatch using only the release (\mahala{} against MVN on TCGA-COMBINED: 0.68 with none, 0.89 matched, 0.69 in TPM, 0.90 in TPM after alignment); \mahala{} needs most of the 978 genes while GAN-leaks needs 100; and the DOMIAS baseline was at 0.50 because of an implementation error (corrected: 0.54 to 0.72, Table~\ref{tab:domias}). Decide what moves into this subsection. \textbf{High priority, not yet run:} the attacked profiles themselves in TPM or from another pipeline.}
 
 \subsection{What makes the attacks work}
 \label{sec:exp-ablations}
@@ -507,6 +509,7 @@ Three things can be read from the table.
 \label{sec:gov-future}
 
 \todo{Planned content: two TCGA cancer cohorts and 978 genes only; the exact-profile assumption of the membership game (Section~\ref{sec:threat}); membership inference only; rare-disease cohorts with tens of donors not yet tested; generators and attacks will both improve.}
+\todo{Add from Appendix~\ref{app:beyond}: second samples are tested only where TCGA holds them (tumour tissue and adjacent normal tissue of the same organ, 62 donors for the headline), so a sample of another tissue or a later time point is untested and needs a cohort with repeated sampling such as GTEx; no attack is yet designed for a second sample; and the mismatch experiments change only the auxiliary data.}
 
 % =============================================================================
 \section{Conclusion}
@@ -545,6 +548,147 @@ Three things can be read from the table.
 \section{Privacy accounting for the graphical model}
 \label{app:accounting}
 \todo{What is and is not covered by $\varepsilon$ in the challenge's DP-PGM; basic against zCDP composition; neighbouring relation and the row count; DP binning; the empirical check of the accounting; the bound on any attack's AUC at a given $\varepsilon$; the comparison of table-selection structures. Source: \texttt{docs/ZCDP\_ACCOUNTING.md}, \texttt{results/PGM\_ARCHITECTURES.md}.}
+
+\section{Beyond the exact training profile}
+\label{app:beyond}
+
+The membership game of Section~\ref{sec:threat} hands the adversary the exact profile that was or was not trained on, and auxiliary data processed exactly like the release. This appendix relaxes each assumption in turn. All numbers are AUC over the five splits of Section~\ref{sec:setup}, and \mahala{} is the ridge variant.
+\todo{Find a home for these three experiments in the main text (candidates: Section~\ref{sec:exp-threat} and Section~\ref{sec:gov-future}); for now they are recorded here in full. Source for every number: \texttt{docs/DONOR\_LINKED\_AND\_PERTURBATIONS.md} and \texttt{results/perturb/}.}
+
+\subsection{A second sample from a training donor}
+\label{app:donor}
+
+\paragraph{Question.}
+A generator was trained on sample A of a donor. The adversary holds sample B, a different sample of the same donor that no generator ever saw. Can the adversary still tell that the donor is in $\Dtrain$? This is the bulk counterpart of attacking held-out cells of a training donor in single-cell data. \tocite{our scRNA-seq audit, donor-disjoint experiment}
+
+\paragraph{Setup.}
+No new cohort is needed. The challenge kept one primary-tumour sample per donor, and TCGA holds further sequenced samples for some of the same donors \citep{weinstein2013tcga}. The TCGA barcode says what each one is, and we use three kinds.
+A \emph{separate tumour sample} is physically different tumour tissue: another portion of the same primary tumour, or another lesion (a metastasis, a recurrence or a new primary). TCGA-COMBINED has 72 of these from 62 donors and TCGA-BRCA has 13.
+A \emph{matched normal} is non-cancerous tissue taken from the same organ of the same donor (410 and 111 donors).
+A \emph{re-sequenced} sample is the same piece of tissue as sample A, extracted and sequenced a second time (25 and 3). It is close to a copy of the training sample, so we report it separately and exclude it from the headline.
+
+We downloaded the raw counts from the Genomic Data Commons and placed each B sample in the release's space with the cohort's own fitted VST, whose two dispersion coefficients we recovered from the challenge data (they reproduce the challenge matrices to $10^{-13}$). The B samples are then scored by the existing attacks against the existing targets, and nothing is retrained. Each donor is a non-member in exactly one of the five splits, so the comparison is between B samples whose donor was trained on and B samples whose donor was not. As a control, the same donors' A samples are scored in the usual way.
+
+\begin{table}[!t]
+\caption{Attacking a second sample of a donor, TCGA-COMBINED. ``Sample A'' is standard membership inference on the training-pool samples of the 62 donors who have a separate tumour sample. ``Separate tumour'' attacks those donors' 72 separate tumour samples (95\% interval from resampling donors). ``Normal'' attacks the matched normals of 410 donors. Separate tumour tissue leaks to \mahala{}; normal tissue does not leak to any attack.\label{tab:donor}}
+\begin{tabular}{L{3.3cm} C{0.9cm} C{2.3cm} C{0.9cm}}
+  \toprule
+  \textbf{Attack / generator} & \textbf{Sample A} & \textbf{Separate tumour} & \textbf{Normal} \\
+  \midrule
+  \mahala{} / MVN     & 0.88 & 0.63 (0.58--0.67) & 0.51 \\
+  \mahala{} / CVAE    & 0.83 & 0.63 (0.59--0.67) & 0.50 \\
+  \mahala{} / ND      & 0.70 & 0.56 (0.51--0.62) & 0.50 \\
+  \melo{}-CVAE / CVAE & 0.82 & 0.52 (0.44--0.60) & 0.50 \\
+  \melo{}-ND / ND     & 0.83 & 0.54 (0.45--0.61) & 0.51 \\
+  \mama{} / DP-PGM    & 0.64 & 0.53 (0.48--0.58) & 0.51 \\
+  \botrule
+\end{tabular}
+\end{table}
+
+\paragraph{Findings.}
+Table~\ref{tab:donor} gives the result for TCGA-COMBINED. With \mahala{}, a separate tumour sample identifies a training donor at an AUC of 0.63 against MVN and the CVAE, where the trained-on sample gives 0.88 and 0.83. So part of the membership signal belongs to the donor's tumour and survives a change of sample. The shadow-based and marginal-based attacks do not carry over: their intervals include 0.50. Matched normals are at 0.50 to 0.51 for every attack. Re-sequenced samples leak more than separate tissue, as expected (0.74 against MVN, where their training samples give 0.89).
+
+How closely B resembles A explains most of this. A re-sequenced sample's most correlated profile among the 4{,}323 candidates is its own donor's training sample in 68\% of cases. The figure is 68\% for other lesions, 19\% for another portion of the same tumour, and 2\% for matched normals.
+
+A stronger adversary gets more. We retrained MVN on 100 fresh splits and scored each B sample by how far its score rises when its donor is in training, measured against its own scores when its donor is out (the per-record calibration of offline LiRA \citep{carlini2022membership}). The AUC on separate tumour samples rises from 0.63 to 0.78 (0.74--0.83), and on matched normals from 0.50 to 0.53 (0.52--0.54); with membership labels shuffled both are 0.50. This adversary can retrain the generator many times on data that includes the donor, which the black-box adversary of Section~\ref{sec:threat} cannot, so 0.78 is an upper reference.
+
+\todo{Open items for this experiment. (1) The calibrated design is run for MVN only; run it for the CVAE, ND and DP-PGM. (2) Another portion of the same tumour leaks less than another lesion (0.58 against 0.74 with MVN) and resembles its training sample less (19\% against 68\%), which is the reverse of what we expected. Check how these portions were preserved (a second vial in TCGA may be formalin-fixed where the first was frozen) before interpreting it. (3) TCGA-BRCA has only 13 separate tumour samples (\mahala{} against MVN: 0.62, calibrated 0.90); report it as supporting evidence only. (4) Samples of another tissue or a later time point need a cohort with repeated sampling, for example GTEx \citep{gtex2020}; decide whether to onboard it or name it as future work. (5) No attack here is designed for a second sample; one that models what a donor's samples share is future work, and is the natural test of whether matched normals are safe.}
+
+\subsection{Auxiliary data that does not match the release}
+\label{app:auxmismatch}
+
+\paragraph{Question.}
+\mahala{} gains from auxiliary data $\Daux$ (Section~\ref{sec:mahalamia}). Does the gain survive when $\Daux$ comes from another cohort, or is normalised differently from the release?
+
+\paragraph{Setup.}
+The release and the attacked profiles stay in VST. Only $\Daux$ changes.
+On TCGA-COMBINED, the challenge's 824 reference samples are used as distributed (VST) and re-normalised to transcripts per million (TPM), computed from the same sequencing runs.
+On TCGA-BRCA, which has no reference set, $\Daux$ is an independent breast-cancer cohort of 84 primary tumours (GEO accession GSE58135 \tocite{Varley et al.\ 2014}), as TPM and as VST. As a matched control we use 84 TCGA-BRCA non-members instead, and these 84 are left out of every BRCA number so that all rows score the same profiles.
+In the \emph{aligned} rows the adversary first maps each gene of $\Daux$ onto the distribution of that gene in $\Dsyn$, value by value at equal rank. This uses only the two things the adversary already holds.
+
+\begin{table}[!t]
+\caption{\mahala{} with auxiliary data that does not match the release. Mismatched auxiliary data is worth as much as none, and aligning it to the release, gene by gene, restores the gain.\label{tab:auxmismatch}}
+\begin{tabular}{L{4.6cm} C{0.8cm} C{0.8cm} C{0.8cm}}
+  \toprule
+  \textbf{Auxiliary data} & \textbf{MVN} & \textbf{CVAE} & \textbf{ND} \\
+  \midrule
+  \multicolumn{4}{l}{\emph{TCGA-COMBINED, 824 reference samples}} \\
+  None                             & 0.68 & 0.71 & 0.59 \\
+  VST (matched)                    & 0.89 & 0.80 & 0.77 \\
+  TPM                              & 0.69 & 0.71 & 0.59 \\
+  TPM, aligned to the release      & 0.90 & 0.80 & 0.76 \\
+  \midrule
+  \multicolumn{4}{l}{\emph{TCGA-BRCA, 84 samples}} \\
+  None                             & 1.00 & 0.97 & 0.82 \\
+  GSE58135, TPM                    & 1.00 & 0.97 & 0.82 \\
+  GSE58135, VST                    & 1.00 & 0.99 & 0.86 \\
+  GSE58135, aligned to the release & 1.00 & 1.00 & 0.95 \\
+  TCGA-BRCA non-members (matched)  & 1.00 & 1.00 & 0.97 \\
+  \botrule
+\end{tabular}
+\end{table}
+
+\paragraph{Findings.}
+Table~\ref{tab:auxmismatch} shows the same pattern on both cohorts. Auxiliary data in TPM gives \mahala{} nothing: 0.69 against MVN on TCGA-COMBINED, where no auxiliary data gives 0.68 and matched auxiliary data gives 0.89. The attack never falls below its no-auxiliary level, because the release alone carries that part of the signal. After alignment the TPM set is worth as much as the matched one (0.90). An outside cohort behaves the same way: GSE58135 in VST gives a small gain against ND (0.82 to 0.86), and after alignment it gives nearly the gain of matched TCGA samples (0.95 against 0.97). So a custodian should not count on the adversary's reference data being processed differently, since the release itself tells the adversary how to repair it.
+
+\todo{\textbf{High priority.} Here only $\Daux$ is mismatched. Run the case in which the attacked profiles themselves arrive in TPM or from another pipeline, with and without the same alignment; this is the realistic version of the adversary in Section~\ref{sec:threat}. Also before this goes in the main text: confirm the alignment result independently (it rests on five splits per cohort and one alignment method); add the remaining generators and the as-submitted \mahala{}; and reconcile the ``None'' row for BRCA with Table~\ref{tab:grid} (0.97 here against 0.996 for the CVAE, on 84 fewer candidates). \melo{} and \mama{} use no auxiliary data and are unaffected by construction.}
+
+\subsection{Fewer genes, and the DOMIAS baseline}
+\label{app:genes}
+
+\paragraph{Question.}
+An adversary may hold only a panel of genes. How many of the 978 does each attack need?
+
+\paragraph{Setup.}
+The generator still trains on all 978 genes. The release, the attacked profiles and $\Daux$ are then cut to the same $k$ genes before the attack runs. We chose the $k$ genes at random, by variance in the release, and by the three selection rules of the challenge's baseline code. The rules differ by 0.01 in AUC on average and a random panel is never more than 0.02 below the best rule, so Table~\ref{tab:genes} reports random panels.
+
+\begin{table}[!t]
+\caption{AUC when the adversary holds a random $k$ of the 978 genes. The covariance attack needs most of the genes. The nearest-neighbour attack is at full strength with 100.\label{tab:genes}}
+\begin{tabular}{L{3.3cm} C{0.65cm} C{0.65cm} C{0.65cm} C{0.65cm} C{0.65cm}}
+  \toprule
+  \textbf{Attack / generator} & \textbf{10} & \textbf{100} & \textbf{400} & \textbf{800} & \textbf{978} \\
+  \midrule
+  \multicolumn{6}{l}{\emph{TCGA-BRCA}} \\
+  \mahala{} / MVN       & 0.52 & 0.57 & 0.82 & 1.00 & 1.00 \\
+  \mahala{} / CVAE      & 0.52 & 0.58 & 0.80 & 0.96 & 0.97 \\
+  \mahala{} / ND        & 0.52 & 0.57 & 0.70 & 0.80 & 0.82 \\
+  GAN-leaks / TabSyn    & 0.59 & 0.76 & 0.77 & 0.77 & 0.77 \\
+  \midrule
+  \multicolumn{6}{l}{\emph{TCGA-COMBINED}} \\
+  \mahala{} / MVN       & 0.51 & 0.59 & 0.77 & 0.81 & 0.89 \\
+  \mama{} / DP-PGM      & 0.52 & 0.57 & 0.62 & 0.65 & 0.66 \\
+  \botrule
+\end{tabular}
+\end{table}
+
+\paragraph{Findings.}
+\mahala{} against MVN on TCGA-BRCA is at 0.57 with 100 genes and at 1.00 with 800. Its signal lies in the directions in which the synthetic covariance has little variance (Appendix~\ref{app:mahala}), and those appear only once the number of genes approaches the number of training donors. GAN-leaks against TabSyn has 0.76 of its 0.77 with 100 genes. So exposing fewer genes weakens one family of attacks and leaves the other intact.
+
+\paragraph{DOMIAS.}
+The same sweep exposed an error in our DOMIAS baseline \citep{van2023membership}, and correcting it changes the generic-attack row of Table~\ref{tab:grid}. DOMIAS scores a profile by the density of $\Dsyn$ around it divided by the density of $\Daux$, after reducing the genes with PCA. Our implementation, ported from the code we submitted to the challenge, fitted a separate PCA to the candidates, to $\Dsyn$ and to $\Daux$. The three projections then have unrelated axes, the densities are not comparable, and the AUC is 0.50 against every generator. The organisers' baseline fits one PCA, on $\Daux$, and applies it to all three sets. We do the same, and compute the ratio in log space, because in 100 dimensions the densities fall below the $10^{-10}$ floor of the original ratio. Table~\ref{tab:domias} gives the corrected attack three ways.
+
+\begin{table}[!t]
+\caption{DOMIAS on TCGA-COMBINED before and after the correction. ``Best'' is the highest AUC over 10 to 800 components, with the number of components in parentheses; choosing it requires the membership labels, so it is an upper reference. The corrected attack is above chance against every non-private generator and stays below \mahala{}.\label{tab:domias}}
+\begin{tabular}{L{1.3cm} C{0.9cm} C{0.9cm} C{0.9cm} C{1.5cm} C{1.3cm}}
+  \toprule
+  & \textbf{As run} & \multicolumn{3}{c}{\textbf{Corrected DOMIAS}} & \\
+  \cline{3-5}
+  \textbf{Generator} & \textbf{before} & \textbf{978 genes} & \textbf{100 comp.} & \textbf{Best} & \textbf{\mahala{}} \\
+  \midrule
+  MVN    & 0.50 & 0.57 & 0.59 & 0.81 (400) & 0.89 \\
+  CVAE   & 0.50 & 0.72 & 0.69 & 0.71 (800) & 0.80 \\
+  ND     & 0.50 & 0.54 & 0.54 & 0.69 (600) & 0.77 \\
+  DP-PGM & 0.50 & 0.51 & 0.50 & 0.51 (400) & 0.50 \\
+  \botrule
+\end{tabular}
+\begin{tablenotes}
+\item The 978-gene column uses no PCA and an isotropic Gaussian kernel, because a kernel with the full covariance cannot be fitted to 824 reference samples in 978 dimensions. The other columns use the original full-covariance kernel.
+\end{tablenotes}
+\end{table}
+
+At the organisers' default of 100 components the corrected DOMIAS reaches 0.59, 0.69 and 0.54 against MVN, the CVAE and ND, which is above the best generic attack of Table~\ref{tab:grid} in all three columns (0.566, 0.642 and 0.522). The number of components matters as much as the method: against MVN the AUC goes from 0.59 at 100 components to 0.81 at 400 and back to 0.54 at 800, and the best setting differs for each generator. \mahala{} is ahead of the best case in every column, and DOMIAS needs $\Daux$, which TCGA-BRCA does not have.
+
+\todo{Decisions and runs for the DOMIAS result. (1) Choose which of the three corrected columns the main text reports; the plan is one default and one best case per generic attack, and no other variants. (2) Update the ``Best generic attack'' row and tablenote of Table~\ref{tab:grid}, and the caption's ``0.52 to 0.71'', once (1) is settled. (3) Give calibrated GAN-leaks and LOGAN the same default-and-best treatment so the generic rows are comparable (LOGAN stays within 0.03 of chance at every setting; calibrated GAN-leaks peaks at 0.61 against the CVAE). (4) Check whether the CAMDA 2026 abstract's DOMIAS row came from the same separate-PCA code. (5) BRCA: DOMIAS can run with GSE58135 as $\Daux$, limited to 50 components by its 84 samples (0.71 against the CVAE, 0.77 against TabSyn); decide whether to report it. (6) \melo{} with fewer genes needs a shadow stack per panel size (GPU-hours each) and is not run; pick one or two sizes if a reviewer is likely to ask. (7) The first of the baseline's three gene-selection rules ranks genes by a variance ratio that equals 1 for every gene after its own standardisation, so its order is arbitrary; worth a footnote if we cite those rules.}
 
 \section{Extended tables}
 \label{app:tables}

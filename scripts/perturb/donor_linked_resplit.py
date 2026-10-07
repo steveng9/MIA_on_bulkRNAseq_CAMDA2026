@@ -173,6 +173,9 @@ def main() -> None:
     rows.append(summarise("A samples of the donors with a second tumour sample (overlap control)",
                           M[:, hsel], SC[:, hsel], donors[hsel], rng))
     rows.append(summarise("any second tumour sample", YB[:, tumour], SB[:, tumour], bd[tumour], rng))
+    sep = mB.tier.str.startswith(("same tumour, other vial", "other lesion")).values
+    rows.append(summarise("separate tumour sample (other vial or other lesion)",
+                          YB[:, sep], SB[:, sep], bd[sep], rng))
     for tier in sorted(mB.tier.unique()):
         sel = (mB.tier == tier).values
         rows.append(summarise(tier, YB[:, sel], SB[:, sel], bd[sel], rng))

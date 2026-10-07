@@ -64,6 +64,9 @@ def auc(y, s):
 
 
 POOLED = "any second tumour sample (three tiers pooled)"
+# The headline group: tissue that is physically distinct from the training sample.
+# A second aliquot of the same tumour sample is the same tissue sequenced again.
+SEPARATE = "separate tumour sample (other vial or other lesion)"
 
 
 def zscore(s, reference):
@@ -179,6 +182,9 @@ def main() -> None:
             tum = [v for k, v in tiers.items() if k != "matched normal"]
             if tum and not ADAPTED:
                 tiers[POOLED] = {k: np.concatenate([v[k] for v in tum], axis=-1) for k in tum[0]}
+                sep = [v for k, v in tiers.items() if k.startswith(("same tumour, other vial", "other lesion"))]
+                if sep:
+                    tiers[SEPARATE] = {k: np.concatenate([v[k] for v in sep], axis=-1) for k in sep[0]}
             for tier, v in tiers.items():
                 Y, Z, ZA, donors = v["Y"], v["Z"], v["ZA"], v["donors"]
                 d5 = np.tile(donors, len(splits))
