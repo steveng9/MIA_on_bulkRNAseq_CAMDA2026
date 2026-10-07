@@ -86,7 +86,14 @@ def summarise(name, Y, S, donors, rng, n_boot=500):
     bs = np.array([mean_auc(np.concatenate([by[i] for i in rng.integers(0, len(uniq), len(uniq))]))
                    for _ in range(n_boot)])
     lo, hi = np.nanpercentile(bs, [2.5, 97.5], axis=0)
-    return dict(group=name, n=Y.shape[1], n_donors=len(uniq), auc=raw, auc_lo=lo[0], auc_hi=hi[0],
+    # null for the calibrated attack: each sample keeps its scores, its in/out
+    # labels are shuffled across repetitions
+    null = []
+    for _ in range(5):
+        Yp = np.stack([rng.permutation(Y[:, j]) for j in range(Y.shape[1])], 1)
+        Zp = calibrate(S, Yp)
+        null.append(np.nanmean([auc(Yp[r], Zp[r]) for r in range(len(Y))]))
+    return dict(calibrated_null=float(np.mean(null)), group=name, n=Y.shape[1], n_donors=len(uniq), auc=raw, auc_lo=lo[0], auc_hi=hi[0],
                 calibrated_auc=cal, calibrated_lo=lo[1], calibrated_hi=hi[1])
 
 
@@ -96,6 +103,7 @@ def main() -> None:
     ap.add_argument("--generator", default="mvn")
     ap.add_argument("--reps", type=int, default=60)
     ap.add_argument("--device", default="cpu")
+    ap.add_argument("--reuse", action="store_true", help="re-analyse the saved scores")
     args = ap.parse_args()
     ds = args.dataset
 
@@ -118,7 +126,11 @@ def main() -> None:
     M = np.zeros((R, len(X)), dtype=np.int8)
     SC, SB = np.zeros((R, len(X))), np.zeros((R, len(XB)))
     t0 = time.time()
-    for r in range(R):
+    if args.reuse:
+        z = np.load(cache, allow_pickle=True)
+        M, SC, SB = z["member"], z["scores_candidates"], z["scores_B"]
+        R = len(M)
+    for r in range(0 if args.reuse else R):
         rng = np.random.default_rng(10_000 + r)
         member = rng.random(len(X)) < 0.8
         chosen = rng.permutation(half)[: len(half) // 2]
@@ -149,13 +161,14 @@ def main() -> None:
         M[r], SC[r], SB[r] = member, score(X.astype(np.float64)), score(XBv)
         if r % 10 == 0:
             print(f"rep {r}: cohort AUC {auc(M[r], SC[r]):.3f}  ({time.time() - t0:.0f}s)", flush=True)
-    np.savez_compressed(cache, member=M, scores_candidates=SC, scores_B=SB,
-                        b_ids=np.array(mB.index), candidates=np.array(expr.index))
+    if not args.reuse:
+        np.savez_compressed(cache, member=M, scores_candidates=SC, scores_B=SB,
+                            b_ids=np.array(mB.index), candidates=np.array(expr.index))
 
     rng = np.random.default_rng(0)
     YB = M[:, a_idx]
     bd = mB.patient.values
-    rows = [summarise("all candidates", M, SC, donors, rng, n_boot=0 or 50)]
+    rows = [summarise("all candidates", M, SC, donors, rng, n_boot=50)]
     hsel = np.isin(donors, half)
     rows.append(summarise("A samples of the donors with a second tumour sample (overlap control)",
                           M[:, hsel], SC[:, hsel], donors[hsel], rng))

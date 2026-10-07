@@ -102,18 +102,17 @@ TCGA-COMBINED, the three tumour tiers pooled (97 B samples, 70 donors).
 | DP-PGM (new, eps = 10) | MAMA-MIA v2 | 0.52 [0.50, 0.56] | 0.62 [0.60, 0.66] | 0.57 [0.49, 0.64] |
 
 So about two fifths of the attack's advantage over chance survives when the
-attacker's sample was never trained on (for MVN, 0.15 of 0.37). BRCA agrees on its 16 tumour B samples (MVN 0.68
-[0.61, 0.77], CVAE 0.65 [0.57, 0.75], NoisyDiffusion 0.62 [0.57, 0.70]), with
-wide intervals.
+attacker's sample was never trained on (for MVN, 0.15 of 0.37). BRCA agrees on
+its 16 tumour B samples (MVN 0.68 [0.61, 0.77], CVAE 0.65 [0.57, 0.75],
+NoisyDiffusion 0.62 [0.57, 0.70]), with wide intervals.
 
 The linked AUC is much lower than the within-donor figure because the two
 measure different things. A B sample's score depends mostly on how typical that
 sample is, and the donor's membership moves it by less than samples differ from
 one another. Within one donor the move is consistent: in COMBINED/MVN a second
 tumour sample scores higher in a split where its donor is a member 86% of the
-time. An attack that calibrates each record against itself would see more of
-this, which is what MeLoMIA's per-record calibration does (section 1, last
-part).
+time. An attack that calibrates each record against itself should see more of
+this. Result 5 measures how much.
 
 By tier (COMBINED, MahalaMIA ridge, linked AUC):
 
@@ -142,15 +141,16 @@ a second aliquot is. The "other vial" tier is less recognisable than a
 metastasis, which was not what I expected; these are mostly `01B` vials and may
 differ in preservation, which I have not checked.
 
-### Result 3: matched normal tissue does not leak, as attacked here
+### Result 3: matched normal tissue does not leak to the attacks as shipped
 
 410 matched normals give tight intervals around 0.50 for every generator and
 every attack (table above; the widest claim the data allow is an AUC below
 0.52). A normal sample resembles other normals far more than it resembles its
 donor's tumour.
 
-That is a statement about these attacks and not yet about the data. Two further
-checks say a weak donor signal is present in a normal sample.
+That is a statement about these attacks and not about the data. Three further
+checks say a weak donor signal is present in a normal sample; the third
+(Result 5) is the one that settles it.
 
 First, after subtracting class means and projecting out the 400 leading
 principal components of the candidate pool, a normal sample's own donor is the
@@ -165,8 +165,7 @@ normals of the organ and the labelled release) moves two cells off chance on
 COMBINED: MahalaMIA against NoisyDiffusion 0.52 [0.51, 0.53], within donor 0.58
 [0.55, 0.61], and against MVN 0.52 [0.51, 0.53], within donor 0.56
 [0.52, 0.59]. CVAE, both DP-PGMs and all of BRCA (111 normals) stay at chance.
-I would call this suggestive. It is two cells out of many, at an AUC nobody
-could act on.
+On its own this is suggestive: two cells out of many.
 
 ### Result 4: DP-PGM
 
@@ -175,6 +174,47 @@ v2 keeps a small linked signal against the CAMDA-26 release (0.55), concentrated
 in the re-sequenced aliquots (0.64 [0.58, 0.71], as high as its overlap AUC of
 0.63). That release is not differentially private end to end. Against the
 corrected generator at eps = 10 the linked interval reaches 0.50.
+
+### Result 5: with per-record calibration the leak is larger, and normal tissue leaks too
+
+The five canonical splits make each donor a non-member once. To measure every
+second sample many times in both states, `donor_linked_resplit.py` retrains
+the MVN generator on 100 fresh splits in which the donors with a second tumour
+sample are placed half in and half out, and every other donor is a member with
+probability 0.8. The attack is MahalaMIA with the ridge. Two scores are
+reported. The raw score is the attack as it stands. The calibrated score
+z-scores a sample against the same sample's scores in the other repetitions
+where its donor was out. Those repetitions stand in for shadow releases known
+not to contain the donor, so the calibrated number is what an adversary with
+ideal shadow modelling could reach (offline LiRA), and an upper bound on what a
+real one would. Shuffling each sample's in/out labels across repetitions puts
+the calibrated AUC at 0.49 to 0.51 in every row with more than 20 samples (0.46
+to 0.50 in the three BRCA rows with 3 to 13).
+
+| sample attacked | n | COMBINED raw | COMBINED calibrated | BRCA raw | BRCA calibrated |
+|---|---|---|---|---|---|
+| trained-on sample (A) of the same donors | 70 / 13 | 0.89 [0.85, 0.93] | 0.99 | 1.00 | 1.00 |
+| any second tumour sample | 97 / 16 | 0.65 [0.62, 0.69] | 0.81 [0.78, 0.85] | 0.66 [0.56, 0.73] | 0.91 [0.84, 0.98] |
+| same tumour sample, other aliquot | 25 / 3 | 0.69 [0.63, 0.78] | 0.90 [0.85, 0.95] | 1.00 | 0.98 |
+| other lesion | 25 / 7 | 0.72 [0.65, 0.81] | 0.86 [0.79, 0.93] | 0.66 [0.51, 0.86] | 0.89 [0.77, 0.99] |
+| same tumour, other vial | 47 / 6 | 0.60 [0.57, 0.63] | 0.73 [0.69, 0.78] | 0.74 [0.64, 0.88] | 0.93 [0.84, 0.98] |
+| matched normal | 410 / 111 | 0.50 [0.49, 0.51] | 0.53 [0.52, 0.54] | 0.51 [0.49, 0.54] | 0.55 [0.53, 0.57] |
+
+(n is given as COMBINED / BRCA; intervals are donor bootstraps of the mean over
+the 100 repetitions.)
+
+Three things follow. The raw linked AUC on redrawn splits (0.65) reproduces the
+five-split estimate (0.65), so Result 1 did not depend on the canonical splits.
+Calibration takes a second tumour sample from 0.65 to 0.81 on COMBINED and
+from 0.66 to 0.91 on BRCA, most of the way to the trained-on sample. And the
+matched normals move off chance on both cohorts, 0.53 [0.52, 0.54] and 0.55
+[0.53, 0.57], with the shuffled null at 0.50. An AUC of 0.53 identifies nobody.
+What it establishes is that a donor's normal tissue carries a measurable trace
+of whether that donor's tumour was in the training data, which the uncalibrated
+attacks missed.
+
+This is MVN only. The CVAE takes 45 s per target on a free GPU and both GPUs
+were shared today.
 
 ### MeLoMIA
 
@@ -186,28 +226,53 @@ signatures under the synth-shadows, and the saved meta-classifiers score it.
 The same pass re-scores the candidates and reproduces the recorded AUCs (BRCA
 NoisyDiffusion 0.97 to 0.99 per split, CVAE 0.78 to 0.83).
 
-Results: still running on a shared GPU when this was written (BRCA is too
-small to say anything: 16 tumour B samples). To be filled in from
-`results/perturb/donor_linked_melomia.csv`.
+Each backend against its own generator, second tumour samples pooled:
+
+| cohort | attack on generator | n | linked AUC | overlap AUC | within donor |
+|---|---|---|---|---|---|
+| COMBINED | MeLoMIA-ND on NoisyDiffusion | 97 | 0.55 [0.48, 0.62] | 0.83 [0.77, 0.88] | 0.58 [0.50, 0.65] |
+| COMBINED | MeLoMIA-CVAE on CVAE | 97 | 0.53 [0.46, 0.59] | 0.82 [0.77, 0.87] | 0.50 [0.43, 0.58] |
+| BRCA | MeLoMIA-ND on NoisyDiffusion | 16 | 0.78 [0.66, 0.89] | 0.97 [0.92, 1.00] | 0.81 [0.67, 0.93] |
+| BRCA | MeLoMIA-CVAE on CVAE | 16 | 0.54 [0.39, 0.69] | 0.88 [0.78, 0.95] | 0.53 [0.39, 0.69] |
+
+Matched normals are at chance for both backends on COMBINED (0.50 and 0.51)
+and for MeLoMIA-ND on BRCA; MeLoMIA-CVAE on BRCA is slightly below it (0.43
+[0.37, 0.49]), which I read as noise from out-of-distribution inputs until it
+is seen twice.
+
+I expected MeLoMIA to carry more of its signal over than MahalaMIA, because it
+already calibrates each record against itself. It carries less. Against the
+CVAE on COMBINED it is the stronger attack on the trained-on samples (0.82
+either way on these donors, 0.87 against 0.80 on the whole cohort) and has no
+measurable linked signal, where MahalaMIA keeps 0.65. The likely reason is what
+each attack reads. MeLoMIA reads how well the model reconstructs or denoises
+this exact record, and that advantage belongs to the training point itself. A
+second sample of the donor is a different point, and the model has not fitted
+it. MahalaMIA reads the released covariance, and a donor's training sample
+bends that covariance in directions the donor's other samples share. BRCA
+NoisyDiffusion is the exception (0.78 on 16 samples), and there the generator
+is so overfitted (overlap 0.97) that even neighbours of training points are
+reconstructed well. So the attack that is most dangerous for a trained-on
+record is not the one that is most dangerous for a donor's other samples.
 
 ### What this does and does not show
 
 It shows that in bulk RNA-seq, as in single-cell, "the adversary must hold the
 exact training record" is not a safe assumption: a second biopsy, a
 re-sequenced aliquot or a later metastasis of a training donor carries about
-two fifths of the membership signal. It does not show leakage through normal tissue,
-blood, or a sample taken years apart, and TCGA cannot answer those. The numbers
-rest on 70 donors for the tumour tiers.
+two fifths of the membership signal to an attack used as is, and most of it to
+a calibrated one. Adjacent normal tissue carries a trace (0.53 to 0.55,
+calibrated, MVN). It does not show leakage through another organ, blood, or a
+sample taken years apart, and TCGA cannot answer those. The tumour tiers rest
+on 70 donors.
 
 Not done, in order of value:
 
-1. More power. Every donor is a non-member in one split only. Redrawing many
-   80/20 splits that place the donors with a B sample half in and half out, and
-   retraining the cheap generators (MVN 6 s, CVAE 45 s per target), would
-   measure each donor in both states many times.
-2. A cohort with repeated samples by design. Candidates: GTEx (one donor, many
+1. A cohort with repeated samples by design. Candidates: GTEx (one donor, many
    tissues; 948 donors), longitudinal blood cohorts, CPTAC. This is the test of
    whether a sample of a different tissue links to a donor.
+2. The redrawn-splits design (Result 5) for CVAE and the other generators, and
+   a calibrated attack that uses real shadow models in place of the ideal ones.
 3. An attack built for the normal-tissue case: remove shared structure first,
    then score.
 4. Training on B and attacking with A, and training on both.
@@ -381,6 +446,20 @@ choosing genes cleverly and loses little by holding an arbitrary panel.
 RedSigma's CVAE rule on COMBINED returns a constant below 200 genes for the
 same reason as above (it zeroes 100 principal components).
 
+MAMA-MIA v2 against the corrected DP-PGM (eps = 10) loses its signal gradually
+too, since each gene contributes two noisy tables: BRCA 0.53 at 10 genes, 0.59
+at 100, 0.69 at 400, 0.76 at 978; COMBINED 0.53, 0.59, 0.63, 0.65.
+
+**BRCA with GSE58135 as the auxiliary set** (`gene_subsets_gse.csv`; this is
+what lets BRCA run the reference-based baselines and the vDE / dDE selections).
+The conclusions carry over: MahalaMIA with the ridge against CVAE goes 0.58 at
+100 random genes, 0.84 at 400, 0.98 at 800; the five rules stay within 0.03 of
+each other. With only 84 auxiliary samples the PCA and KDE baselines stop at 50
+components (DOMIAS-KDE with PCA: CVAE 0.71, TabSyn 0.77 at 50). The
+pseudo-inverse variant of MahalaMIA fails on 40 of the roughly 5,000 cells in
+this run, where an 84-sample auxiliary covariance gives some candidate a
+distance of exactly zero; the ridge variant is unaffected.
+
 ## 5. Not done, and where Steven's call is needed
 
 - **MeLoMIA under experiments 1 to 3.** Its shadows are trained on the
@@ -404,8 +483,8 @@ same reason as above (it zeroes 100 principal components).
 ## 6. For the paper
 
 Suggested placement: the donor-linked result in the threat-model part of the
-experiments section (one table: the five rows of Result 1, one sentence on
-normals), experiments 1 to 3 as a robustness subsection with the two MahalaMIA
+experiments section (one table: the rows of Result 5 with the Result 1 column
+for the other generators), experiments 1 to 3 as a robustness subsection with the two MahalaMIA
 tables and the gene-count curve, the rest in the appendix.
 
 Future-work text, if the donor-linked follow-ups are not run before submission:
@@ -414,10 +493,11 @@ Future-work text, if the donor-linked follow-ups are not run before submission:
 > hold: 97 tumour samples from 70 donors, and matched normal tissue of the same
 > organ. Whether a sample of another tissue, or one taken years later, links a
 > donor to a training set needs a cohort with repeated sampling by design, such
-> as GTEx. Normal tissue did not leak under our attacks, but after removing
-> shared expression programmes a normal sample's nearest neighbour among 4,323
-> tumours is its own donor's tumour 12% of the time, so an attack built for
-> that case may succeed where ours did not.
+> as GTEx. Adjacent normal tissue leaked only to a per-record calibrated attack
+> with ideal shadow models, and only slightly (AUC 0.53 to 0.55). After
+> removing shared expression programmes, a normal sample's nearest neighbour
+> among 4,323 tumours is its own donor's tumour 12% of the time, so an attack
+> built for that case may do better.
 
 ## Reproducing
 
@@ -432,6 +512,7 @@ python scripts/perturb/donor_linked.py --dataset COMBINED      # also BRCA; --ad
 python scripts/perturb/donor_linked_report.py                  # --suffix=_adapted | _melomia
 python scripts/perturb/donor_linked_control.py
 python scripts/perturb/donor_linkability.py
+python scripts/perturb/donor_linked_resplit.py --dataset COMBINED --generator mvn --reps 100
 python scripts/perturb/aux_mismatch.py --dataset BRCA          # also COMBINED
 python scripts/perturb/gene_subsets.py --dataset COMBINED --logan
 python scripts/perturb/report.py                               # results/perturb/TABLES.md

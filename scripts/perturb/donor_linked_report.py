@@ -49,7 +49,7 @@ from donor_linked import extras  # noqa: E402
 
 SUFFIX = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--suffix=")), "")
 ADAPTED = SUFFIX == "_adapted"
-SRC = paths.RESULTS / "perturb" / f"donor_linked_scores{SUFFIX}"
+SRC = paths.ARTIFACTS / "perturb" / f"donor_linked_scores{SUFFIX}"
 N_BOOT = 1000
 
 

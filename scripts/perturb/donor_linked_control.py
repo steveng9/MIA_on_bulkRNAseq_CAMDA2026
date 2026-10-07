@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from donor_linked import extras  # noqa: E402
 from donor_linked_report import auc, zscore  # noqa: E402
 
-SRC = paths.RESULTS / "perturb" / "donor_linked_scores"
+SRC = paths.ARTIFACTS / "perturb" / "donor_linked_scores"
 
 
 def main() -> None:

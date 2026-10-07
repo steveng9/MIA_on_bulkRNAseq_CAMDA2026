@@ -17,7 +17,7 @@ anyway and does not keep.  The candidates go through the same code in the same
 pass, and their AUC is printed next to the one recorded in results/index.csv.
 
 Writes npz files in the layout of donor_linked.py to
-results/perturb/donor_linked_scores_melomia/.
+artifacts/perturb/donor_linked_scores_melomia/.
 
     python scripts/perturb/donor_linked_melomia.py --dataset BRCA --backend nd --generators nd
 """
@@ -77,7 +77,7 @@ def main() -> None:
     XB = XB.values.astype(np.float32)
     cand = list(D.load_expression(ds).index)
     X_real = D.load_expression(ds).values.astype(np.float32)
-    out_dir = paths.RESULTS / "perturb" / "donor_linked_scores_melomia"
+    out_dir = paths.ARTIFACTS / "perturb" / "donor_linked_scores_melomia"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. B and the candidates under every synth-shadow, per classifier spec

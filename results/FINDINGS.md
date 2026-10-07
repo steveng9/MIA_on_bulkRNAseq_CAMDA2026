@@ -1854,3 +1854,19 @@ random 100 of the 978 genes MahalaMIA is at 0.57 on BRCA MVN (1.00 with all);
 GAN-leaks on TabSyn keeps 96% of its AUC with 50 genes.  The selection rule
 changes the AUC by 0.01 on average.  The challenge baseline's fixed 100 PCA
 components understate DOMIAS-KDE: 0.59 against MVN on COMBINED, 0.81 at 400.
+
+**Calibrating each record against itself roughly doubles the donor-linked
+leak.**  Retraining MVN on 100 redrawn splits and z-scoring each second sample
+against its own scores in the repetitions where its donor was out (ideal
+shadow models, so an upper bound): second tumour samples go from 0.65 to 0.81
+on COMBINED and from 0.66 to 0.91 on BRCA, and matched normals move off chance
+on both cohorts (0.53 [0.52, 0.54] and 0.55 [0.53, 0.57]; label-shuffled
+control 0.50).
+
+**The strongest attack on a trained-on record is the weakest on a donor's other
+samples.**  MeLoMIA read through its existing stacks: against the CVAE on
+COMBINED it has no measurable donor-linked signal (0.53 [0.46, 0.59]) where
+MahalaMIA keeps 0.65, although MeLoMIA is the stronger of the two on the
+trained-on samples (0.87 against 0.80).  A loss-based attack reads how well the
+model fits this exact point; a covariance attack reads directions the donor's
+samples share.

@@ -18,7 +18,7 @@ transform (scripts/external/tcga_vst.py), appended to the candidate pool one
 tier at a time, and scored against the existing targets.  Nothing is retrained:
 no B sample was ever seen by a generator.
 
-Per target this writes `results/perturb/donor_linked_scores/<...>.npz` with the
+Per target this writes `artifacts/perturb/donor_linked_scores/<...>.npz` with the
 score of every candidate and every B sample under every attack;
 `donor_linked_report.py` turns those into the tables.
 
@@ -141,7 +141,7 @@ def main() -> None:
     ap.add_argument("--adapt", action="store_true",
                     help="score each tier after aligning it to the release (adaptive adversary)")
     args = ap.parse_args()
-    out_dir = paths.RESULTS / "perturb" / ("donor_linked_scores" + ("_adapted" if args.adapt else ""))
+    out_dir = paths.ARTIFACTS / "perturb" / ("donor_linked_scores" + ("_adapted" if args.adapt else ""))
     out_dir.mkdir(parents=True, exist_ok=True)
     jobs = [(args.dataset, g, s, str(out_dir), args.adapt)
             for g in args.generators for s in args.splits]
