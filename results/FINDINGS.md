@@ -1852,8 +1852,10 @@ same way, and the attack is 1.00 / 0.97 on MVN / CVAE with no auxiliary set.
 **Withholding genes protects against the covariance attack only.**  With a
 random 100 of the 978 genes MahalaMIA is at 0.57 on BRCA MVN (1.00 with all);
 GAN-leaks on TabSyn keeps 96% of its AUC with 50 genes.  The selection rule
-changes the AUC by 0.01 on average.  The challenge baseline's fixed 100 PCA
-components understate DOMIAS-KDE: 0.59 against MVN on COMBINED, 0.81 at 400.
+changes the AUC by 0.01 on average.  DOMIAS-KDE in the benchmark tables is at 0.50 because of two implementation
+choices (a separate PCA per set, and a 1e-10 floor in the density ratio); with
+one shared PCA and a log ratio it reads 0.59 AUC against MVN on COMBINED at 100
+components and 0.81 at 400.  Which version the paper reports is open (TRACKER 0e).
 
 **Calibrating each record against itself roughly doubles the donor-linked
 leak.**  Retraining MVN on 100 redrawn splits and z-scoring each second sample

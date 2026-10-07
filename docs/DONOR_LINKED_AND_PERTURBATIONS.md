@@ -385,9 +385,9 @@ with the release alone.
 
 Two blocks (`scripts/perturb/gene_subsets.py`).
 
-*Baselines.* DOMIAS-KDE, GAN-leaks calibrated and LOGAN-D1 exactly as the
-challenge baseline runs them (each set on its own StandardScaler, PCA fitted on
-the reference set, and the three gene selections vDE, sDE, dDE), with the
+*Baselines.* DOMIAS-KDE, GAN-leaks calibrated and LOGAN-D1 following the
+organisers' baseline (each set on its own StandardScaler, one PCA fitted on
+the reference set; DOMIAS as a log density ratio, see the first result, and the three gene selections vDE, sDE, dDE), with the
 dimension swept over 10 to 800 instead of fixed at 100.
 
 *Our attacks.* The adversary holds only k genes of each candidate. The release
@@ -397,7 +397,27 @@ the release, and a random set.
 
 ### Results
 
-**The baseline's fixed dimension understates DOMIAS.** COMBINED, DOMIAS-KDE with
+**DOMIAS here is not the DOMIAS of our benchmark tables.** The benchmark row
+(`mia/attacks/generic.py`, a line-for-line port of the team's submitted
+baseline) reads 0.50 on every COMBINED generator. The version swept here
+differs from it in two ways, and both matter (check on COMBINED splits 1-2,
+100 components; MVN / CVAE):
+
+| PCA | density ratio | MVN | CVAE |
+|---|---|---|---|
+| fitted separately on each set (benchmark) | p_G / (p_R + 1e-10) (benchmark) | 0.50 | 0.49 |
+| fitted separately on each set | log p_G - log p_R | 0.50 | 0.49 |
+| one PCA, fitted on the reference set | p_G / (p_R + 1e-10) | 0.52 | 0.61 |
+| one PCA, fitted on the reference set (swept here) | log p_G - log p_R | 0.60 | 0.70 |
+
+Separate PCAs put the three sets in three unrelated coordinate systems, so the
+benchmark version cannot work at any dimension. The 1e-10 floor is larger than
+the densities themselves in 100 dimensions and flattens the ratio. So the
+numbers below belong to a repaired DOMIAS (shared PCA as in the organisers'
+`baseline.py`, plus the log ratio, which is my change). Which version the
+paper's baseline row should carry is an open decision (TRACKER item 0e).
+
+**With the repair, the number of components decides what DOMIAS scores.** COMBINED, DOMIAS-KDE with
 PCA:
 
 | components | 10 | 25 | 50 | 100 | 200 | 400 | 600 | 800 |
@@ -406,7 +426,7 @@ PCA:
 | CVAE | 0.545 | 0.646 | 0.701 | 0.685 | 0.645 | 0.641 | 0.668 | 0.713 |
 | NoisyDiffusion | 0.515 | 0.521 | 0.525 | 0.539 | 0.560 | 0.601 | 0.689 | 0.565 |
 
-At the baseline's 100 components DOMIAS reads 0.59 against MVN; at 400 it
+At 100 components the repaired DOMIAS reads 0.59 AUC against MVN; at 400 it
 reads 0.81. The best dimension differs by generator (400 for MVN, 600 for NoisyDiffusion,
 and two peaks for CVAE at 50 and 800), so no single setting is fair to all
 three, and the baseline row of a results table depends on this choice as much

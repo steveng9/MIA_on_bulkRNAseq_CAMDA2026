@@ -50,6 +50,8 @@ Last updated 2026-10-07.
 
 0d. **Hakime's experiments: two things not run.** MeLoMIA with a gene subset needs a full shadow stack per subset size (GPU-hours each); say which sizes, if any. And her text mismatches only the auxiliary data; should the attacked record itself also arrive as TPM or from another pipeline?
 
+0e. **Which DOMIAS goes in the paper's baseline row** (2026-10-07). Our benchmark DOMIAS scores 0.50 AUC on every COMBINED generator. That is an implementation artefact: it fits a separate PCA on each of the three sets, and its density ratio has a floor larger than the densities. With one shared PCA and a log ratio DOMIAS scores 0.59 (MVN) and 0.69 (CVAE) at 100 components, and up to 0.81 on MVN at 400. Keep the as-submitted 0.50, report the repaired one, or both? `mia/attacks/generic.py` is unchanged so far. Details: `docs/DONOR_LINKED_AND_PERTURBATIONS.md` section 4.
+
 1. **Which DP-PGM goes in the paper.** Leaning star (= forest k=978) at 16 bins; the forest sweep did cover k=500/978 and l up to 400, and none beat it.  PQRS part 2 is in and ties it (§10m).
 2. **Class-centring as headline or ablation.** It subtracts each subtype's mean attack score before ranking.
 3. **The abstract's DP-PGM targets and its MAMA-MIA v1 run**: where did they come from? It reports 0.53 / 0.56; our exact rebuild of the CAMDA-25 generator gives 0.51 / 0.50.
