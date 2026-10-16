@@ -298,7 +298,8 @@ class TabSynBackend(Backend):
       probe         synth-shadows and the final proxy share ONE recipe, chosen
                     to memorise the synthetic data they are fitted to: 4x the
                     denoiser's capacity (width 1024 -> 2048) and 2x its steps,
-                    label-free, same learning rate, batch and weight averaging.
+                    label-free, same batch and weight averaging; lower learning rate,
+                    warm-up and clipping because the wide denoiser otherwise dies.
                     The VAE is left at the target's recipe: it already
                     reconstructs its training rows to an MSE of ~2e-5.
 
@@ -311,6 +312,11 @@ class TabSynBackend(Backend):
     vae_draws: int = 16
     probe_dim_t: int = 2048
     probe_diff_steps: int = 40000
+    # At the target's optimiser settings the 2048-wide denoiser never trains on
+    # 3 seeds in 4 (22 of 30 BRCA probes); these three together: 0 of 16.
+    probe_diff_lr: float = 3e-4
+    probe_diff_warmup: int = 1000
+    probe_diff_clip: float = 1.0
     probe_vae_epochs: int = 4000
     shadow_vae_epochs: int = 4000         # the target's; lower only for tests
     shadow_diff_steps: int = 20000        # likewise
@@ -335,7 +341,7 @@ class TabSynBackend(Backend):
     def probe(self) -> G.Generator:
         from ...generators.tabsyn import TUNED
         kw = dict(TUNED, class_freq="generated", unconditional=True,
-                  dim_t=self.probe_dim_t, diff_steps=self.probe_diff_steps,
+                  dim_t=self.probe_dim_t, diff_steps=self.probe_diff_steps, diff_warmup=self.probe_diff_warmup, diff_lr=self.probe_diff_lr, diff_clip=self.probe_diff_clip,
                   vae_epochs=self.probe_vae_epochs)
         return G.build("tabsyn", seed=self.seed, device=self.device, verbose=False, **kw)
 

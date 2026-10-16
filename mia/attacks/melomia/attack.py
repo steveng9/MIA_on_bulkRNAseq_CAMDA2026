@@ -854,6 +854,9 @@ class MeLoMIATabSyn(MeLoMIA):
     backend: str = "tabsyn"
     # ~75 MB each, and what the white-box stack reuses as its shadows
     keep_base_shadows: bool = True
+    # a proxy is hours of VAE training; keep it so a fault in the denoiser
+    # stage can be repaired without redoing that
+    keep_proxies: bool = True
     name: str = field(init=False, default="melomia_tabsyn")
 
 

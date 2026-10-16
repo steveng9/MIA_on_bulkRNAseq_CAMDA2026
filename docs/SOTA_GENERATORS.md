@@ -439,3 +439,136 @@ COMBINED is about four times that.
 
 Smoke test only so far (200-gene cohort, K=3, models trained for 20 VAE epochs,
 no search): black box 0.635, white box 0.992 AUC.  Not a result.
+
+### Probe collapse (found 2026-10-07; black-box BRCA numbers before it are void)
+
+The first black-box run read 0.52 / 0.77 / 0.76 / 0.53 / 0.50 on BRCA splits
+1-5 (K=10 and K=30 alike) while white box read 1.000 everywhere.  Cause: in 22
+of the 30 synth-shadow probes, and in the final proxies of splits 1, 4 and 5,
+the denoiser never trained.  Signature: a probe's single-feature AUC is the
+same at all 13 noise levels (the network outputs zero, so the score is only
+`c_skip * x`), against ~0.75 for the 8 live probes.
+
+Reproduced on probe 3 by refitting its denoiser alone: one large update in the
+first 100 Adam steps (gradient norm 7.5), then gradients of 1e-3 and a weighted
+EDM loss pinned at 1.000 for 40,000 steps.  The target recipe (width 1024) did
+not do this in 5 targets and 30 base shadows; the probe is 2048 wide at the
+same learning rate.  Four remedies each restore it to the live probes'
+denoising error (MSE at sigma 0.3: 0.0486 in all four, 0.0486 in live probe 1,
+0.0661 dead):
+
+| remedy | final loss | MSE at sigma 1 | MSE at sigma 5 |
+|---|---|---|---|
+| none (as first run) | 1.000 | 0.200 | 0.248 |
+| 1,000-step linear warm-up | 0.648 | 0.040 | 0.114 |
+| warm-up + gradient clipping at 1 | 0.648 | 0.040 | 0.114 |
+| gradient clipping at 1 only | 0.650 | 0.041 | 0.113 |
+| learning rate 3e-4 | 0.642 | 0.040 | 0.060 |
+
+Warm-up alone was adopted first and was not enough: 2 of the first 4 probes
+refitted with it died again (caught by the new check).  Collapse frequency over
+8 seeds x 2 probes, 3,000 steps each (`logs/melomia_tabsyn/probe_seed_sweep.py`):
+
+| recipe | dead | loss of the live runs |
+|---|---|---|
+| as first run (lr 1e-3) | 12 / 16 | 0.69-0.72 |
+| lr 1e-3, warm-up 1,000 | 1 / 16 | 0.67 |
+| lr 1e-3, warm-up, clip 1 | 0 / 16 | 0.67 |
+| lr 3e-4 | 0 / 16 | 0.65-0.66 |
+| lr 3e-4, warm-up, clip 1 | 0 / 16 | 0.66 |
+| lr 1e-4, warm-up, clip 1 | 0 / 16 | 0.67-0.68 |
+
+Adopted for the probe only: learning rate 3e-4, 1,000-step warm-up, gradient
+clipping at 1 (`probe_diff_lr`, `probe_diff_warmup`, `probe_diff_clip`; the
+generator's `diff_warmup` and `diff_clip` default to off, so targets are
+unchanged).  The lower rate also gave the lowest denoising error in the full
+40,000-step refit.  `_fit_diffusion_steps` now raises if the final loss exceeds
+0.95, so a dead denoiser cannot be saved silently again.  Repair: `scripts/repair_melomia_tabsyn.sh` refits only the
+probes' denoisers (VAEs kept), re-extracts features, retrains the final proxies
+(now saved under `proxies/`).  The void results are kept in
+`artifacts/attacks/melomia_tabsyn/BRCA/n200/broken_no_warmup/`; their rows in
+`results/index.csv` (melomia_tabsyn, before 2026-10-07 20:00 UTC) must not be used.
+Diagnostic: `logs/melomia_tabsyn/probe_collapse_diag.py`.
+
+### MeLoMIA-TabSyn on tuned TabSyn, BRCA, after the repair (2026-10-09)
+
+Shadow cross-validation AUC of the meta-classifiers: 0.789 (0.62 with the dead
+probes).  All 30 refitted probes ended at a loss of 0.638-0.641.
+
+| split | black box K=30 | TPR @ 1% FPR | black box K=10 | white box K=30 |
+|---|---|---|---|---|
+| 1 | 0.797 | 0.545 | 0.801 | 1.000 |
+| 2 | 0.793 | 0.566 | 0.765 | 1.000 |
+| 3 | 0.815 | 0.532 | 0.786 | 1.000 |
+| 4 | 0.776 | 0.526 | 0.767 | 1.000 |
+| 5 | 0.761 | 0.533 | 0.763 | 1.000 |
+| mean | 0.788 +- 0.021 | 0.540 | 0.776 +- 0.017 | 1.000 |
+
+Same target, other attacks (five-split mean AUC): MeLoMIA-ND 0.775, GAN-leaks
+0.773 (TPR @ 1% FPR 0.52), MahalaMIA 0.662, MeLoMIA-CVAE 0.642, MAMA-MIA 0.555.
+Black-box MeLoMIA-TabSyn is the best black-box attack on this target, but only
+by about one point over the shadow-free GAN-leaks distance, and with the same
+shape: about half the members are found at almost no false-positive cost and
+the rest are not separated.  The gap to white box (1.000) is the whole story:
+the leak is in the trained denoiser, and a probe fitted to the release recovers
+only the members the generator reproduced nearly verbatim.
+
+### MeLoMIA-TabSyn against the other generators, BRCA (2026-10-13)
+
+Black box, K=30, per-record calibration, five splits.  The comparison columns
+are the matched configuration of the other two backends (K=30, per-record
+calibration, 2026-10-03 runs; TabPFN is four splits for those two).
+
+| target | MeLoMIA-TabSyn AUC | TPR @ 1% FPR | MeLoMIA-CVAE | MeLoMIA-ND |
+|---|---|---|---|---|
+| MVN | 0.569 +- 0.014 | 0.034 | 0.560 | 0.929 |
+| CVAE | 0.770 +- 0.007 | 0.437 | 0.807 | 0.823 |
+| NoisyDiffusion | 0.560 +- 0.017 | 0.033 | 0.574 | 0.969 |
+| DP-PGM (`pgg`) | 0.503 +- 0.018 | 0.016 | 0.492 | 0.504 |
+| TabPFN | 0.575 +- 0.019 | 0.034 | 0.568 | 0.750 |
+
+Off its own generator the TabSyn backend behaves like the CVAE backend, within
+a point or two on every target, and nothing like the NoisyDiffusion backend.
+Having a diffusion half does not help.  A likely reason (not tested): the
+denoiser works in the VAE's latent space, so the fingerprint is that of a
+compressing autoencoder, and it misses the gene-space signal MeLoMIA-ND reads
+on MVN, NoisyDiffusion and TabPFN.  On
+CVAE it is three to four points below MeLoMIA-CVAE in AUC but higher at 1% FPR
+(0.44 against 0.25).  The `melomia_tabsyn` rows for these targets dated before
+2026-10-07 20:00 UTC in `results/index.csv` are from the dead probes and void.
+
+### MeLoMIA-TabSyn on tuned TabSyn, COMBINED (K=10 2026-10-13, K=20 2026-10-16)
+
+| split | black box K=20 | TPR @ 1% FPR | black box K=10 | TPR @ 1% FPR | white box K=10, K=20 |
+|---|---|---|---|---|---|
+| 1 | 0.774 | 0.187 | 0.765 | 0.149 | 1.000 |
+| 2 | 0.831 | 0.351 | 0.818 | 0.344 | 1.000 |
+| 3 | 0.837 | 0.318 | 0.831 | 0.281 | 1.000 |
+| 4 | 0.824 | 0.330 | 0.809 | 0.266 | 1.000 |
+| 5 | 0.817 | 0.303 | 0.801 | 0.256 | 1.000 |
+| mean | 0.817 +- 0.025 | 0.298 | 0.805 +- 0.025 | 0.259 | 1.000 |
+
+Shadow cross-validation AUC at K=20: 0.824-0.832 across the five classifiers.
+
+No
+off-diagonal MeLoMIA-TabSyn on COMBINED (Steven, 2026-10-13): BRCA already
+answers that question.
+
+### Other attacks on the COMBINED tuned-TabSyn and TabPFN targets (2026-10-13)
+
+Five splits for tuned TabSyn; TabPFN has a target for split 1 only.  MeLoMIA-ND
+and MeLoMIA-CVAE are K=20 with per-record calibration (`melomia_prc_combined.yaml`).
+
+| attack | tuned TabSyn AUC | TPR @ 1% FPR | TabPFN, split 1 |
+|---|---|---|---|
+| MeLoMIA-TabSyn, black box K=20 | 0.817 +- 0.025 | 0.298 | - |
+| MeLoMIA-CVAE | 0.661 +- 0.028 | 0.062 | 0.591 |
+| GAN-leaks | 0.650 +- 0.022 | 0.105 | 0.520 |
+| MahalaMIA | 0.582 +- 0.012 | 0.029 | 0.600 |
+| MeLoMIA-ND | 0.578 +- 0.036 | 0.029 | 0.679 |
+| MC | 0.552 +- 0.009 | 0.059 | 0.506 |
+| MAMA-MIA | 0.514 +- 0.005 | 0.011 | 0.529 |
+| confidence, logistic / random forest | 0.501 / 0.508 | | 0.509 / 0.509 |
+
+On BRCA MeLoMIA-ND matched MeLoMIA-TabSyn on this target (0.775 against 0.788);
+on COMBINED it falls to 0.578 while MeLoMIA-TabSyn rises to 0.817.

@@ -22,6 +22,7 @@ T="tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:
 K=$(grep -m1 "n_shadows:" "$CFG" | awk '{print $2}')
 LOG=logs/melomia_tabsyn/$DS; mkdir -p "$LOG"
 export OMP_NUM_THREADS=2 MIA_N_JOBS=8
+GS=$([ "$W0" = 0 ] && echo 1 || echo 0)   # GPU for the scoring steps
 say() { echo "### [$(date -u +%m-%d\ %H:%M)] $*" | tee -a "$LOG/progress.log"; }
 
 stack() {    # stack <label> <K>
@@ -39,7 +40,12 @@ proxies() {  # proxies <label> <generators...>   five splits over the two GPUs
     local label=$1; shift
     local pids=() s
     for s in 1 2 3 4 5; do
-        CUDA_VISIBLE_DEVICES=$(( s % 2 )) $PY -W ignore scripts/melomia_proxies.py "$CFG" "$label" \
+        # one GPU only (W0 or W1 = 0): stay on it, at most that many fits at once
+        if [ "$W1" = 0 ]; then g=0; elif [ "$W0" = 0 ]; then g=1; else g=$(( s % 2 )); fi
+        if [ "$W0" = 0 ] || [ "$W1" = 0 ]; then
+            while [ "$(jobs -rp | wc -l)" -ge $(( W0 + W1 )) ]; do sleep 60; done
+        fi
+        CUDA_VISIBLE_DEVICES=$g $PY -W ignore scripts/melomia_proxies.py "$CFG" "$label" \
             --generators "$@" --splits $s >> "$LOG/proxies_s$s.log" 2>&1 & pids+=($!)
     done
     wait "${pids[@]}"
@@ -47,8 +53,8 @@ proxies() {  # proxies <label> <generators...>   five splits over the two GPUs
 
 score() {    # score <black-box label> <white-box label>
     proxies "$1" "$T"
-    CUDA_VISIBLE_DEVICES=0 $PY -W ignore scripts/run_experiment.py "$CFG" --only "$1" --generators "$T" >> "$LOG/score_$1.log" 2>&1
-    CUDA_VISIBLE_DEVICES=0 $PY -W ignore scripts/run_experiment.py "$CFG" --only "$2" --generators "$T" >> "$LOG/score_$2.log" 2>&1
+    CUDA_VISIBLE_DEVICES=$GS $PY -W ignore scripts/run_experiment.py "$CFG" --only "$1" --generators "$T" >> "$LOG/score_$1.log" 2>&1
+    CUDA_VISIBLE_DEVICES=$GS $PY -W ignore scripts/run_experiment.py "$CFG" --only "$2" --generators "$T" >> "$LOG/score_$2.log" 2>&1
     grep -h "MEAN" "$LOG/score_$1.log" "$LOG/score_$2.log" | tail -n 2 | tee -a "$LOG/progress.log"
 }
 
@@ -61,6 +67,6 @@ stack melomia_tabsyn "$K"
 score melomia_tabsyn melomia_tabsyn_wb
 say "stage 4: off-diagonal targets"
 proxies melomia_tabsyn mvn cvae nd pgg tabpfn
-CUDA_VISIBLE_DEVICES=0 $PY -W ignore scripts/run_experiment.py "$CFG" --only melomia_tabsyn --generators mvn cvae nd pgg tabpfn >> "$LOG/score_offdiag.log" 2>&1
+CUDA_VISIBLE_DEVICES=$GS $PY -W ignore scripts/run_experiment.py "$CFG" --only melomia_tabsyn --generators mvn cvae nd pgg tabpfn >> "$LOG/score_offdiag.log" 2>&1
 grep -h "MEAN" "$LOG/score_offdiag.log" | tee -a "$LOG/progress.log"
 say "MELOMIA_TABSYN_DONE $DS"

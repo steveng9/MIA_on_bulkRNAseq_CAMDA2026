@@ -137,7 +137,7 @@ def _append_index(record: dict, metrics: dict) -> None:
                             if r.get("run_id") != row["run_id"]]
 
         with open(tmp, "w", newline="") as f:
-            w = csv.DictWriter(f, fieldnames=INDEX_COLUMNS)
+            w = csv.DictWriter(f, fieldnames=INDEX_COLUMNS, lineterminator="\n")
             w.writeheader()
             for r in existing:
                 w.writerow({c: r.get(c, "") for c in INDEX_COLUMNS})
@@ -193,7 +193,7 @@ def rebuild_index() -> pd.DataFrame:
 
     paths.RESULTS.mkdir(parents=True, exist_ok=True)
     with open(paths.INDEX_CSV, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=INDEX_COLUMNS)
+        w = csv.DictWriter(f, fieldnames=INDEX_COLUMNS, lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     return pd.DataFrame(rows)

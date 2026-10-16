@@ -131,6 +131,8 @@ class TabSynGenerator(Generator):
     diff_schedule: str = "upstream"   # "upstream": plateau LR + early stop | "steps"
     diff_steps: int = 20000           # gradient steps when diff_schedule = "steps"
     diff_ema: float = 0.999           # weight averaging when diff_schedule = "steps"
+    diff_warmup: int = 0              # linear LR warm-up steps (diff_schedule = "steps")
+    diff_clip: float = 0.0            # gradient-norm clip, 0 = off (diff_schedule = "steps")
     class_freq: str = "generated"     # "generated": as sampled | "train": training proportions
     unconditional: bool = False       # ignore the labels (MeLoMIA probes): one constant class
 
@@ -304,7 +306,15 @@ class TabSynGenerator(Generator):
         noisy estimate; nothing here reacts to it.
         """
         import copy
-        sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, self.diff_steps)
+        # Optional linear warm-up and gradient clipping, then cosine decay.  A
+        # denoiser wider than upstream's (the MeLoMIA probe, dim_t 2048) dies
+        # on 3 seeds in 4 at upstream's settings: one large Adam update, then
+        # gradients of 1e-3 and a loss pinned at 1.0 (the network outputs zero).
+        w = max(0, int(self.diff_warmup))
+        sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda t: (
+            (t + 1) / w if t < w else
+            0.5 * (1 + np.cos(np.pi * (t - w) / max(1, self.diff_steps - w)))))
+        tail = []
         avg = copy.deepcopy(self.diffusion)
         self.diffusion.train()
         n, step = len(data), 0
@@ -314,6 +324,8 @@ class TabSynGenerator(Generator):
                 loss = self.diffusion(data[perm[i:i + self.diff_batch_size]]).mean()
                 opt.zero_grad()
                 loss.backward()
+                if self.diff_clip:
+                    torch.nn.utils.clip_grad_norm_(self.diffusion.parameters(), self.diff_clip)
                 opt.step()
                 sched.step()
                 with torch.no_grad():
@@ -321,6 +333,8 @@ class TabSynGenerator(Generator):
                     for pa, pn in zip(avg.parameters(), self.diffusion.parameters()):
                         pa.mul_(d).add_(pn, alpha=1 - d)
                 step += 1
+                if step > self.diff_steps - 500:
+                    tail.append(loss.item())
                 if self.verbose and step % 5000 == 0:
                     print(f"    [tabsyn diff] step {step:6d}/{self.diff_steps}  "
                           f"loss={loss.item():.5f}", flush=True)
@@ -328,6 +342,12 @@ class TabSynGenerator(Generator):
                     break
         self.diffusion.load_state_dict(avg.state_dict())
         self.diffusion.eval()
+        # The weighted EDM loss of a network that outputs zero is exactly 1.
+        self.diff_final_loss = float(np.mean(tail))
+        if self.diff_final_loss > 0.95:
+            raise RuntimeError(
+                f"tabsyn: the denoiser did not train (final loss {self.diff_final_loss:.3f}; "
+                "1.0 is a network that outputs zero). Lower diff_lr, set diff_warmup and diff_clip.")
 
     # ── Sampling ────────────────────────────────────────────────────────────
 

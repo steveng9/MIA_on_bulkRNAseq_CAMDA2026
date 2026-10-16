@@ -1,0 +1,35 @@
+{
+  "run_id": "COMBINED__generic__tabpfn__s1__85dd6f22",
+  "timestamp": "2026-10-13T03:26:59+00:00",
+  "dataset": "COMBINED",
+  "attack": "generic",
+  "generator": "tabpfn",
+  "split": 1,
+  "tag": "mc",
+  "experiment": "grid_sota_combined",
+  "variant": "generic_mc",
+  "notes": "SOTA generators: all attacks on tabsyn / tabpfn / dpsynth / dpcvae targets",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "mc",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "54a199bd1a29cca3",
+    "params": {
+      "seed": 1167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 1167,
+    "source": "trained"
+  }
+}
