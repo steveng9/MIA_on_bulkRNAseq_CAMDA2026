@@ -1,0 +1,59 @@
+{
+  "run_id": "GTEX__mamamia_v2__cvae__s1__725307af",
+  "timestamp": "2026-10-22T19:25:34+00:00",
+  "dataset": "GTEX",
+  "attack": "mamamia_v2",
+  "generator": "cvae",
+  "split": 1,
+  "tag": "cl-public_ed-auto_cc",
+  "experiment": "grid_gtex",
+  "variant": "mamamia_v2",
+  "notes": "GTEx normal tissue, challenge generators, shadow-free attacks, 5 donor-grouped splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mamamia_v2",
+    "cliques": "public",
+    "edges": "auto",
+    "families": [
+      "1way",
+      "gl",
+      "tree"
+    ],
+    "class_centre": true,
+    "alpha": 0.5,
+    "calibrate": true,
+    "n_shadows": 20,
+    "shadow_frac": 0.8,
+    "n_bins": 16,
+    "attack": "mamamia_v2"
+  },
+  "target": {
+    "fingerprint": "c8698fa9269edc50",
+    "params": {
+      "seed": 1850,
+      "device": "cuda",
+      "verbose": true,
+      "name": "cvae",
+      "z_dim": 128,
+      "beta": 0.001,
+      "transform": "none",
+      "condition_type": "embedding",
+      "disease_embed_dim": 20,
+      "preprocess": "standard",
+      "batch_size": 64,
+      "num_iters": 10000,
+      "epochs": null,
+      "lr": 0.001,
+      "weight_decay": 0.0,
+      "optimizer": "adam",
+      "scheduler": "none",
+      "early_stopping": false,
+      "patience": 50,
+      "min_delta": 0.0001,
+      "condition_mode": null
+    },
+    "seed": 1850,
+    "source": "trained"
+  }
+}

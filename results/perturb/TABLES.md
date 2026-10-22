@@ -2701,3 +2701,97 @@ Rows are generators; the gene-selection rule is `random` (the rules agree to wit
 | ('RedSigma', 'random')                  | 0.511 | 0.513 | 0.524 | 0.546 | 0.571 | 0.611 | 0.642 | 0.652 |
 | ('RedSigma', 'sde')                     | 0.502 | 0.510 | 0.521 | 0.539 | 0.567 | 0.608 | 0.639 | 0.651 |
 | ('RedSigma', 'vde_raw')                 | 0.500 | 0.507 | 0.520 | 0.539 | 0.567 | 0.609 | 0.640 | 0.651 |
+
+## GTEx: another tissue of a training donor
+
+AUC over the donor's other-tissue samples (member donor vs non-member donor), mean over splits; `trained` is the same attack on the cohort's own samples.
+
+**MahalaMIA (ridge 1e-4)**
+
+|                                       |   MVN |   CVAE |   NoisyDiffusion |
+|:--------------------------------------|------:|-------:|-----------------:|
+| Adipose - Subcutaneous                | 0.617 |  0.592 |            0.561 |
+| Artery - Tibial                       | 0.536 |  0.521 |            0.526 |
+| Cells - Cultured fibroblasts          | 0.503 |  0.521 |            0.504 |
+| Colon - Sigmoid                       | 0.605 |  0.588 |            0.555 |
+| Esophagus - Gastroesophageal Junction | 0.577 |  0.553 |            0.535 |
+| Esophagus - Muscularis                | 0.564 |  0.547 |            0.542 |
+| Muscle - Skeletal                     | 0.512 |  0.518 |            0.505 |
+| Nerve - Tibial                        | 0.537 |  0.519 |            0.517 |
+| Skin - Not Sun Exposed (Suprapubic)   | 0.621 |  0.578 |            0.556 |
+| Testis                                | 0.502 |  0.516 |            0.508 |
+| Thyroid                               | 0.533 |  0.530 |            0.528 |
+| Whole Blood                           | 0.495 |  0.507 |            0.504 |
+| trained on (cohort)                   | 0.974 |  0.870 |            0.760 |
+
+**MahalaMIA (no aux, ridge 1e-4)**
+
+|                                       |   MVN |   CVAE |   NoisyDiffusion |
+|:--------------------------------------|------:|-------:|-----------------:|
+| Adipose - Subcutaneous                | 0.558 |  0.554 |            0.530 |
+| Artery - Tibial                       | 0.508 |  0.508 |            0.507 |
+| Cells - Cultured fibroblasts          | 0.501 |  0.506 |            0.500 |
+| Colon - Sigmoid                       | 0.548 |  0.543 |            0.523 |
+| Esophagus - Gastroesophageal Junction | 0.523 |  0.518 |            0.510 |
+| Esophagus - Muscularis                | 0.521 |  0.517 |            0.514 |
+| Muscle - Skeletal                     | 0.504 |  0.508 |            0.503 |
+| Nerve - Tibial                        | 0.512 |  0.508 |            0.506 |
+| Skin - Not Sun Exposed (Suprapubic)   | 0.555 |  0.537 |            0.524 |
+| Testis                                | 0.500 |  0.501 |            0.501 |
+| Thyroid                               | 0.510 |  0.507 |            0.506 |
+| Whole Blood                           | 0.500 |  0.502 |            0.501 |
+| trained on (cohort)                   | 0.833 |  0.866 |            0.634 |
+
+**RedSigma**
+
+|                                       |   MVN |   CVAE |   NoisyDiffusion |
+|:--------------------------------------|------:|-------:|-----------------:|
+| Adipose - Subcutaneous                | 0.558 |  0.508 |            0.504 |
+| Artery - Tibial                       | 0.511 |  0.508 |            0.499 |
+| Cells - Cultured fibroblasts          | 0.503 |  0.490 |            0.502 |
+| Colon - Sigmoid                       | 0.549 |  0.535 |            0.505 |
+| Esophagus - Gastroesophageal Junction | 0.527 |  0.520 |            0.500 |
+| Esophagus - Muscularis                | 0.525 |  0.526 |            0.499 |
+| Muscle - Skeletal                     | 0.504 |  0.495 |            0.502 |
+| Nerve - Tibial                        | 0.514 |  0.497 |            0.499 |
+| Skin - Not Sun Exposed (Suprapubic)   | 0.554 |  0.519 |            0.500 |
+| Testis                                | 0.501 |  0.521 |            0.500 |
+| Thyroid                               | 0.512 |  0.504 |            0.501 |
+| Whole Blood                           | 0.502 |  0.504 |            0.500 |
+| trained on (cohort)                   | 0.829 |  0.815 |            0.504 |
+
+**GAN-leaks**
+
+|                                       |   MVN |   CVAE |   NoisyDiffusion |
+|:--------------------------------------|------:|-------:|-----------------:|
+| Adipose - Subcutaneous                | 0.510 |  0.504 |            0.501 |
+| Artery - Tibial                       | 0.499 |  0.509 |            0.500 |
+| Cells - Cultured fibroblasts          | 0.509 |  0.498 |            0.503 |
+| Colon - Sigmoid                       | 0.511 |  0.522 |            0.489 |
+| Esophagus - Gastroesophageal Junction | 0.507 |  0.519 |            0.496 |
+| Esophagus - Muscularis                | 0.504 |  0.511 |            0.505 |
+| Muscle - Skeletal                     | 0.499 |  0.504 |            0.500 |
+| Nerve - Tibial                        | 0.499 |  0.501 |            0.501 |
+| Skin - Not Sun Exposed (Suprapubic)   | 0.508 |  0.506 |            0.502 |
+| Testis                                | 0.500 |  0.500 |            0.499 |
+| Thyroid                               | 0.502 |  0.503 |            0.503 |
+| Whole Blood                           | 0.503 |  0.500 |            0.501 |
+| trained on (cohort)                   | 0.528 |  0.727 |            0.539 |
+
+**MAMA-MIA v2**
+
+|                                       |   MVN |   CVAE |   NoisyDiffusion |
+|:--------------------------------------|------:|-------:|-----------------:|
+| Adipose - Subcutaneous                | 0.498 |  0.499 |            0.511 |
+| Artery - Tibial                       | 0.503 |  0.497 |            0.501 |
+| Cells - Cultured fibroblasts          | 0.503 |  0.494 |            0.492 |
+| Colon - Sigmoid                       | 0.503 |  0.513 |            0.498 |
+| Esophagus - Gastroesophageal Junction | 0.502 |  0.498 |            0.500 |
+| Esophagus - Muscularis                | 0.499 |  0.495 |            0.499 |
+| Muscle - Skeletal                     | 0.501 |  0.499 |            0.501 |
+| Nerve - Tibial                        | 0.499 |  0.496 |            0.502 |
+| Skin - Not Sun Exposed (Suprapubic)   | 0.500 |  0.502 |            0.505 |
+| Testis                                | 0.498 |  0.501 |            0.499 |
+| Thyroid                               | 0.504 |  0.505 |            0.502 |
+| Whole Blood                           | 0.501 |  0.501 |            0.502 |
+| trained on (cohort)                   | 0.509 |  0.523 |            0.531 |

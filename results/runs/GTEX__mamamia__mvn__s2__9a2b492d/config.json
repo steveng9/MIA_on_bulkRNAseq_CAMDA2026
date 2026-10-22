@@ -1,0 +1,42 @@
+{
+  "run_id": "GTEX__mamamia__mvn__s2__9a2b492d",
+  "timestamp": "2026-10-22T19:25:28+00:00",
+  "dataset": "GTEX",
+  "attack": "mamamia",
+  "generator": "mvn",
+  "split": 2,
+  "tag": "k4_1w_2w",
+  "experiment": "grid_gtex",
+  "variant": "mamamia",
+  "notes": "GTEx normal tissue, challenge generators, shadow-free attacks, 5 donor-grouped splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mamamia",
+    "n_bins": 4,
+    "use_oneway": true,
+    "use_twoway": true,
+    "use_subtype_marginal": true,
+    "calibrate": true,
+    "aggregation": "ratio",
+    "dp_epsilon": null,
+    "dp_delta": 1e-05,
+    "dp_budget_weights": [
+      0.33,
+      0.67
+    ],
+    "attack": "mamamia"
+  },
+  "target": {
+    "fingerprint": "174304644ae03329",
+    "params": {
+      "seed": 2958,
+      "device": "cuda",
+      "verbose": true,
+      "name": "mvn",
+      "noise_level": 0.7
+    },
+    "seed": 2958,
+    "source": "trained"
+  }
+}

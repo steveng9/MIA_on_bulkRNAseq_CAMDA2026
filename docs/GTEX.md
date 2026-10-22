@@ -70,8 +70,53 @@ MeLoMIA-TabSyn.
 
 ## Results
 
-First check (MVN, split 1): MahalaMIA with the ridge reaches AUC 0.976 with the
-reference set and 0.816 without one (COMBINED, five splits: 0.89 and 0.68).
+### Shadow-free attacks, MVN / CVAE / NoisyDiffusion (2026-10-22)
+
+`configs/experiments/grid_gtex.yaml`, five donor-grouped splits, AUC (mean over
+splits; split-to-split standard deviation 0.02 or less except where noted) and
+TPR at 1% FPR. COMBINED alongside, same attacks and settings
+(`results/perturb/aux_mismatch.csv`, `grid_slides_extra_combined`,
+`redsigma_combined`). DOMIAS is the corrected implementation (one PCA, 100
+components, fitted on the reference set; `aux_mismatch.domias_baseline`); the
+benchmark one in `mia/attacks/generic.py` scores 0.50 on every target here, as
+on COMBINED (tracker 0e).
+
+| attack | MVN | CVAE | NoisyDiffusion | COMBINED: MVN | CVAE | NoisyDiffusion |
+|---|---|---|---|---|---|---|
+| MahalaMIA, ridge 1e-4, reference set | **0.974** (0.61) | **0.870** (0.43) | **0.760** (0.14) | 0.893 (0.45) | 0.798 (0.33) | 0.769 (0.23) |
+| MahalaMIA, ridge 1e-4, no reference set | 0.833 (0.22) | 0.866 (0.21) | 0.634 (0.08) | 0.682 (0.03) | 0.711 (0.02) | 0.592 (0.03) |
+| MahalaMIA as submitted | 0.972 (0.57) | 0.653 +- 0.107 (0.11) | 0.756 (0.16) | 0.900 (0.41) | 0.619 (0.08) | 0.770 (0.20) |
+| RedSigma | 0.829 (0.21) | 0.815 (0.31) | 0.504 (0.01) | 0.681 (0.03) | 0.847 (0.35) | 0.506 (0.01) |
+| DOMIAS (corrected, 100 components) | 0.576 (0.03) | 0.762 (0.22) | 0.573 (0.05) | 0.59 | 0.69 | 0.54 |
+| GAN-leaks | 0.528 (0.01) | 0.727 (0.14) | 0.539 (0.03) | 0.528 | 0.642 | 0.514 |
+| GAN-leaks calibrated | 0.543 | 0.588 | 0.541 | 0.566 | 0.562 | 0.522 |
+| MC | 0.512 | 0.557 | 0.522 | 0.507 | 0.531 | 0.507 |
+| MAMA-MIA v1 | 0.512 | 0.516 | 0.523 | 0.512 | 0.517 | 0.528 |
+| MAMA-MIA v2 | 0.509 | 0.523 | 0.531 | 0.508 | 0.517 | 0.547 |
+| confidence (LR / RF), LOGAN | 0.50-0.52 | 0.50-0.52 | 0.50-0.51 | 0.50-0.51 | 0.50-0.51 | 0.50-0.51 |
+
+Readings:
+
+1. **GTEx is attacked about as easily as COMBINED, and more easily against MVN
+   and CVAE.** The same attacks lead (MahalaMIA, RedSigma), the same ones fail
+   (MAMA-MIA, the confidence attacks, LOGAN), and MahalaMIA as submitted is again
+   unstable on CVAE (0.65 +- 0.11 here, 0.62 on COMBINED) where the ridge is not.
+   One change of order: on CVAE, MahalaMIA now beats RedSigma (0.87 against
+   0.82; COMBINED 0.80 against 0.85).
+2. Part of the gap is cohort size: GTEx trains on about 2,800 samples, COMBINED
+   on about 3,460, and MahalaMIA weakens as the training set grows towards the
+   978 genes' covariance limit. COMBINED with its training set subsampled to
+   2,800 gave MVN 0.93 and CVAE 0.84 (`scripts/cohort_size_sweep.py`, ridge
+   1e-6), between COMBINED at full size and GTEx. The rest is not explained; normal tissue is more homogeneous than
+   tumour, which would make a member stand out more, but that was not tested.
+3. **The reference set matters less on GTEx.** Without it, MahalaMIA still
+   reaches 0.83 on MVN and 0.87 on CVAE (COMBINED: 0.68 and 0.71); on CVAE the
+   reference set adds nothing.
+4. NoisyDiffusion is the hardest target on both cohorts, at the same level
+   (0.76 against 0.77).
+
+First check (MVN, split 1), before the grid: MahalaMIA with the ridge 0.976 with
+the reference set and 0.816 without.
 
 ### Another tissue of a training donor (MVN, 100 redrawn splits)
 
@@ -122,6 +167,37 @@ Readings:
    or shared processing batches. For the privacy question it does not matter
    which: each links the sample to the donor.
 
-The same question on the canonical five splits, for every generator and the
-shadow-free attacks without calibration, is `scripts/perturb/gtex_donor_linked.py`
-(queued; `results/perturb/gtex_donor_linked.csv`).
+### Another tissue of a training donor, canonical splits, every generator
+
+`scripts/perturb/gtex_donor_linked.py`: the five canonical targets, the
+shadow-free attacks, no calibration; each of a candidate donor's other-tissue
+samples is scored against the target and labelled with its donor's membership.
+Per-tissue tables for every attack: `results/perturb/TABLES.md`, section "GTEx:
+another tissue of a training donor"; rows in
+`results/perturb/gtex_donor_linked.csv`. MahalaMIA with the ridge and the
+reference set, AUC, mean over splits:
+
+| attacked sample | MVN | CVAE | NoisyDiffusion |
+|---|---|---|---|
+| the trained-on samples themselves | 0.974 | 0.870 | 0.760 |
+| Skin, not sun-exposed | 0.621 | 0.578 | 0.556 |
+| Colon, sigmoid | 0.605 | 0.588 | 0.555 |
+| Oesophagus, gastro-oesophageal junction | 0.577 | 0.553 | 0.535 |
+| Oesophagus, muscularis | 0.564 | 0.547 | 0.542 |
+| Adipose, subcutaneous | 0.617 | 0.592 | 0.561 |
+| Nerve / artery / thyroid | 0.53-0.54 | 0.52-0.53 | 0.52-0.53 |
+| Blood, muscle, testis, fibroblasts | 0.50-0.51 | 0.51-0.52 | 0.50-0.51 |
+
+Readings:
+
+1. The MVN column reproduces the 100-redraw estimate (unexposed skin 0.621
+   against 0.620, adipose 0.617 against 0.612), so five splits suffice here.
+2. The leak is there for every generator and falls with how well the attack
+   does on the trained-on samples: averaged over the four same-organ tissues,
+   CVAE keeps about three quarters of MVN's excess over 0.5 (0.567 against
+   0.592), NoisyDiffusion about half (0.547).
+3. It is weak per donor: TPR at 1% FPR on unexposed skin is 0.05 (MVN), 0.03
+   (CVAE, NoisyDiffusion). The other tissue shifts the whole distribution a
+   little; it does not single out a few donors.
+4. Without the reference set the leak halves (MVN unexposed skin 0.555); RedSigma
+   sees less of it (0.55 at best), and GAN-leaks and MAMA-MIA none (0.49-0.52).
