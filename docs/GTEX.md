@@ -72,3 +72,56 @@ MeLoMIA-TabSyn.
 
 First check (MVN, split 1): MahalaMIA with the ridge reaches AUC 0.976 with the
 reference set and 0.816 without one (COMBINED, five splits: 0.89 and 0.68).
+
+### Another tissue of a training donor (MVN, 100 redrawn splits)
+
+`scripts/perturb/gtex_donor_linked_resplit.py`, the design of
+`donor_linked_resplit.py` (TCGA) on GTEx: MVN retrained on 100 donor-level
+splits (each candidate donor in with probability 0.8, all of its ten-tissue
+samples together), every other-tissue sample of the 775 candidate donors scored
+in every repetition. MahalaMIA with the ridge and the reference set. The
+calibrated column z-scores each sample against its own scores in the
+repetitions where its donor was out: ideal shadow models, so an upper bound on
+what shadow modelling could reach. 95% donor-bootstrap intervals are within
+0.02 of every number below; a label-shuffled control scores 0.50 in every row.
+
+| attacked sample | samples | AUC | calibrated AUC |
+|---|---|---|---|
+| the trained-on samples themselves | 3,497 | 0.975 | 1.000 |
+| same organ, another site (all) | 1,714 | 0.590 | 0.697 |
+| Skin, not sun-exposed (trained: sun-exposed) | 543 | 0.620 | 0.771 |
+| Colon, sigmoid (trained: transverse) | 350 | 0.604 | 0.725 |
+| Oesophagus, gastro-oesophageal junction (trained: mucosa) | 340 | 0.571 | 0.656 |
+| Oesophagus, muscularis (trained: mucosa) | 471 | 0.566 | 0.643 |
+| another organ (all) | 10,524 | 0.520 | 0.554 |
+| Adipose, subcutaneous | 586 | 0.612 | 0.730 |
+| Nerve, tibial | 554 | 0.542 | 0.582 |
+| Artery, tibial | 576 | 0.530 | 0.579 |
+| Thyroid | 571 | 0.528 | 0.568 |
+| Whole blood | 665 | 0.507 | 0.508 |
+| Muscle, skeletal | 678 | 0.502 | 0.509 |
+| Testis | 356 | 0.503 | 0.506 |
+| Cultured fibroblasts (cell line) | 531 | 0.508 | 0.516 |
+
+Readings:
+
+1. **A different sample of the same organ identifies the donor**, as a second
+   tumour sample did on TCGA (COMBINED, same design, separate tumour sample:
+   0.64 uncalibrated, 0.78 calibrated). Unexposed skin against a generator
+   trained on sun-exposed skin: 0.62, and 0.77 with calibration. This is a
+   stronger leak than TCGA's matched normal tissue (0.50 / 0.53), the other
+   normal-tissue case we had.
+2. **The leak follows tissue similarity, not organ labels.** Subcutaneous
+   adipose leaks as much as a same-organ sample (0.61 / 0.73), presumably
+   because breast tissue, one of the ten trained tissues, is mostly fat (not
+   checked). Nerve, artery and thyroid leak a little (0.57 to 0.58
+   calibrated). Blood, muscle, testis and cultured fibroblasts stay at chance
+   even with ideal calibration.
+3. What carries the signal is not separated: shared biology of the donor
+   (genotype, sex, age), shared handling (ischaemic time, death circumstances)
+   or shared processing batches. For the privacy question it does not matter
+   which: each links the sample to the donor.
+
+The same question on the canonical five splits, for every generator and the
+shadow-free attacks without calibration, is `scripts/perturb/gtex_donor_linked.py`
+(queued; `results/perturb/gtex_donor_linked.csv`).
