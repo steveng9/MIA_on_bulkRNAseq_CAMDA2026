@@ -1,0 +1,11 @@
+# GTEx v10 normal tissue of the ten organs in TCGA-COMBINED (Hakime's
+# suggestion, 2026-10-22), 978 landmark genes, tissue as label, the challenge's
+# VST recipe.  Donors are the unit: the reference set is whole donors and the
+# five splits are donor-grouped, so no donor has samples on both sides.  Built
+# by scripts/external/gtex_prepare.py; the same donors' other tissues are in
+# GTEX_extras_vst.tsv for the donor-linked attack.
+expression: ~/data/GTEx/processed/GTEX_candidates_vst.tsv
+labels: ~/data/GTEx/processed/GTEX_meta.csv
+label_col: tissue
+reference: ~/data/GTEx/processed/GTEX_reference_vst.tsv
+splits: ~/data/GTEx/processed/GTEX_splits.yaml

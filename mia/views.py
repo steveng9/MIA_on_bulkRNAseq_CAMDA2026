@@ -10,7 +10,10 @@ Inside the block the loaders in `mia.datasets` and `mia.targets` answer for
   genes         only these gene columns existed, in the candidates, the
                 release and the auxiliary set alike;
   extra         these rows were appended to the candidate pool (never members
-                of any target), with classes `extra_labels`.
+                of any target), with classes `extra_labels`;
+  candidates    the candidate pool's profiles were these values instead (same
+                ids, same genes): the attacked records arrive in another
+                representation than the release.
 
 The targets themselves are untouched: a view changes the attack's inputs, not
 what was released.  Only attacks that keep nothing on disk may run inside a
@@ -35,8 +38,13 @@ STATEFUL = ("melomia_nd", "melomia_cvae", "melomia_tabsyn", "melomia_e2e_cvae")
 
 @contextmanager
 def view(dataset: str, reference=KEEP, genes=None, extra: pd.DataFrame | None = None,
-         extra_labels=None):
+         extra_labels=None, candidates: pd.DataFrame | None = None):
     base_expr = D.load_expression(dataset)
+    if candidates is not None:
+        missing = base_expr.index.difference(candidates.index)
+        if len(missing):
+            raise ValueError(f"candidates lack {len(missing)} ids, e.g. {list(missing[:3])}")
+        base_expr = candidates.loc[base_expr.index, base_expr.columns]
     base_ref = D.load_reference(dataset)
     base_lab = D.load_subtypes(dataset)
     cols = list(base_expr.columns)

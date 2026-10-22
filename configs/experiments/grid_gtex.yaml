@@ -1,0 +1,55 @@
+# GTEx v10 normal tissue, the ten organs of TCGA-COMBINED (configs/datasets/GTEX.yaml;
+# Hakime's suggestion, 2026-10-22).  The four challenge generators (DP-PGM both as
+# the CAMDA-26 release and as the corrected one) and every attack that needs no
+# shadow stack, at the settings of the COMBINED grid.  MeLoMIA:
+# melomia_prc_gtex.yaml.
+name: grid_gtex
+dataset: GTEX
+notes: "GTEx normal tissue, challenge generators, shadow-free attacks, 5 donor-grouped splits"
+device: cuda
+
+generators: ["mvn", "cvae", "nd", "pgg", "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16"]
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  mahalamia:
+    class: mahalamia
+    params:
+      use_reference: true
+  mahalamia_ridge:
+    class: mahalamia
+    params: {use_reference: true, covariance: ridge, ridge_alpha: 1.0e-4}
+  mahalamia_noaux_ridge:
+    class: mahalamia
+    params: {use_reference: false, covariance: ridge, ridge_alpha: 1.0e-4}
+  mamamia:
+    class: mamamia
+    params:
+      n_bins: 4
+  mamamia_v2:
+    class: mamamia_v2
+    params: {cliques: public, edges: auto, class_centre: true}
+  redsigma:
+    class: redsigma
+    params: {rule: auto}
+  generic_mc:
+    class: generic
+    params: {method: mc}
+  generic_gan_leaks:
+    class: generic
+    params: {method: gan_leaks}
+  generic_conf_lr:
+    class: generic
+    params: {method: conf_lr}
+  generic_conf_rf:
+    class: generic
+    params: {method: conf_rf}
+  generic_logan_d1:
+    class: generic
+    params: {method: logan_d1}
+  generic_gan_leaks_cal:
+    class: generic
+    params: {method: gan_leaks_cal}
+  generic_domias_kde:
+    class: generic
+    params: {method: domias_kde}

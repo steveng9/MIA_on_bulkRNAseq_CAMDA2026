@@ -506,9 +506,7 @@ distance of exactly zero; the ridge variant is unaffected.
   subset sizes are worth that.
 - **Candidates in a mismatched representation.** Hakime's text mismatches the
   auxiliary data only. The harder case, where the record under attack is itself
-  TPM or from another pipeline, is not run. The donor-linked experiment is a
-  version of it (the B samples come through a frozen transform), and the
-  machinery is the same.
+  TPM or from another pipeline, is now run: section 7 (2026-10-22).
 - **PAM50 labels for GSE58135.** The series gives receptor status only.
   Attacks that need a class for auxiliary samples label them with the nearest
   class of the release, as they already do for the COMBINED reference set.
@@ -534,6 +532,90 @@ Future-work text, if the donor-linked follow-ups are not run before submission:
 > among 4,323 tumours is its own donor's tumour 12% of the time, so an attack
 > built for that case may do better.
 
+## 7. The attacked profiles themselves in another representation (2026-10-22)
+
+TRACKER item 0d, the "high priority" note in the paper's auxiliary-mismatch
+appendix. Experiments 1 and 2 changed only the auxiliary data. Here the record
+under attack changes: the adversary holds each candidate's profile as another
+lab would have it, while the release stays as published (VST).
+
+### Setup
+
+`scripts/external/candidate_representations.py` writes every distributed
+sample of both cohorts in four other forms;
+`scripts/perturb/candidate_mismatch.py` swaps them in for the candidates
+(`mia.views.view(..., candidates=...)`) and reruns every attack that needs no
+shadow models, on every target, five splits (TabPFN on COMBINED: one).
+
+| candidates | what it is |
+|---|---|
+| VST as distributed | control: the grid's setting |
+| GDC, TPM / log2(TPM+1) | same reads, same aligner and counts as the release (GDC's STAR pipeline), another normalisation |
+| TOIL, log2(TPM+1) | another pipeline: UCSC's TOIL recompute of TCGA (STAR + RSEM, GENCODE v23) |
+| TOIL, VST fitted by the adversary | TOIL's expected counts through a VST the adversary fits on its own samples with the challenge's published recipe (it cannot know the fitted transform) |
+| ... quantile-aligned | the adversary maps each gene of its candidate pool onto the release's distribution of that gene; needs only the release |
+| VST, quantile-aligned | what the mapping does when nothing is mismatched |
+
+TOIL lacks 3 BRCA and 194 COMBINED samples; they are left out of the TOIL rows'
+metrics. On COMBINED the auxiliary set is either as distributed (VST) or in the
+candidates' representation (all of the adversary's data from one pipeline);
+BRCA has none. Spread over splits is below 0.01 AUC in every cell checked.
+
+### Result
+
+MahalaMIA with the ridge (1e-4, as in sections 2 and 3; the main table's 1e-6
+gives 0.996 rather than 0.97 on BRCA CVAE, the only reason the two disagree),
+AUC:
+
+| attacked profiles | BRCA MVN | BRCA CVAE | BRCA ND | COMBINED MVN | COMBINED CVAE | COMBINED ND |
+|---|---|---|---|---|---|---|
+| VST as distributed | 1.00 | 0.97 | 0.82 | 0.89 | 0.80 | 0.77 |
+| GDC, log2(TPM+1) | 0.54 | 0.53 | 0.52 | 0.55 | 0.56 | 0.53 |
+| GDC, TPM, aligned | 0.95 | 0.90 | 0.71 | 0.84 | 0.77 | 0.70 |
+| TOIL, log2(TPM+1) | 0.54 | 0.53 | 0.52 | 0.54 | 0.55 | 0.52 |
+| TOIL, TPM, aligned | 0.89 | 0.85 | 0.67 | 0.78 | 0.73 | 0.67 |
+| TOIL, own VST | 0.83 | 0.80 | 0.71 | 0.69 | 0.65 | 0.64 |
+| TOIL, own VST, aligned | 0.98 | 0.94 | 0.72 | 0.83 | 0.76 | 0.69 |
+
+(BRCA without auxiliary data; COMBINED with the reference set as distributed.)
+
+1. **Unaligned, the covariance attack is at chance.** TPM or log-TPM profiles
+   against a VST release score 0.50 to 0.56 on every generator.
+2. **The adversary repairs most of it with the release alone.** Per-gene
+   quantile alignment brings another normalisation of the same counts back to
+   0.95 / 0.90 (BRCA MVN / CVAE) and 0.84 / 0.77 (COMBINED). Another pipeline
+   costs more (TOIL aligned: 0.89 / 0.85 and 0.78 / 0.73), and knowing the
+   release's recipe helps most: TOIL counts through the adversary's own VST,
+   then aligned, reach 0.98 / 0.94 on BRCA and 0.83 / 0.76 on COMBINED. The
+   rare-record end recovers less: TPR at 1% FPR on BRCA MVN 1.00 as
+   distributed, 0.81 GDC aligned, 0.52 TOIL aligned, 0.86 TOIL own VST aligned;
+   COMBINED MVN 0.45, 0.36, 0.28, 0.36.
+3. **Matching the auxiliary data to the candidates hurts on COMBINED** (MVN,
+   GDC aligned: 0.70 with a TPM reference set against 0.84 with the distributed
+   one). The reference covariance then carries the mismatch noise that the
+   release's does not. An adversary should take the auxiliary set from the
+   release side when one is published.
+4. **Attacks that standardise each set are robust.** RedSigma barely notices:
+   BRCA MVN 1.00 as distributed, 0.96 on unaligned log-TPM; COMBINED CVAE 0.85
+   as distributed, 0.79 with GDC TPM, 0.75 with TOIL. GAN-leaks on tuned TabSyn (BRCA): 0.77 to 0.74 (GDC) and 0.72
+   (TOIL).
+5. **The DP-PGM attack does not survive it.** MAMA-MIA v2 reads which bin each
+   gene value falls in, and a pipeline change moves values across bins: on
+   COMBINED, 0.66 / 0.65 (CAMDA-26 / corrected DP-PGM) as distributed and 0.50
+   to 0.52 in every other representation, aligned or not. On BRCA the CAMDA-26
+   DP-PGM comes back only with the adversary's own VST of TOIL counts plus
+   alignment (0.63 against 0.64); the corrected one does not (0.57 against
+   0.76, and alignment alone already costs it 0.18). So the one attack that
+   works against the DP-PGM needs the release's exact pipeline. Why BRCA
+   recovers and COMBINED does not is not checked.
+
+MeLoMIA is not run here: its candidate features are cached per target, and its
+per-record calibration would need every synth-shadow proxy re-applied to the
+new profiles (a re-run of the stack's feature extraction per representation).
+
+Tables for every attack: `results/perturb/TABLES.md`, "Attacked profiles in
+another representation"; rows in `results/perturb/candidate_mismatch.csv`.
+
 ## Reproducing
 
 ```
@@ -550,6 +632,9 @@ python scripts/perturb/donor_linkability.py
 python scripts/perturb/donor_linked_resplit.py --dataset COMBINED --generator mvn --reps 100
 python scripts/perturb/aux_mismatch.py --dataset BRCA          # also COMBINED
 python scripts/perturb/gene_subsets.py --dataset COMBINED --logan
+python scripts/external/candidate_representations.py gdc     # section 7; then `toil`
+~/.venvs/pydeseq2/bin/python scripts/external/candidate_representations.py toil_vst
+python scripts/perturb/candidate_mismatch.py --dataset BRCA    # also COMBINED
 python scripts/perturb/report.py                               # results/perturb/TABLES.md
 ```
 

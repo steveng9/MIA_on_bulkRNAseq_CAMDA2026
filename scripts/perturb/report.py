@@ -81,6 +81,75 @@ def aux_tables(out: list) -> None:
                    f"{md(cols(base))}\n")
 
 
+CAND = {
+    "vst": "VST as distributed (control)",
+    "vst_aligned": "VST, quantile-aligned to the release",
+    "gdc_tpm": "GDC pipeline, TPM",
+    "gdc_log2tpm": "GDC pipeline, log2(TPM+1)",
+    "gdc_log2tpm_aligned": "GDC pipeline, TPM, quantile-aligned",
+    "toil_log2tpm": "TOIL pipeline (RSEM), log2(TPM+1)",
+    "toil_log2tpm_aligned": "TOIL pipeline, TPM, quantile-aligned",
+    "toil_vst_own": "TOIL pipeline, VST fitted by the adversary",
+    "toil_vst_own_aligned": "TOIL pipeline, own VST, quantile-aligned",
+}
+
+
+def candidate_tables(out: list) -> None:
+    f = R / "candidate_mismatch.csv"
+    if not f.exists():
+        return
+    d = pd.read_csv(f)
+    d["generator"] = gen_name(d.generator)
+    d["rep"] = d.condition.str.split("|").str[0]
+    d["aux"] = d.condition.str.split("|").str[1]
+    blocks = {
+        "BRCA": [("none", "MahalaMIA (no aux, ridge 1e-4)"), ("none", "RedSigma"),
+                 ("none", "GAN-leaks"), ("none", "MAMA-MIA v2")],
+        "COMBINED": [("ref_vst", "MahalaMIA (ridge 1e-4)"), ("ref_same", "MahalaMIA (ridge 1e-4)"),
+                     ("none", "MahalaMIA (no aux, ridge 1e-4)"), ("ref_vst", "RedSigma"),
+                     ("ref_same", "RedSigma"), ("none", "GAN-leaks"), ("none", "MAMA-MIA v2"),
+                     ("ref_vst", "DOMIAS-KDE")],
+    }
+    auxname = {"none": "no auxiliary set", "ref_vst": "reference set as distributed (VST)",
+               "ref_same": "reference set in the candidates' representation"}
+    for ds, items in blocks.items():
+        x = d[d.dataset == ds]
+        if x.empty:
+            continue
+        n = x.groupby("generator").split.nunique()
+        out.append(f"## Attacked profiles in another representation: TCGA-{ds}\n")
+        out.append("The release is unchanged (VST); the candidates are the same samples in another "
+                   "normalisation or pipeline. AUC, mean over splits ("
+                   + ", ".join(f"{g}: {k}" for g, k in n.items()) + ").\n")
+        for aux, attack in items:
+            keep = x[(x.attack == attack) & ((x.aux == aux) | ((x.rep == "vst") & (aux == "ref_same")
+                                                               & (x.aux == "ref_vst")))]
+            t = keep.pivot_table(index="rep", columns="generator", values="auc")
+            t = cols(t.reindex([c for c in CAND if c in t.index]))
+            t.index = [CAND[c] for c in t.index]
+            out.append(f"**{attack}, {auxname[aux]}**\n\n{md(t)}\n")
+
+
+def gtex_tables(out: list) -> None:
+    f = R / "gtex_donor_linked.csv"
+    if not f.exists():
+        return
+    d = pd.read_csv(f)
+    d["generator"] = gen_name(d.generator)
+    out.append("## GTEx: another tissue of a training donor\n")
+    out.append("AUC over the donor's other-tissue samples (member donor vs non-member donor), "
+               "mean over splits; `trained` is the same attack on the cohort's own samples.\n")
+    for attack in ["MahalaMIA (ridge 1e-4)", "MahalaMIA (no aux, ridge 1e-4)", "RedSigma", "GAN-leaks",
+                   "MAMA-MIA v2"]:
+        x = d[d.attack == attack]
+        if x.empty:
+            continue
+        t = x.pivot_table(index="tissue", columns="generator", values="auc")
+        tr = x.groupby("generator").trained_auc.mean().rename("trained on (cohort)")
+        t = pd.concat([t, tr.to_frame().T])
+        out.append(f"**{attack}**\n\n{md(cols(t))}\n")
+
+
 def subset_tables(out: list) -> None:
     for tag, label in (("", ""), ("_gse", " (BRCA with GSE58135 as the auxiliary set)")):
         f = R / f"gene_subsets{tag}.csv"
@@ -175,7 +244,9 @@ def main() -> None:
            "`docs/DONOR_LINKED_AND_PERTURBATIONS.md`.\n"]
     donor_tables(out)
     aux_tables(out)
+    candidate_tables(out)
     subset_tables(out)
+    gtex_tables(out)
     (R / "TABLES.md").write_text("\n".join(out))
     print(f"wrote {R / 'TABLES.md'} ({sum(len(o) for o in out) // 1000} kB)")
 
