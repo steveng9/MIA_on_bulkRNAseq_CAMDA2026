@@ -118,6 +118,26 @@ Readings:
 First check (MVN, split 1), before the grid: MahalaMIA with the ridge 0.976 with
 the reference set and 0.816 without.
 
+### Both DP-PGMs, and MeLoMIA-CVAE (2026-10-23)
+
+The CAMDA-26 release (`pgg`) and the corrected DP-PGM (16 DP bins, epsilon 10),
+five splits, AUC (TPR at 1% FPR); COMBINED in brackets.
+
+| attack | DP-PGM, CAMDA-26 release | DP-PGM, corrected |
+|---|---|---|
+| MAMA-MIA v2 | **0.631** (0.03) [0.659] | **0.648** (0.02) [0.649] |
+| MAMA-MIA v1 | 0.589 [0.620] | 0.517 [0.520] |
+| every other shadow-free attack, corrected DOMIAS included | 0.50-0.51 | 0.50-0.51 |
+
+The same picture as COMBINED: only MAMA-MIA reads a DP-PGM, at the same level.
+
+MeLoMIA-CVAE (K=20, per-record calibration, `melomia_prc_gtex.yaml`): CVAE
+**0.881** (TPR at 1% FPR 0.39; COMBINED 0.870), MVN 0.557, NoisyDiffusion 0.598.
+It is the strongest attack on the GTEx CVAE, one point above MahalaMIA (0.870).
+
+Corrected DOMIAS is `scripts/perturb/gtex_domias.py` (the grid's DOMIAS is the
+uncorrected benchmark version).
+
 ### Another tissue of a training donor (MVN, 100 redrawn splits)
 
 `scripts/perturb/gtex_donor_linked_resplit.py`, the design of
@@ -201,3 +221,6 @@ Readings:
    little; it does not single out a few donors.
 4. Without the reference set the leak halves (MVN unexposed skin 0.555); RedSigma
    sees less of it (0.55 at best), and GAN-leaks and MAMA-MIA none (0.49-0.52).
+5. Against both DP-PGMs another tissue is at chance for every attack
+   (0.49-0.51), including MAMA-MIA v2, which reaches 0.63 and 0.65 on the
+   trained-on samples.

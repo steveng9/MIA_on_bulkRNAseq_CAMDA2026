@@ -1,0 +1,42 @@
+{
+  "run_id": "GTEX__mahalamia__pgg__s5__3beaec73",
+  "timestamp": "2026-10-23T01:20:45+00:00",
+  "dataset": "GTEX",
+  "attack": "mahalamia",
+  "generator": "pgg",
+  "split": 5,
+  "tag": "aux_ridge0.0001",
+  "experiment": "grid_gtex",
+  "variant": "mahalamia_ridge",
+  "notes": "GTEx normal tissue, challenge generators, shadow-free attacks, 5 donor-grouped splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ridge",
+    "ridge_alpha": 0.0001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "1595fa920648be64",
+    "params": {
+      "seed": 5881,
+      "device": "cuda",
+      "verbose": true,
+      "name": "pgg",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "iterations": 10000
+    },
+    "seed": 5881,
+    "source": "trained"
+  }
+}
