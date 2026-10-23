@@ -14,6 +14,9 @@ diagram) is TikZ: paper/Fig/overview.tex.
   exposure           per generator and cohort, the strongest of our attacks
                      against the strongest generic attack and RedSigma, as AUC
                      and as TPR at 1% FPR.
+  cohort_size        MahalaMIA against MVN and CVAE on TCGA-COMBINED with the
+                     training set subsampled, as AUC and TPR at 1% FPR: the
+                     exposure falls once there are more donors than genes.
 
 Cells are fixed attack settings, not the best of every variant ever run, and
 each cell is the mean over the splits recorded for it (the latest run of each
@@ -91,7 +94,8 @@ def cell(df, dataset, generator, choices):
                & (df.attack == attack) & (df.tag == tag)]
         if len(d):
             out = {m: d[m].mean() for m in METRICS}
-            out.update(n_splits=d.split.nunique(), attack=attack, tag=tag,
+            out.update(auc_sd=d["auc"].std(ddof=1) if len(d) > 1 else np.nan,
+                       n_splits=d.split.nunique(), attack=attack, tag=tag,
                        run_ids=";".join(d.sort_values("split").run_id))
             return out
     return None
@@ -334,17 +338,120 @@ def fig_exposure(c: pd.DataFrame, name="exposure") -> None:
     plt.close(fig)
 
 
+# ---- Figure: exposure against the number of training donors ---------------------
+def cohort_size_table() -> pd.DataFrame:
+    """MahalaMIA (ridge 1e-6) on COMBINED with the training set subsampled to n."""
+    df = R.load_index()
+    df = df[(df.status == "ok") & (df.experiment.astype(str) == "cohort_size")
+            & df.tag.astype(str).str.endswith("_ridge1e-06")]
+    for m in METRICS:
+        df[m] = pd.to_numeric(df[m], errors="coerce")
+    df = df.assign(n=df.tag.str.extract(r"^n(\d+)_")[0].astype(int))
+    t = (df.groupby(["generator", "n"])
+           .agg(auc=("auc", "mean"), tpr_at_fpr_0_01=("tpr_at_fpr_0.01", "mean"),
+                trials=("split", "size"))
+           .reset_index())
+    return t.rename(columns={"tpr_at_fpr_0_01": "tpr_at_fpr_0.01"})
+
+
+def fig_cohort_size(name="cohort_size") -> None:
+    import matplotlib.pyplot as plt
+
+    t = cohort_size_table()
+    p = 978
+    fig, axes = plt.subplots(1, 2, figsize=(3.5, 1.75), sharex=True,
+                             gridspec_kw=dict(wspace=0.38))
+    styles = {"mvn": ("MVN", "o", "-"), "cvae": ("CVAE", "s", (0, (3, 1.5)))}
+    for ax, m in zip(axes, METRICS):
+        ax.axvline(p, color=AXIS, lw=0.8, zorder=1)
+        for g, (label, marker, ls) in styles.items():
+            d = t[t.generator == g].sort_values("n")
+            ax.plot(d.n, d[m], ls=ls, color=FAMILY_COLOR["MahalaMIA"], lw=1.4, zorder=3)
+            ax.plot(d.n, d[m], marker, ms=3.6, mfc=FAMILY_COLOR["MahalaMIA"], mec="white",
+                    mew=0.5, ls="", zorder=4)
+            last = d.iloc[-1]
+            ax.text(last.n * 1.07, last[m], label, va="center", ha="left", fontsize=6,
+                    color=INK2)
+        ax.set_xscale("log")
+        ax.set_xticks([500, 1000, 2000])
+        ax.set_xticklabels(["500", "1,000", "2,000"])
+        ax.minorticks_off()
+        ax.set_xlim(430, 6000)
+        if m == "auc":
+            ax.set_ylim(0.5, 1.01)  # chance at the bottom, as for TPR
+            ax.set_yticks([0.5, 0.75, 1.0])
+            ax.set_ylabel("AUC")
+        else:
+            ax.set_ylim(0, 1.03)
+            ax.set_yticks([0, 0.5, 1.0])
+            ax.set_ylabel("TPR at 1% FPR")
+        ax.grid(axis="y", color=GRID, lw=0.5, zorder=0)
+        ax.set_axisbelow(True)
+        for s in ("top", "right"):
+            ax.spines[s].set_visible(False)
+        ax.tick_params(axis="y", length=2.5, width=0.6)
+        ax.set_xlabel("training donors (log scale)")
+        lo = ax.get_ylim()[0]
+        ax.text(p * 0.96, lo + 0.02 * (ax.get_ylim()[1] - lo), "978 genes",
+                rotation=90, ha="right", va="bottom", fontsize=5.5, color=MUTED)
+    save(fig, name, t)
+    plt.close(fig)
+
+
+# ---- Table: AUC and TPR of every attack, for the appendix ------------------------
+def latex_grid(c: pd.DataFrame, cohorts=("BRCA", "COMBINED", "GTEX")) -> str:
+    """Body rows of the extended table: 'AUC / TPR at 1% FPR' per cell.
+
+    The generic row is the generic attack with the highest AUC, with its own TPR.
+    """
+    gens = list(GENERATORS)
+    lines = []
+    for ds in cohorts:
+        d = c[c.dataset == ds]
+        cols = [g for g in gens if (d.generator == g).any()]
+        lines.append(r"\midrule")
+        lines.append(r"\multicolumn{%d}{l}{\emph{%s}} \\" % (len(gens) + 1, COHORTS[ds]))
+        for row in [r for r in HEAT_ROWS if r]:
+            if row == "Best generic attack":
+                g = d[d.group == "generic"]
+                pick = g.loc[g.groupby("generator")["auc"].idxmax()].set_index("generator")
+            else:
+                pick = d[d.row == row].set_index("generator")
+            if pick.empty:
+                continue
+            cellstr = []
+            for g in gens:
+                if g not in pick.index or g not in cols:
+                    cellstr.append("")
+                    continue
+                r = pick.loc[g]
+                mark = r"$^{%d}$" % r.n_splits if r.n_splits < 5 else ""
+                cellstr.append(f"{r.auc:.2f} / {r['tpr_at_fpr_0.01']:.2f}{mark}")
+            name = {"MahalaMIA": r"\mahala{}", "MAMA-MIA": r"\mama{}", "RedSigma": r"\redsigma{}"}.get(
+                row, row.replace("MeLoMIA", r"\melo{}"))
+            lines.append(name + " & " + " & ".join(cellstr) + r" \\")
+        sd = d.auc_sd.max()
+        lines.append(f"% largest split-to-split SD of AUC in {ds}: {sd:.3f}")
+    return "\n".join(lines)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--cells", action="store_true", help="print the cells and stop")
+    ap.add_argument("--latex", action="store_true",
+                    help="print the rows of the appendix's extended table and stop")
     args = ap.parse_args()
 
     c = cells(load_runs())
+    if args.latex:
+        print(latex_grid(c))
+        return
     if not args.cells:
         style()
         fig_mechanism_heatmap(c)
         fig_mechanism_heatmap(c, cohorts=("GTEX",), name="mechanism_heatmap_gtex")
         fig_exposure(c)
+        fig_cohort_size()
         return
     if args.cells:
         pd.set_option("display.width", 220)
