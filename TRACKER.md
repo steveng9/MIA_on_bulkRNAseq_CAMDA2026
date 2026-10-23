@@ -39,6 +39,7 @@ Last updated 2026-10-23.
 | Many-shadow selection on the structure-sweep targets | `results/mamamia_v2.csv` (cliques=shadow) |
 | Why DP-PGM works now: the zCDP note for the group, Daniil, and the other agent | `docs/WHY_DP_PGM_WORKS_NOW.md` (also in the generator repo); page https://claude.ai/artifact/RfatVJKYn8saBiYnJy3KXT (share it first) |
 | PCA / UMAP of real vs synthetic (CVAE, ND, four DP-PGM configs) | `results/figures/fidelity_{pca,umap}_s1.png`; script `scripts/fidelity_embeddings.py` |
+| PCA of real vs synthetic for the October generators (TabSyn, TabPFN, DP-CVAE, DPSynth; 2026-10-23) and for GTEx (five challenge generators, five splits), in the frame of the 1 October slide | `results/figures/pca_new_s*.png`, `pca_gtex.png`; `scripts/umap_grid_slides.py --set new` / `--set gtex`; meeting page https://claude.ai/artifact/VusEFdNk1F9aoJUARhGJ4H |
 | Edge recovery from density steps (task 18) | `mia/attacks/mamamia_v2.py` (`edges="steps"`); a negative result, see "Needs Steven" below |
 | Disk pruning | 3.9 GB freed from BROKEN targets (`results/BROKEN.md`); then 7.5 GB of legacy shadow-generator weights in `mia_output/` (Steven OK'd; synthetic data, features, splits, classifiers kept; list in `mia_output/PRUNED_2026-09-24.txt`).  9.2 GB free.  2026-09-25: disk hit 2 GB and paused the hairy sweep; PGM target checkpoints now drop the fitted model (never reloaded; edges, tables and rho kept), 19 GB freed, `scripts/slim_pgm_checkpoints.py`, list in `artifacts/targets/SLIMMED.txt` |
 
