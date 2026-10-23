@@ -276,8 +276,14 @@ Many synthetic data releases are assessed with similarity metrics such as the di
 \section{Threat model}
 \label{sec:threat}
 
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{overview.pdf}
+\caption{\textbf{The membership game and the three attacks.} (a) A generator is trained on the members of a cohort, and its synthetic samples are released. The adversary holds the release, every candidate profile with its membership hidden, the generator's public description and, optionally, a reference set of known non-members. It gives each candidate a membership score, and the scores are evaluated by AUC and by the true-positive rate at a 1\% false-positive rate. (b) Each attack reads the place where one generator family keeps a trace of its training donors: \mahala{} the covariance of the release, \melo{} the losses of models that were trained on synthetic data only, and \mama{} the marginal tables that a DP graphical model measured.\label{fig:overview}}
+\end{figure*}
+
 \paragraph{What the adversary has.}
-We assume a black-box adversary. It holds (i) the released synthetic dataset $\Dsyn$; (ii) the candidate profiles, here all of $D$, with their class labels; and (iii) the public description of the generator: its code, its hyperparameters, and for a DP method its privacy parameters. It does not hold the trained generator, any intermediate quantity computed during training, or any knowledge of which candidates are members. This is the setting of the CAMDA 2026 red-team task, and it is the least a data custodian should assume, since a synthetic dataset published for research is usually accompanied by a paper and code that describe how it was made.
+We assume a black-box adversary. It holds (i) the released synthetic dataset $\Dsyn$; (ii) the candidate profiles, here all of $D$, with their class labels; and (iii) the public description of the generator: its code, its hyperparameters, and for a DP method its privacy parameters. It does not hold the trained generator, any intermediate quantity computed during training, or any knowledge of which candidates are members. This is the setting of the CAMDA 2026 red-team task, and it is the least a data custodian should assume, since a synthetic dataset published for research is usually accompanied by a paper and code that describe how it was made. Figure~\ref{fig:overview}a summarises the setting.
 
 \paragraph{The situation this models.}
 A hospital, biobank or consortium holds expression profiles for a disease cohort and publishes a synthetic version in place of the real data. The adversary holds the real expression profile of a person of interest and wants to know whether that person is in the cohort, because being in the cohort means having the disease, having been treated at that institution, or having taken part in that study. The adversary could be a party that already holds expression data for legitimate reasons, such as a second research group, a commercial testing laboratory or an insurer, or anyone who obtains a copy of such data through a breach.
@@ -297,7 +303,7 @@ The black-box adversary is our default, and every number in this paper is for it
 \section{Attacks}
 \label{sec:attacks}
 
-Each of our three attacks starts from the same question: where in $\Dsyn$ would a training profile leave a mark that a non-member would not? The answer differs by generator family, and so does the attack.
+Each of our three attacks starts from the same question: where in $\Dsyn$ would a training profile leave a mark that a non-member would not? The answer differs by generator family, and so does the attack (Figure~\ref{fig:overview}b).
 
 \subsection{\mahala{}: reading the covariance}
 \label{sec:mahalamia}
@@ -421,7 +427,7 @@ For MVN, the CVAE and DP-PGM we rebuild the challenge's generators from their pu
 \subsection{Attacks against generators}
 \label{sec:grid}
 
-Table~\ref{tab:grid} gives the AUC of every attack against each of the challenge's four generators.
+Table~\ref{tab:grid} gives the AUC of every attack against each of the challenge's four generators. Figure~\ref{fig:exposure} sets the strongest of our attacks against the strongest earlier attacks for every generator in all three cohorts, and Figure~\ref{fig:heatmap} extends the grid to TabSyn and TabPFN.
 
 \begin{table*}[!t]
 \caption{AUC of each attack against each generator of the CAMDA 2026 red-team task, black-box adversary, mean of five splits. The attack designed for a generator is in bold. Mechanism-aware attacks reach 0.80 to 1.00 against the three non-private generators, where the best generic attack reaches 0.52 to 0.71. Against DP-PGM only \mama{} is above chance.\label{tab:grid}}
@@ -447,6 +453,21 @@ Table~\ref{tab:grid} gives the AUC of every attack against each of the challenge
 \end{table*}
 
 \todo{This table is generated from \texttt{results/SLIDE\_TABLE.md} (state of 2026-10-07) and will be regenerated. Still to add: the \redsigma{} row (as submitted: BRCA 1.000 / 0.795 / 0.52 / 0.50; COMBINED 0.681 / 0.847 / 0.51 / 0.50, pending the decision on which rule choices to report); columns for the end-to-end DP graphical model, TabSyn, TabPFN, DPSynth and DP-CVAE; a companion table of TPR at 1\% FPR; standard deviations over splits.}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{exposure.pdf}
+\caption{\textbf{How exposed each generator is.} For each generator and cohort, the strongest of our attacks (filled; colour and shape give its family) against the strongest generic attack of the CAMDA 2025 benchmark (open circle) and \redsigma{} (open diamond), as AUC (top) and as the true-positive rate at 1\% false-positive rate on a log scale (bottom). The strongest attack in each group is chosen separately for each metric, from attacks run at one fixed setting each, black box. The grey bar is how far the generic attacks understate the exposure; dashed lines mark chance. Generators above the horizontal rule are not differentially private. Means over five splits unless marked. GTEx is normal tissue from the ten organs of TCGA-COMBINED.\label{fig:exposure}}
+\end{figure*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{mechanism_heatmap.pdf}
+\caption{\textbf{Each attack sees the generators whose mechanism it reads.} AUC of every attack against every generator, black box, mean over five splits (TabPFN: four splits on TCGA-BRCA, one on TCGA-COMBINED). The strongest of our attacks against each generator is in bold; white is chance. Against the two DP graphical models (right of the rule) only \mama{} is above chance. \melo{}-TabSyn was run against the other generators on TCGA-BRCA only.\label{fig:heatmap}}
+\end{figure*}
+
+\todo{Figures~\ref{fig:exposure} and \ref{fig:heatmap} are drafts made by \texttt{scripts/paper\_figures.py} from the run index (state of 2026-10-23); the diagram in Figure~\ref{fig:overview} is \texttt{Fig/overview.tex}. Pending: \melo{}-ND on GTEx (running), TabPFN on TCGA-COMBINED splits 2--5, TabSyn and TabPFN on GTEx. The figures use \mahala{} with the ridge $\lambda = 10^{-4}$ in every cohort, where Table~\ref{tab:grid} uses $10^{-6}$ (the only visible difference: TCGA-BRCA CVAE, 0.970 against 0.996). GTEx needs a paragraph in Section~\ref{sec:setup}.}
+\steven{Figure~\ref{fig:heatmap} repeats the numbers of Table~\ref{tab:grid} and adds TabSyn and TabPFN. Keep both, or move the table (with standard deviations) to Appendix~\ref{app:tables} and keep the figure?}
 
 Three things can be read from the table.
 
@@ -692,6 +713,13 @@ At the organisers' default of 100 components the corrected DOMIAS reaches 0.59, 
 
 \section{Extended tables}
 \label{app:tables}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.78\textwidth]{mechanism_heatmap_gtex.pdf}
+\caption{AUC of every attack against every generator on GTEx, as in Figure~\ref{fig:heatmap}. Rows and columns not yet run are left out.\label{fig:heatmap-gtex}}
+\end{figure*}
+
 \todo{Full attack $\times$ generator grids with AUC, TPR at 1\% and 10\% FPR and standard deviations; every generic attack as its own row; ROC curves on a log scale.}
 
 \section{Reproducibility}

@@ -1,0 +1,109 @@
+dataset,generator,row,value,n_splits,metric,group
+BRCA,CVAE,MahalaMIA,0.969807507493412,5,auc,ours
+BRCA,MVN,MahalaMIA,0.999955633651353,5,auc,ours
+BRCA,NoisyDiffusion,MeLoMIA-ND,0.9691315070948054,5,auc,ours
+BRCA,DP-PGM (CAMDA 2026),MAMA-MIA,0.638722537969202,5,auc,ours
+BRCA,DP-PGM (corrected),MAMA-MIA,0.7561118203815858,5,auc,ours
+BRCA,TabPFN,MeLoMIA-ND,0.7495307501110464,4,auc,ours
+BRCA,TabSyn,MeLoMIA-TabSyn,0.7881404239530374,5,auc,ours
+COMBINED,CVAE,MeLoMIA-CVAE,0.870020624461764,5,auc,ours
+COMBINED,MVN,MahalaMIA,0.8928449634663025,5,auc,ours
+COMBINED,NoisyDiffusion,MeLoMIA-ND,0.8023779787125441,5,auc,ours
+COMBINED,DP-PGM (CAMDA 2026),MAMA-MIA,0.6588175734850328,5,auc,ours
+COMBINED,DP-PGM (corrected),MAMA-MIA,0.6485776881346903,5,auc,ours
+COMBINED,TabPFN,MeLoMIA-ND,0.6785649093832848,1,auc,ours
+COMBINED,TabSyn,MeLoMIA-TabSyn,0.8165027091702264,5,auc,ours
+GTEX,CVAE,MeLoMIA-CVAE,0.8808016675172563,5,auc,ours
+GTEX,MVN,MahalaMIA,0.9740166264492996,5,auc,ours
+GTEX,NoisyDiffusion,MahalaMIA,0.7600967229509743,5,auc,ours
+GTEX,DP-PGM (CAMDA 2026),MAMA-MIA,0.631052939525202,5,auc,ours
+GTEX,DP-PGM (corrected),MAMA-MIA,0.6476209089871603,5,auc,ours
+BRCA,CVAE,GAN-leaks,0.7086921347459438,5,auc,generic
+BRCA,MVN,Conf-LR,0.5637002049290636,5,auc,generic
+BRCA,NoisyDiffusion,GAN-leaks,0.5441849624714157,5,auc,generic
+BRCA,DP-PGM (CAMDA 2026),Conf-LR,0.506648921259797,5,auc,generic
+BRCA,DP-PGM (corrected),Conf-LR,0.5063473184309517,5,auc,generic
+BRCA,TabPFN,Conf-LR,0.5362023613585886,4,auc,generic
+BRCA,TabSyn,GAN-leaks,0.7726775555567744,5,auc,generic
+COMBINED,CVAE,GAN-leaks,0.6417791753087246,5,auc,generic
+COMBINED,MVN,GAN-leaks cal.,0.5660459356435494,5,auc,generic
+COMBINED,NoisyDiffusion,GAN-leaks cal.,0.5218047169248575,5,auc,generic
+COMBINED,DP-PGM (CAMDA 2026),Conf-RF,0.5072963326518126,5,auc,generic
+COMBINED,DP-PGM (corrected),Conf-LR,0.5060580627429612,5,auc,generic
+COMBINED,TabPFN,GAN-leaks,0.5202342227288987,1,auc,generic
+COMBINED,TabSyn,GAN-leaks,0.6496127320294681,5,auc,generic
+GTEX,CVAE,GAN-leaks,0.7267661621995333,5,auc,generic
+GTEX,MVN,GAN-leaks cal.,0.5427025349585698,5,auc,generic
+GTEX,NoisyDiffusion,GAN-leaks cal.,0.5408204922725528,5,auc,generic
+GTEX,DP-PGM (CAMDA 2026),Conf-RF,0.505047688083233,5,auc,generic
+GTEX,DP-PGM (corrected),Conf-RF,0.5033023508316157,5,auc,generic
+BRCA,CVAE,RedSigma,0.7949165382108317,5,auc,redsigma
+BRCA,MVN,RedSigma,1.0,5,auc,redsigma
+BRCA,NoisyDiffusion,RedSigma,0.5164689703983101,5,auc,redsigma
+BRCA,DP-PGM (CAMDA 2026),RedSigma,0.5044492442224484,5,auc,redsigma
+BRCA,DP-PGM (corrected),RedSigma,0.5073209984504724,5,auc,redsigma
+BRCA,TabPFN,RedSigma,0.5884673316550627,1,auc,redsigma
+COMBINED,CVAE,RedSigma,0.8474061019370405,5,auc,redsigma
+COMBINED,MVN,RedSigma,0.6806526020658888,5,auc,redsigma
+COMBINED,NoisyDiffusion,RedSigma,0.505923079174644,5,auc,redsigma
+COMBINED,DP-PGM (CAMDA 2026),RedSigma,0.5025350972101209,5,auc,redsigma
+COMBINED,DP-PGM (corrected),RedSigma,0.5025885533825224,5,auc,redsigma
+GTEX,CVAE,RedSigma,0.8146334088247029,5,auc,redsigma
+GTEX,MVN,RedSigma,0.8285224182475271,5,auc,redsigma
+GTEX,NoisyDiffusion,RedSigma,0.5040157082308976,5,auc,redsigma
+GTEX,DP-PGM (CAMDA 2026),RedSigma,0.5014073518714549,5,auc,redsigma
+GTEX,DP-PGM (corrected),RedSigma,0.5014749742716564,5,auc,redsigma
+BRCA,CVAE,MahalaMIA,0.7945249054656147,5,tpr_at_fpr_0.01,ours
+BRCA,MVN,MahalaMIA,0.9997706422018349,5,tpr_at_fpr_0.01,ours
+BRCA,NoisyDiffusion,MeLoMIA-ND,0.7033605788980293,5,tpr_at_fpr_0.01,ours
+BRCA,DP-PGM (CAMDA 2026),MAMA-MIA,0.06841050569312923,5,tpr_at_fpr_0.01,ours
+BRCA,DP-PGM (corrected),MAMA-MIA,0.08493690685598115,5,tpr_at_fpr_0.01,ours
+BRCA,TabPFN,MeLoMIA-ND,0.10386043933473064,4,tpr_at_fpr_0.01,ours
+BRCA,TabSyn,MeLoMIA-TabSyn,0.5404056815428854,5,tpr_at_fpr_0.01,ours
+COMBINED,CVAE,MahalaMIA,0.33292757211595936,5,tpr_at_fpr_0.01,ours
+COMBINED,MVN,MahalaMIA,0.4488207475791353,5,tpr_at_fpr_0.01,ours
+COMBINED,NoisyDiffusion,MahalaMIA,0.23357835846538083,5,tpr_at_fpr_0.01,ours
+COMBINED,DP-PGM (CAMDA 2026),MAMA-MIA,0.04169523816212084,5,tpr_at_fpr_0.01,ours
+COMBINED,DP-PGM (corrected),MAMA-MIA,0.016076885789762917,5,tpr_at_fpr_0.01,ours
+COMBINED,TabPFN,MeLoMIA-ND,0.0231347599768652,1,tpr_at_fpr_0.01,ours
+COMBINED,TabSyn,MeLoMIA-TabSyn,0.2977077760115145,5,tpr_at_fpr_0.01,ours
+GTEX,CVAE,MahalaMIA,0.4290062311651542,5,tpr_at_fpr_0.01,ours
+GTEX,MVN,MahalaMIA,0.6090282648667027,5,tpr_at_fpr_0.01,ours
+GTEX,NoisyDiffusion,MahalaMIA,0.14369932293667742,5,tpr_at_fpr_0.01,ours
+GTEX,DP-PGM (CAMDA 2026),MAMA-MIA,0.03431726510386569,5,tpr_at_fpr_0.01,ours
+GTEX,DP-PGM (corrected),MAMA-MIA,0.0153732927097086,5,tpr_at_fpr_0.01,ours
+BRCA,CVAE,GAN-leaks,0.27571203614952755,5,tpr_at_fpr_0.01,generic
+BRCA,MVN,GAN-leaks,0.023414244936222163,5,tpr_at_fpr_0.01,generic
+BRCA,NoisyDiffusion,GAN-leaks,0.04774460443021304,5,tpr_at_fpr_0.01,generic
+BRCA,DP-PGM (CAMDA 2026),Conf-LR,0.01721631784619592,5,tpr_at_fpr_0.01,generic
+BRCA,DP-PGM (corrected),Conf-LR,0.0167591822117359,5,tpr_at_fpr_0.01,generic
+BRCA,TabPFN,GAN-leaks,0.02295487102244595,4,tpr_at_fpr_0.01,generic
+BRCA,TabSyn,GAN-leaks,0.5224973403975184,5,tpr_at_fpr_0.01,generic
+COMBINED,CVAE,GAN-leaks,0.02527069558611984,5,tpr_at_fpr_0.01,generic
+COMBINED,MVN,GAN-leaks,0.01214427756628874,5,tpr_at_fpr_0.01,generic
+COMBINED,NoisyDiffusion,GAN-leaks,0.0161345722034086,5,tpr_at_fpr_0.01,generic
+COMBINED,DP-PGM (CAMDA 2026),GAN-leaks cal.,0.011450284929081619,5,tpr_at_fpr_0.01,generic
+COMBINED,DP-PGM (corrected),GAN-leaks cal.,0.01145040197397886,5,tpr_at_fpr_0.01,generic
+COMBINED,TabPFN,Conf-LR,0.0115673799884326,1,tpr_at_fpr_0.01,generic
+COMBINED,TabSyn,GAN-leaks,0.10461355871498743,5,tpr_at_fpr_0.01,generic
+GTEX,CVAE,GAN-leaks,0.1412649392000552,5,tpr_at_fpr_0.01,generic
+GTEX,MVN,GAN-leaks,0.013440782481879698,5,tpr_at_fpr_0.01,generic
+GTEX,NoisyDiffusion,GAN-leaks,0.031743587764018345,5,tpr_at_fpr_0.01,generic
+GTEX,DP-PGM (CAMDA 2026),GAN-leaks,0.011938431636325362,5,tpr_at_fpr_0.01,generic
+GTEX,DP-PGM (corrected),GAN-leaks cal.,0.01315488998128716,5,tpr_at_fpr_0.01,generic
+BRCA,CVAE,RedSigma,0.32759561402584814,5,tpr_at_fpr_0.01,redsigma
+BRCA,MVN,RedSigma,1.0,5,tpr_at_fpr_0.01,redsigma
+BRCA,NoisyDiffusion,RedSigma,0.01882445570313566,5,tpr_at_fpr_0.01,redsigma
+BRCA,DP-PGM (CAMDA 2026),RedSigma,0.01354185318994296,5,tpr_at_fpr_0.01,redsigma
+BRCA,DP-PGM (corrected),RedSigma,0.01744435900946918,5,tpr_at_fpr_0.01,redsigma
+BRCA,TabPFN,RedSigma,0.0241102181400688,1,tpr_at_fpr_0.01,redsigma
+COMBINED,CVAE,RedSigma,0.35415001912012,5,tpr_at_fpr_0.01,redsigma
+COMBINED,MVN,RedSigma,0.02723823702962786,5,tpr_at_fpr_0.01,redsigma
+COMBINED,NoisyDiffusion,RedSigma,0.01197043245247008,5,tpr_at_fpr_0.01,redsigma
+COMBINED,DP-PGM (CAMDA 2026),RedSigma,0.012028035262617781,5,tpr_at_fpr_0.01,redsigma
+COMBINED,DP-PGM (corrected),RedSigma,0.01087169856056506,5,tpr_at_fpr_0.01,redsigma
+GTEX,CVAE,RedSigma,0.31191756241702145,5,tpr_at_fpr_0.01,redsigma
+GTEX,MVN,RedSigma,0.2136254247826806,5,tpr_at_fpr_0.01,redsigma
+GTEX,NoisyDiffusion,RedSigma,0.011010832682063858,5,tpr_at_fpr_0.01,redsigma
+GTEX,DP-PGM (CAMDA 2026),RedSigma,0.011582798730827359,5,tpr_at_fpr_0.01,redsigma
+GTEX,DP-PGM (corrected),RedSigma,0.00936588072802084,5,tpr_at_fpr_0.01,redsigma

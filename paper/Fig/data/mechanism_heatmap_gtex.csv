@@ -1,0 +1,26 @@
+dataset,attack,generator,auc
+GTEX,MahalaMIA,MVN,0.974
+GTEX,MahalaMIA,CVAE,0.8697
+GTEX,MahalaMIA,NoisyDiffusion,0.7601
+GTEX,MahalaMIA,DP-PGM (CAMDA 2026),0.5065
+GTEX,MahalaMIA,DP-PGM (corrected),0.5047
+GTEX,MeLoMIA-CVAE,MVN,0.5569
+GTEX,MeLoMIA-CVAE,CVAE,0.8808
+GTEX,MeLoMIA-CVAE,NoisyDiffusion,0.598
+GTEX,MeLoMIA-CVAE,DP-PGM (CAMDA 2026),0.5027
+GTEX,MeLoMIA-CVAE,DP-PGM (corrected),0.5046
+GTEX,MAMA-MIA,MVN,0.5095
+GTEX,MAMA-MIA,CVAE,0.5228
+GTEX,MAMA-MIA,NoisyDiffusion,0.5308
+GTEX,MAMA-MIA,DP-PGM (CAMDA 2026),0.6311
+GTEX,MAMA-MIA,DP-PGM (corrected),0.6476
+GTEX,RedSigma,MVN,0.8285
+GTEX,RedSigma,CVAE,0.8146
+GTEX,RedSigma,NoisyDiffusion,0.504
+GTEX,RedSigma,DP-PGM (CAMDA 2026),0.5014
+GTEX,RedSigma,DP-PGM (corrected),0.5015
+GTEX,Best generic attack,MVN,0.5427
+GTEX,Best generic attack,CVAE,0.7268
+GTEX,Best generic attack,NoisyDiffusion,0.5408
+GTEX,Best generic attack,DP-PGM (CAMDA 2026),0.505
+GTEX,Best generic attack,DP-PGM (corrected),0.5033
