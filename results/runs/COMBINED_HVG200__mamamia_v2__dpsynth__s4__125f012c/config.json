@@ -1,0 +1,55 @@
+{
+  "run_id": "COMBINED_HVG200__mamamia_v2__dpsynth__s4__125f012c",
+  "timestamp": "2026-11-12T08:10:49+00:00",
+  "dataset": "COMBINED_HVG200",
+  "attack": "mamamia_v2",
+  "generator": "dpsynth",
+  "split": 4,
+  "tag": "cl-public_ed-auto_cc",
+  "experiment": "paper_grid_combined_hvg200",
+  "variant": "mamamia_v2",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mamamia_v2",
+    "cliques": "public",
+    "edges": "auto",
+    "families": [
+      "1way",
+      "gl",
+      "tree"
+    ],
+    "class_centre": true,
+    "alpha": 0.5,
+    "calibrate": true,
+    "n_shadows": 20,
+    "shadow_frac": 0.8,
+    "n_bins": 16,
+    "attack": "mamamia_v2"
+  },
+  "target": {
+    "fingerprint": "7293ef704420362d",
+    "params": {
+      "seed": 4506,
+      "device": "cpu",
+      "verbose": true,
+      "name": "dpsynth",
+      "mechanism": "mst",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "numerical_bins": 32,
+      "init_budget_fraction": 0.1,
+      "bounds": "public",
+      "lo": 0.0,
+      "hi": 24.0,
+      "interval_handling": "sample",
+      "accountant": "auto",
+      "oracle": "default",
+      "pgm_iters": null,
+      "max_model_size": 80
+    },
+    "seed": 4506,
+    "source": "trained"
+  }
+}

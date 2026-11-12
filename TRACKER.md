@@ -69,6 +69,16 @@ Decided 2026-09-24: BRCA's optimistic held-out aux stays for now (better aux str
 - Offered 2026-10-02 to 10-04, not run, waiting on Steven: donor-level spectral bump test on the scRNA-seq data; an attack that scores a record's distance off the synthetic data's span; MeLoMIA calibration variants (non-member-only reference, raw plus calibrated features, re-tuned search space); why BRCA MeLoMIA-CVAE does not gain from calibration; republish the group-meeting page (https://claude.ai/artifact/Kncd2sC1XLtYDNnAMKSgM5), which still shows uncalibrated MeLoMIA rows; fix the opening of `docs/WHY_DP_PGM_WORKS_NOW.md`.
 - Earlier open items: more ND synth-shadow splits; GPU items (MeLoMIA K sweep, sweep-axis ablation, matched base shadows).
 
+## Side tasks for the 2026-11-13 meeting (2026-11-12, run in parallel with the manuscript session)
+
+GTEx tissue/size documentation, DP-CVAE and DPSynth built on TCGA-COMBINED
+(TabSyn/TabPFN already done or in progress elsewhere), a mapping of Hakime's
+four biological-quality methods onto what we already compute, and a new
+gene-subset MIA sweep (random vs HVG vs a 27-gene breast-cancer panel) asking
+how many genes an attacker needs for a given AUC. Full write-up, numbers and
+the lower-priority master TODO (normalization writeup, donor/sample overlap
+validation, the genes-needed-for-AUC privacy metric idea): `docs/SIDE_TASKS_2026-11-12.md`.
+
 ## Paper rebuild for ISMB 2027 (2026-11-11 to 11-12, manuscript session)
 
 | Item | Status | Where |

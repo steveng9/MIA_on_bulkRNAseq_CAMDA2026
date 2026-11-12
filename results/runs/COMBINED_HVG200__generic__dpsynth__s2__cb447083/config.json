@@ -1,0 +1,43 @@
+{
+  "run_id": "COMBINED_HVG200__generic__dpsynth__s2__cb447083",
+  "timestamp": "2026-11-12T08:11:03+00:00",
+  "dataset": "COMBINED_HVG200",
+  "attack": "generic",
+  "generator": "dpsynth",
+  "split": 2,
+  "tag": "gan_leaks",
+  "experiment": "paper_grid_combined_hvg200",
+  "variant": "generic_gan_leaks",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "generic",
+    "method": "gan_leaks",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "2553517b0809e419",
+    "params": {
+      "seed": 2506,
+      "device": "cpu",
+      "verbose": true,
+      "name": "dpsynth",
+      "mechanism": "mst",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "numerical_bins": 32,
+      "init_budget_fraction": 0.1,
+      "bounds": "public",
+      "lo": 0.0,
+      "hi": 24.0,
+      "interval_handling": "sample",
+      "accountant": "auto",
+      "oracle": "default",
+      "pgm_iters": null,
+      "max_model_size": 80
+    },
+    "seed": 2506,
+    "source": "trained"
+  }
+}

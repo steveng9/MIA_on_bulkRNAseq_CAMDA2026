@@ -1,0 +1,53 @@
+{
+  "run_id": "COMBINED_HVG200__mahalamia__dpsynth__s3__ff442aaf",
+  "timestamp": "2026-11-12T08:10:44+00:00",
+  "dataset": "COMBINED_HVG200",
+  "attack": "mahalamia",
+  "generator": "dpsynth",
+  "split": 3,
+  "tag": "aux_ridge0.0001_shrink0.5",
+  "experiment": "paper_grid_combined_hvg200",
+  "variant": "mahalamia",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ridge",
+    "ridge_alpha": 0.0001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "class_shrink": 0.5,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "54cdb3d74ed5f220",
+    "params": {
+      "seed": 3506,
+      "device": "cpu",
+      "verbose": true,
+      "name": "dpsynth",
+      "mechanism": "mst",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "numerical_bins": 32,
+      "init_budget_fraction": 0.1,
+      "bounds": "public",
+      "lo": 0.0,
+      "hi": 24.0,
+      "interval_handling": "sample",
+      "accountant": "auto",
+      "oracle": "default",
+      "pgm_iters": null,
+      "max_model_size": 80
+    },
+    "seed": 3506,
+    "source": "trained"
+  }
+}
