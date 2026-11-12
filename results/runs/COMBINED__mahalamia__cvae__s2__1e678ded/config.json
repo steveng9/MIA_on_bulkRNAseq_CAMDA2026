@@ -1,0 +1,22 @@
+{
+  "run_id": "COMBINED__mahalamia__cvae__s2__1e678ded",
+  "timestamp": "2026-11-11T23:43:28+00:00",
+  "dataset": "COMBINED",
+  "attack": "mahalamia",
+  "generator": "cvae",
+  "split": 2,
+  "tag": "n700_shrink0.5",
+  "experiment": "cohort_size",
+  "variant": "n700_shrink0.5",
+  "notes": "cohort-size sweep at fixed gene count",
+  "params": {
+    "attack": "mahalamia",
+    "covariance": "shrink",
+    "ridge_alpha": 0.0001,
+    "use_reference": true,
+    "n_train": 700,
+    "n_genes": 978,
+    "sweep_generator": "cvae"
+  },
+  "target": null
+}

@@ -1,0 +1,47 @@
+{
+  "run_id": "BRCA__mamamia_v2__tabpfn__s3__725307af",
+  "timestamp": "2026-11-11T22:33:54+00:00",
+  "dataset": "BRCA",
+  "attack": "mamamia_v2",
+  "generator": "tabpfn",
+  "split": 3,
+  "tag": "cl-public_ed-auto_cc",
+  "experiment": "paper_grid_brca",
+  "variant": "mamamia_v2",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mamamia_v2",
+    "cliques": "public",
+    "edges": "auto",
+    "families": [
+      "1way",
+      "gl",
+      "tree"
+    ],
+    "class_centre": true,
+    "alpha": 0.5,
+    "calibrate": true,
+    "n_shadows": 20,
+    "shadow_frac": 0.8,
+    "n_bins": 16,
+    "attack": "mamamia_v2"
+  },
+  "target": {
+    "fingerprint": "9642b263da2f9ada",
+    "params": {
+      "seed": 3167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 3167,
+    "source": "trained"
+  }
+}

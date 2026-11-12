@@ -53,6 +53,15 @@ ATTACKS = ["MahalaMIA (as submitted)", "MahalaMIA (ridge 1e-4)", "MahalaMIA (no 
            "MahalaMIA (no aux, ridge 1e-4)", "MAMA-MIA v1", "MAMA-MIA v2", "RedSigma",
            "GAN-leaks", "MC", "GAN-leaks cal."]
 
+# Re-running with another attack roster (2026-11-11, when the paper's MahalaMIA changed):
+#   PERTURB_ATTACKS="MahalaMIA" PERTURB_TAG=_default python scripts/perturb/<this>.py ...
+# scores only the listed attacks, in every condition, and writes to outputs carrying the tag.
+import os as _os  # noqa: E402
+ONLY = [a for a in _os.environ.get("PERTURB_ATTACKS", "").split("|") if a]
+TAG = _os.environ.get("PERTURB_TAG", "")
+if ONLY:
+    ATTACKS = ONLY
+
 
 def extras(dataset: str) -> tuple:
     """(B-sample expression in the cohort's space, their metadata) for donors in the cohort."""
@@ -141,7 +150,7 @@ def main() -> None:
     ap.add_argument("--adapt", action="store_true",
                     help="score each tier after aligning it to the release (adaptive adversary)")
     args = ap.parse_args()
-    out_dir = paths.ARTIFACTS / "perturb" / ("donor_linked_scores" + ("_adapted" if args.adapt else ""))
+    out_dir = paths.ARTIFACTS / "perturb" / ("donor_linked_scores" + ("_adapted" if args.adapt else "") + TAG)
     out_dir.mkdir(parents=True, exist_ok=True)
     jobs = [(args.dataset, g, s, str(out_dir), args.adapt)
             for g in args.generators for s in args.splits]

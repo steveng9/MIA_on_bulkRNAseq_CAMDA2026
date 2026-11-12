@@ -1,0 +1,67 @@
+# The paper's attack x generator grid for GTEX: every generator of the main
+# text against every attack at the ONE fixed setting the paper reports
+# (scripts/paper_figures.py reads exactly these tags).  Re-running a cell
+# replaces it; targets that are not built are skipped.  MeLoMIA-TabSyn has its
+# own config (melomia_tabsyn_*.yaml) because its stack is built separately.
+name: paper_grid_gtex
+dataset: GTEX
+notes: "paper grid: default attack settings, all main-text generators, 5 splits"
+device: cuda
+
+generators:
+  - mvn
+  - cvae
+  - nd
+  - "tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard"
+  - tabpfn
+  - pgg
+  - "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16"
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  mahalamia:                       # the paper's MahalaMIA: own class, class covariance averaged with the pooled one, ridge 1e-4, ratio to the reference set where one exists
+    class: mahalamia
+    params: {use_reference: true, covariance: ridge, ridge_alpha: 1.0e-4, class_shrink: 0.5}
+  mamamia_v2:                      # the paper's MAMA-MIA: public star of tables, edges read off the release, class-centred
+    class: mamamia_v2
+    params: {cliques: public, edges: auto, class_centre: true}
+  melomia_nd:                      # per-record calibration, K = 20
+    class: melomia_nd
+    params:
+      n_shadows: 20
+      n_noise: 600
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+      per_record_calibration: true
+  melomia_cvae:
+    class: melomia_cvae
+    params:
+      n_shadows: 20
+      n_noise: 50
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+      per_record_calibration: true
+  redsigma:                        # as submitted: rule chosen by generator
+    class: redsigma
+    params: {rule: auto}
+  generic_mc:
+    class: generic
+    params: {method: mc}
+  generic_gan_leaks:
+    class: generic
+    params: {method: gan_leaks}
+  generic_conf_lr:
+    class: generic
+    params: {method: conf_lr}
+  generic_conf_rf:
+    class: generic
+    params: {method: conf_rf}
+  generic_logan_d1:
+    class: generic
+    params: {method: logan_d1}
+  generic_gan_leaks_cal:
+    class: generic
+    params: {method: gan_leaks_cal}
+  generic_domias_kde:
+    class: generic
+    params: {method: domias_kde}

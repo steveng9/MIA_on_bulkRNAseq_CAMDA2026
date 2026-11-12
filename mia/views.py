@@ -102,6 +102,12 @@ def view(dataset: str, reference=KEEP, genes=None, extra: pd.DataFrame | None = 
 
 # The attacks that can run inside a view, at the settings the grid reports.
 ROSTER = {
+    # The paper's MahalaMIA (2026-11-11): distance to the own class, class covariance
+    # averaged with the pooled one, ridge 1e-4, ratio to the reference set if there is one.
+    "MahalaMIA": ("mahalamia", {"use_reference": True, "covariance": "ridge",
+                                "ridge_alpha": 1e-4, "class_shrink": 0.5}),
+    "MahalaMIA (no reference)": ("mahalamia", {"use_reference": False, "covariance": "ridge",
+                                               "ridge_alpha": 1e-4, "class_shrink": 0.5}),
     "MahalaMIA (as submitted)": ("mahalamia", {"use_reference": True}),
     "MahalaMIA (ridge 1e-4)": ("mahalamia", {"use_reference": True, "covariance": "ridge",
                                              "ridge_alpha": 1e-4}),
@@ -116,7 +122,7 @@ ROSTER = {
     "GAN-leaks cal.": ("generic", {"method": "gan_leaks_cal"}),
     "DOMIAS-KDE": ("generic", {"method": "domias_kde"}),
 }
-USES_AUX = ("MahalaMIA (as submitted)", "MahalaMIA (ridge 1e-4)", "RedSigma",
+USES_AUX = ("MahalaMIA", "MahalaMIA (as submitted)", "MahalaMIA (ridge 1e-4)", "RedSigma",
             "GAN-leaks cal.", "DOMIAS-KDE")
 
 

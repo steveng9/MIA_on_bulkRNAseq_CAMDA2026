@@ -52,7 +52,7 @@ from mia import metrics as M  # noqa: E402
 from mia import paths  # noqa: E402
 from mia import targets as T  # noqa: E402
 from mia import views as V  # noqa: E402
-from aux_mismatch import GENERATORS, NO_AUX, align_to_release, domias_baseline  # noqa: E402
+from aux_mismatch import GENERATORS, NO_AUX, ONLY, TAG, align_to_release, domias_baseline  # noqa: E402
 
 TCGA = Path("~/data/TCGA_GDC/processed").expanduser()
 REPS = ["vst", "gdc_tpm", "gdc_log2tpm", "toil_log2tpm", "toil_vst_own"]
@@ -117,7 +117,7 @@ def one_target(args):
         if cond in set(done.condition):
             continue
         aux = cond.split("|")[1]
-        labels = (NO_AUX + (["RedSigma"] if dataset == "BRCA" else [])) if aux == "none" else V.USES_AUX
+        labels = ONLY or ((NO_AUX + (["RedSigma"] if dataset == "BRCA" else [])) if aux == "none" else V.USES_AUX)
         keep = ids.isin(present)
         with V.view(dataset, reference=None if aux == "none" else ref, candidates=C):
             for label in labels:
@@ -146,14 +146,14 @@ def main() -> None:
     ap.add_argument("--generators", nargs="+", default=GENERATORS)
     ap.add_argument("--jobs", type=int, default=6)
     args = ap.parse_args()
-    out_dir = paths.RESULTS / "perturb" / "candidate_mismatch_parts"
+    out_dir = paths.RESULTS / "perturb" / ("candidate_mismatch_parts" + TAG)
     out_dir.mkdir(parents=True, exist_ok=True)
     jobs = [(args.dataset, g, s, str(out_dir)) for g in args.generators for s in args.splits]
     pool = ProcessPoolExecutor(args.jobs)
     for msg in pool.map(one_target, jobs):
         print(msg, flush=True)
     parts = [pd.read_csv(f) for f in sorted(out_dir.glob("*.csv"))]
-    out = paths.RESULTS / "perturb" / "candidate_mismatch.csv"
+    out = paths.RESULTS / "perturb" / f"candidate_mismatch{TAG}.csv"
     pd.concat(parts).to_csv(out, index=False)
     print(f"wrote {out}", flush=True)
     # a worker that died after its last task once left the pool's shutdown

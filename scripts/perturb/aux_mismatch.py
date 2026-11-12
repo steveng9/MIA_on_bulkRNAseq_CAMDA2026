@@ -55,6 +55,12 @@ GENERATORS = ["mvn", "cvae", "nd", "pgg",
               "preprocess=clip:0.001:0.999+standard", "tabpfn"]
 NO_AUX = ["MahalaMIA (no aux)", "MahalaMIA (no aux, ridge 1e-4)", "GAN-leaks", "MC",
           "MAMA-MIA v1", "MAMA-MIA v2"]
+# Re-running with another attack roster (2026-11-11, when the paper's MahalaMIA changed):
+#   PERTURB_ATTACKS="MahalaMIA" PERTURB_TAG=_default python scripts/perturb/<this>.py ...
+# scores only the listed attacks, in every condition, and writes to outputs carrying the tag.
+import os as _os  # noqa: E402
+ONLY = [a for a in _os.environ.get("PERTURB_ATTACKS", "").split("|") if a]
+TAG = _os.environ.get("PERTURB_TAG", "")
 ALIGNABLE = ("gse_vst_frozen", "gse_vst_own", "gse_log2tpm", "gse_tpm", "ref_vst_own", "ref_log2tpm", "ref_tpm")
 
 
@@ -143,7 +149,7 @@ def one_target(args):
     for cond, ref in conds.items():
         if cond in set(done.condition):
             continue
-        labels = NO_AUX if cond == "none" else V.USES_AUX
+        labels = ONLY or (NO_AUX if cond == "none" else V.USES_AUX)
         with V.view(dataset, reference=ref):
             for label in labels:
                 try:
@@ -171,14 +177,14 @@ def main() -> None:
     ap.add_argument("--generators", nargs="+", default=GENERATORS)
     ap.add_argument("--jobs", type=int, default=6)
     args = ap.parse_args()
-    out_dir = paths.RESULTS / "perturb" / "aux_mismatch_parts"
+    out_dir = paths.RESULTS / "perturb" / ("aux_mismatch_parts" + TAG)
     out_dir.mkdir(parents=True, exist_ok=True)
     jobs = [(args.dataset, g, s, str(out_dir)) for g in args.generators for s in args.splits]
     with ProcessPoolExecutor(args.jobs) as pool:
         for msg in pool.map(one_target, jobs):
             print(msg, flush=True)
     parts = [pd.read_csv(f) for f in sorted(out_dir.glob("*.csv"))]
-    out = paths.RESULTS / "perturb" / "aux_mismatch.csv"
+    out = paths.RESULTS / "perturb" / f"aux_mismatch{TAG}.csv"
     pd.concat(parts).to_csv(out, index=False)
     print(f"wrote {out}", flush=True)
 

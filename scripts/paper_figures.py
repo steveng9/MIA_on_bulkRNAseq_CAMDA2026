@@ -8,9 +8,13 @@ Writes paper/Fig/<name>.pdf (for LaTeX) and .png (for review), and the numbers
 each figure shows to paper/Fig/data/<name>.csv.  Figure 1 (the overview
 diagram) is TikZ: paper/Fig/overview.tex.
 
-  mechanism_heatmap  AUC of every attack against every generator, one cohort.
-                     The pattern to see is the block diagonal: each attack is
-                     strong against the family it was designed for.
+  attack_grid        AUC of our three attacks, RedSigma and the best generic
+                     attack against every generator, one panel per cohort.
+                     MeLoMIA is one row: the backend built for the generator's
+                     family (the diffusion backend where there is none).
+  attack_grid_backends
+                     the same with MeLoMIA's three backends as separate rows
+                     (appendix): how each backend does off its own family.
   exposure           per generator and cohort, the strongest of our attacks
                      against the strongest generic attack and RedSigma, as AUC
                      and as TPR at 1% FPR.
@@ -50,24 +54,29 @@ GENERATORS = {  # target name -> label, in the order of the figures
     "nd": "NoisyDiffusion",
     TABSYN: "TabSyn",
     "tabpfn": "TabPFN",
-    "pgg": "DP-PGM (CAMDA 2026)",
+    "pgg": "DP-PGM (challenge)",
     PGM: "DP-PGM (corrected)",
 }
 DP = {"pgg", PGM}
 
 # Our attacks, as (attack, tag) per cohort.  MeLoMIA uses K=30 shadows on BRCA
 # and K=20 elsewhere, all with per-record calibration and black box.  MahalaMIA
-# is the ridge (1e-4) with the reference set; it was only run with the
-# pseudo-inverse on TabSyn and TabPFN, where it is never the strongest.
+# scores a candidate against its own class, with the class covariance averaged
+# with the pooled one (ridge 1e-4), and uses the reference set where one exists.
 OURS = {
-    "MahalaMIA": [("mahalamia", "aux_ridge0.0001"), ("mahalamia", "aux")],
+    "MahalaMIA": [("mahalamia", "aux_ridge0.0001_shrink0.5")],
     "MeLoMIA-CVAE": [("melomia_cvae", "k30_n50_prc"), ("melomia_cvae", "k20_n50_prc")],
     "MeLoMIA-ND": [("melomia_nd", "k30_n600_prc"), ("melomia_nd", "k20_n600_prc")],
     "MeLoMIA-TabSyn": [("melomia_tabsyn", "k30_n200_prc"), ("melomia_tabsyn", "k20_n200_prc")],
     "MAMA-MIA": [("mamamia_v2", "cl-public_ed-auto_cc")],
 }
-FAMILY = {"MahalaMIA": "MahalaMIA", "MeLoMIA-CVAE": "MeLoMIA", "MeLoMIA-ND": "MeLoMIA",
-          "MeLoMIA-TabSyn": "MeLoMIA", "MAMA-MIA": "MAMA-MIA"}
+FAMILY = {"MahalaMIA": "MahalaMIA", "MeLoMIA": "MeLoMIA", "MeLoMIA-CVAE": "MeLoMIA",
+          "MeLoMIA-ND": "MeLoMIA", "MeLoMIA-TabSyn": "MeLoMIA", "MAMA-MIA": "MAMA-MIA"}
+# In the main text MeLoMIA is one attack: the backend built for the generator's
+# family, and the diffusion backend for generators that have none.
+MELOMIA_BACKEND = {"cvae": "MeLoMIA-CVAE", "nd": "MeLoMIA-ND", TABSYN: "MeLoMIA-TabSyn"}
+MELOMIA_DEFAULT = "MeLoMIA-ND"
+MAIN_OURS = ["MahalaMIA", "MeLoMIA", "MAMA-MIA"]
 REDSIGMA = [("redsigma", "auto")]  # rule chosen by generator, as submitted
 GENERIC = [("generic", t) for t in
            ("mc", "gan_leaks", "conf_lr", "conf_rf", "logan_d1", "gan_leaks_cal", "domias_kde")]
@@ -109,6 +118,12 @@ def cells(df) -> pd.DataFrame:
                 c = cell(df, ds, g, choices)
                 if c:
                     rows.append(dict(dataset=ds, generator=g, row=name, group="ours", **c))
+            mine = {r["row"]: r for r in rows if r["dataset"] == ds and r["generator"] == g
+                    and r["group"] == "ours"}
+            for name in MAIN_OURS:
+                src = MELOMIA_BACKEND.get(g, MELOMIA_DEFAULT) if name == "MeLoMIA" else name
+                if src in mine:
+                    rows.append(dict(mine[src], row=name, group="main", backend=src))
             c = cell(df, ds, g, REDSIGMA)
             if c:
                 rows.append(dict(dataset=ds, generator=g, row="RedSigma", group="redsigma", **c))
@@ -137,7 +152,7 @@ FAMILY_MARKER = {"MahalaMIA": "o", "MeLoMIA": "s", "MAMA-MIA": "^"}
 # Sequential blue, chance (AUC 0.5) near white, AUC 1.0 darkest.
 SEQ = ["#f7f9fc", "#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
 SHORT = {"mvn": "MVN", "cvae": "CVAE", "nd": "Noisy-\nDiffusion", TABSYN: "TabSyn",
-         "tabpfn": "TabPFN", "pgg": "DP-PGM\n(CAMDA 2026)", PGM: "DP-PGM\n(corrected)"}
+         "tabpfn": "TabPFN", "pgg": "DP-PGM\nchallenge", PGM: "DP-PGM\ncorrected"}
 
 
 def style():
@@ -165,83 +180,96 @@ def save(fig, name: str, data: pd.DataFrame) -> None:
 
 # ---- Figure: attack x generator heatmap -----------------------------------------
 HEAT_ROWS = ["MahalaMIA", "MeLoMIA-CVAE", "MeLoMIA-ND", "MeLoMIA-TabSyn", "MAMA-MIA",
-             None, "RedSigma", "Best generic attack"]
+             None, "RedSigma", "Best generic attack"]          # appendix: one row per backend
+MAIN_ROWS = MAIN_OURS + [None, "RedSigma", "Best generic attack"]  # main text
 
 
-def heat_table(c: pd.DataFrame, dataset: str) -> pd.DataFrame:
+def heat_table(c: pd.DataFrame, dataset: str, rows=None) -> pd.DataFrame:
+    rows = rows or HEAT_ROWS
     d = c[c.dataset == dataset]
     gen = d[d.group == "generic"].groupby("generator")["auc"].max().rename("Best generic attack")
-    t = d[d.group != "generic"].pivot_table(index="row", columns="generator", values="auc")
+    ours = "main" if "MeLoMIA" in rows else "ours"
+    t = d[d.group.isin([ours, "redsigma"])].pivot_table(index="row", columns="generator", values="auc")
     t = pd.concat([t, gen.to_frame().T])
-    return t.reindex(index=[r for r in HEAT_ROWS if r], columns=list(GENERATORS))
+    return t.reindex(index=[r for r in rows if r], columns=list(GENERATORS))
 
 
-def fig_mechanism_heatmap(c: pd.DataFrame, cohorts=("BRCA", "COMBINED"),
-                          name="mechanism_heatmap") -> None:
+def fig_attack_grid(c: pd.DataFrame, cohorts=("BRCA", "COMBINED", "GTEX"), rows=None,
+                    name="attack_grid", width=3.5) -> None:
+    """One panel per cohort, stacked; a generator that was not built for a cohort
+    (TabSyn and TabPFN on GTEx) and a backend that was not run leave an empty cell."""
     import matplotlib.pyplot as plt
     from matplotlib.colors import LinearSegmentedColormap, Normalize
     from matplotlib.patches import Rectangle
 
+    rows = rows or MAIN_ROWS
+    ours = [r for r in rows if r in FAMILY]
     cmap = LinearSegmentedColormap.from_list("seq", SEQ)
     norm = Normalize(0.5, 1.0, clip=True)
-    # rows and columns with no run in any of the cohorts shown are left out
-    tabs = {ds: heat_table(c, ds) for ds in cohorts}
-    have = pd.concat(tabs.values()).notna().groupby(level=0).any()
-    rows = [r for r in HEAT_ROWS if r is None or have.loc[r].any()]
-    gens = [g for g in GENERATORS if have[g].any()]
+    tabs = {ds: heat_table(c, ds, rows) for ds in cohorts}
+    gens = list(GENERATORS)
     split_at = sum(g not in DP for g in gens)
+    small = width < 5
+    row_h = 0.185
+    GAP = 0.3                                   # height of the blank between our attacks and the rest
+    height = sum(GAP if r is None else 1.0 for r in rows)
+    ypos, y = {}, height
+    for i, r in enumerate(rows):
+        y -= GAP if r is None else 1.0
+        ypos[i] = y
     fig, axes = plt.subplots(len(cohorts), 1,
-                             figsize=(7.1 * (len(gens) + 2) / 9, 0.2 * len(rows) * len(cohorts) + 0.35),
-                             gridspec_kw=dict(hspace=0.32))
+                             figsize=(width, row_h * height * len(cohorts) + 0.22 * len(cohorts) + 0.42),
+                             gridspec_kw=dict(hspace=0.2))
     axes = np.atleast_1d(axes)
     out = []
     for ax, ds in zip(axes, cohorts):
         t = tabs[ds]
-        best_ours = t.loc[[r for r in OURS if r in rows]].fillna(0).idxmax()
+        best_ours = t.loc[ours].fillna(0).idxmax()
         for i, r in enumerate(rows):
             if r is None:
                 continue
             for j, g in enumerate(gens):
                 v = t.loc[r, g]
-                y = len(rows) - 1 - i
+                y = ypos[i]
                 if np.isnan(v):
-                    ax.add_patch(Rectangle((j, y), 1, 1, facecolor="white", edgecolor=GRID,
-                                           hatch="//////", linewidth=0))
-                    ax.text(j + 0.5, y + 0.5, "not run", ha="center", va="center",
-                            fontsize=5.5, color=MUTED)
+                    ax.add_patch(Rectangle((j, y), 1, 1, facecolor=NA_FILL, edgecolor="white",
+                                           linewidth=1.2))
                     continue
                 rgba = cmap(norm(v))
                 ax.add_patch(Rectangle((j, y), 1, 1, facecolor=rgba, edgecolor="white",
                                        linewidth=1.2))
                 lum = 0.2126 * rgba[0] + 0.7152 * rgba[1] + 0.0722 * rgba[2]
-                bold = r == best_ours[g]
-                ax.text(j + 0.5, y + 0.5, f"{v:.2f}", ha="center", va="center",
-                        fontsize=6.8, color="white" if lum < 0.5 else INK,
+                bold = r == best_ours[g] and v >= 0.55
+                ax.text(j + 0.5, y + 0.47, f"{v:.2f}", ha="center", va="center",
+                        fontsize=6.3 if small else 6.8, color="white" if lum < 0.5 else INK,
                         fontweight="bold" if bold else "normal")
                 out.append(dict(dataset=ds, attack=r, generator=GENERATORS[g], auc=round(v, 4)))
         ax.set_xlim(0, len(gens))
-        ax.set_ylim(0, len(rows))
-        ax.set_yticks([len(rows) - 1 - i + 0.5 for i, r in enumerate(rows) if r])
-        ax.set_yticklabels([r for r in rows if r])
+        ax.set_ylim(0, height)
+        ax.set_yticks([ypos[i] + 0.5 for i, r in enumerate(rows) if r])
+        ax.set_yticklabels([r for r in rows if r], fontsize=6.5 if small else 7)
         ax.set_xticks(np.arange(len(gens)) + 0.5)
-        ax.set_xticklabels([SHORT[g] for g in gens], fontsize=6.8, color=INK)
         ax.xaxis.tick_top()
-        ax.tick_params(axis="x", length=0, pad=2)
-        for s in ax.spines.values():
-            s.set_visible(False)
-        ax.set_title(COHORTS[ds], loc="left", fontweight="bold", color=INK, pad=20 if ax is axes[0] else 4)
-        if ax is not axes[0]:
+        ax.tick_params(axis="x", length=0, pad=1.5)
+        ax.tick_params(axis="y", pad=1.5)
+        if ax is axes[0]:
+            ax.set_xticklabels([SHORT[g] for g in gens], fontsize=5.6 if small else 6.8, color=INK,
+                               linespacing=0.95)
+        else:
             ax.set_xticklabels([])
-        # DP columns separated from the rest
-        ax.axvline(split_at, color=INK2, lw=0.6, ymin=0, ymax=1)
-    cax = fig.add_axes([0.93, 0.25, 0.012, 0.5])
-    cb = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cax)
+        for sp in ax.spines.values():
+            sp.set_visible(False)
+        ax.text(-0.02, 1.03, COHORTS[ds], transform=ax.transAxes,
+                ha="right", va="bottom", fontweight="bold", color=INK, fontsize=7)
+        ax.axvline(split_at, color=INK2, lw=0.6, ymin=0, ymax=1)   # DP generators to the right
+    cax = fig.add_axes([0.2, 0.045, 0.6, 0.012])
+    cb = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cax, orientation="horizontal")
     cb.set_ticks([0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
-    cb.set_ticklabels(["0.5\nchance", "0.6", "0.7", "0.8", "0.9", "1.0"])
+    cb.set_ticklabels(["0.5 (chance)", "0.6", "0.7", "0.8", "0.9", "1.0"])
     cb.outline.set_visible(False)
-    cb.ax.tick_params(labelsize=6, length=2, color=AXIS)
-    cb.set_label("AUC", fontsize=6.5, color=INK2, labelpad=2)
-    fig.subplots_adjust(left=0.14, right=0.91)
+    cb.ax.tick_params(labelsize=5.8, length=2, color=AXIS, pad=1.5)
+    cb.set_label("AUC", fontsize=6.2, color=INK2, labelpad=1)
+    fig.subplots_adjust(left=0.2 if small else 0.14, right=0.995, top=0.94, bottom=0.105)
     save(fig, name, pd.DataFrame(out))
     plt.close(fig)
 
@@ -250,9 +278,9 @@ def fig_mechanism_heatmap(c: pd.DataFrame, cohorts=("BRCA", "COMBINED"),
 def exposure_table(c: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for m in METRICS:
-        for group in ("ours", "generic", "redsigma"):
+        for group in ("main", "generic", "redsigma"):
             b = best(c, group, m).rename(columns={m: "value"})
-            rows.append(b.assign(metric=m, group=group))
+            rows.append(b.assign(metric=m, group="ours" if group == "main" else group))
     t = pd.concat(rows)
     t["family"] = t.row.map(FAMILY)
     return t
@@ -280,7 +308,7 @@ def fig_exposure(c: pd.DataFrame, name="exposure") -> None:
                 y = ypos[g]
                 o = d[(d.generator == g) & (d.group == "ours")]
                 if o.empty:
-                    ax.text((lo * hi) ** 0.5 if log else (lo + hi) / 2, y, "not run",
+                    ax.text((lo * hi) ** 0.5 if log else (lo + hi) / 2, y, "not built",
                             ha="center", va="center", fontsize=6, color=MUTED)
                     continue
                 ov = max(o.value.iloc[0], lo * 1.05 if log else lo)
@@ -340,10 +368,10 @@ def fig_exposure(c: pd.DataFrame, name="exposure") -> None:
 
 # ---- Figure: exposure against the number of training donors ---------------------
 def cohort_size_table() -> pd.DataFrame:
-    """MahalaMIA (ridge 1e-6) on COMBINED with the training set subsampled to n."""
+    """MahalaMIA (the paper's default) on COMBINED with the training set subsampled to n."""
     df = R.load_index()
     df = df[(df.status == "ok") & (df.experiment.astype(str) == "cohort_size")
-            & df.tag.astype(str).str.endswith("_ridge1e-06")]
+            & df.tag.astype(str).str.endswith("_shrink0.5")]
     for m in METRICS:
         df[m] = pd.to_numeric(df[m], errors="coerce")
     df = df.assign(n=df.tag.str.extract(r"^n(\d+)_")[0].astype(int))
@@ -398,6 +426,78 @@ def fig_cohort_size(name="cohort_size") -> None:
     plt.close(fig)
 
 
+# ---- Figure: the corrected DP-PGM across epsilon ---------------------------------
+def epsilon_table() -> pd.DataFrame:
+    """Per cohort and epsilon: MAMA-MIA (the paper's setting), the DP bound and utility.
+
+    The releases are those of scripts/pgm_eps_sweep.py at 16 bins (five splits);
+    MAMA-MIA was run on them by scripts/queue_eps_curve_attack.sh, and epsilon = 10
+    is the grid's corrected DP-PGM.
+    """
+    sweep = pd.read_csv(ROOT / "results" / "pgm_eps_sweep.csv")
+    sweep = sweep[(sweep.binning == "dp_quantile") & (sweep.n_bins == 16)]
+    fid = (sweep.groupby(["dataset", "epsilon"])
+                .agg(utility=("utility_ratio", "mean"), w1=("wasserstein_mean", "mean"),
+                     bound=("dp_bound_auc", "mean"), releases=("split", "nunique"))
+                .reset_index())
+    df = R.load_index()
+    df = df[(df.status == "ok") & (df.attack == "mamamia_v2")
+            & (df.tag.fillna("") == OURS["MAMA-MIA"][0][1])
+            & df.generator.astype(str).str.startswith("pgm@binning=dp_quantile,edge_estimator=threshold,")
+            & df.generator.astype(str).str.endswith(",n_bins=16")]
+    eps = df.generator.str.extract(r"epsilon=([0-9.]+)")[0].astype(float)
+    df = df.assign(epsilon=eps.where(eps.notna(), 10.0) if len(df) else eps)
+    df = df[df.generator.str.contains("epsilon=") | (df.generator == PGM)]
+    for m in METRICS:
+        df[m] = pd.to_numeric(df[m], errors="coerce")
+    df = df.sort_values("timestamp").drop_duplicates(["dataset", "generator", "split"], keep="last")
+    att = (df.groupby(["dataset", "epsilon"])
+             .agg(auc=("auc", "mean"), auc_sd=("auc", "std"),
+                  tpr_at_fpr_0_01=("tpr_at_fpr_0.01", "mean"), splits=("split", "nunique"))
+             .reset_index())
+    return fid.merge(att, on=["dataset", "epsilon"], how="left").sort_values(["dataset", "epsilon"])
+
+
+def fig_epsilon(name="epsilon_curve") -> None:
+    import matplotlib.pyplot as plt
+
+    t = epsilon_table()
+    fig, axes = plt.subplots(1, 2, figsize=(3.5, 1.7), sharey=True,
+                             gridspec_kw=dict(wspace=0.10))
+    green = FAMILY_COLOR["MAMA-MIA"]
+    for ax, ds in zip(axes, ("BRCA", "COMBINED")):
+        d = t[t.dataset == ds]
+        ax.plot(d.epsilon, d.bound, color=MUTED, lw=0.9, zorder=2)
+        ax.axhline(0.5, color=AXIS, lw=0.6, ls=(0, (2, 2)), zorder=1)
+        ax.plot(d.epsilon, d.utility, color=INK2, lw=1.0, ls=(0, (3, 1.5)), zorder=3)
+        ax.plot(d.epsilon, d.utility, "s", ms=2.8, mfc="white", mec=INK2, mew=0.7, zorder=4)
+        ax.plot(d.epsilon, d.auc, color=green, lw=1.4, zorder=5)
+        ax.plot(d.epsilon, d.auc, "^", ms=3.8, mfc=green, mec="white", mew=0.5, zorder=6)
+        ax.set_xscale("log")
+        ax.set_xticks([0.1, 1, 10, 100, 1000])
+        ax.set_xticklabels(["0.1", "1", "10", "100", "1,000"])
+        ax.minorticks_off()
+        ax.set_xlim(0.07, 1500)
+        ax.set_ylim(0, 1.02)
+        ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
+        ax.set_title(COHORTS[ds], pad=3)
+        ax.set_xlabel(r"privacy budget $\varepsilon$ (log scale)")
+        for s in ("top", "right"):
+            ax.spines[s].set_visible(False)
+        ax.tick_params(axis="y", length=2.5, width=0.6)
+    axes[0].set_ylabel("AUC, or share of real-data utility")
+    axes[0].text(0.085, 0.455, "chance", fontsize=5.5, color=MUTED, va="top")
+    axes[0].text(5.5, 0.97, "bound on\nany attack", fontsize=5.5, color=MUTED, va="top",
+                 ha="right", linespacing=0.95)
+    c = t[t.dataset == "COMBINED"].set_index("epsilon")
+    axes[1].text(1300, c.auc[1000.0] - 0.045, "MAMA-MIA", fontsize=6, color=green,
+                 ha="right", va="top")
+    axes[1].text(1300, c.utility[1000.0] - 0.05, "utility", fontsize=6, color=INK2,
+                 ha="right", va="top")
+    save(fig, name, t)
+    plt.close(fig)
+
+
 # ---- Table: AUC and TPR of every attack, for the appendix ------------------------
 def latex_grid(c: pd.DataFrame, cohorts=("BRCA", "COMBINED", "GTEX")) -> str:
     """Body rows of the extended table: 'AUC / TPR at 1% FPR' per cell.
@@ -407,7 +507,7 @@ def latex_grid(c: pd.DataFrame, cohorts=("BRCA", "COMBINED", "GTEX")) -> str:
     gens = list(GENERATORS)
     lines = []
     for ds in cohorts:
-        d = c[c.dataset == ds]
+        d = c[(c.dataset == ds) & (c.group != "main")]
         cols = [g for g in gens if (d.generator == g).any()]
         lines.append(r"\midrule")
         lines.append(r"\multicolumn{%d}{l}{\emph{%s}} \\" % (len(gens) + 1, COHORTS[ds]))
@@ -448,10 +548,11 @@ def main() -> None:
         return
     if not args.cells:
         style()
-        fig_mechanism_heatmap(c)
-        fig_mechanism_heatmap(c, cohorts=("GTEX",), name="mechanism_heatmap_gtex")
+        fig_attack_grid(c)
+        fig_attack_grid(c, rows=HEAT_ROWS, name="attack_grid_backends", width=5.6)
         fig_exposure(c)
         fig_cohort_size()
+        fig_epsilon()
         return
     if args.cells:
         pd.set_option("display.width", 220)

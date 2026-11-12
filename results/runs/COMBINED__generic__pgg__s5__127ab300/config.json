@@ -1,0 +1,33 @@
+{
+  "run_id": "COMBINED__generic__pgg__s5__127ab300",
+  "timestamp": "2026-11-11T23:22:01+00:00",
+  "dataset": "COMBINED",
+  "attack": "generic",
+  "generator": "pgg",
+  "split": 5,
+  "tag": "domias_kde",
+  "experiment": "paper_grid_combined",
+  "variant": "generic_domias_kde",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "generic",
+    "method": "domias_kde",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "667e765e31af1dc4",
+    "params": {
+      "seed": 5881,
+      "device": "cpu",
+      "verbose": true,
+      "name": "pgg",
+      "epsilon": 10.0,
+      "delta": 1e-05,
+      "iterations": 10000
+    },
+    "seed": 5881,
+    "source": "trained"
+  }
+}

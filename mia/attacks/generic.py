@@ -76,12 +76,20 @@ def gan_leaks_cal(X_test, X_G, X_ref) -> np.ndarray:
 
 
 def domias_kde(X_test, X_G, X_ref) -> np.ndarray:
+    """DOMIAS with kernel density estimates, as the challenge's baseline runs it.
+
+    One PCA, fitted on the reference set (100 components, or a quarter of the
+    reference set's size if that is smaller), is applied to all three sets, and
+    the score is the difference of log densities.  Until 2026-11-11 this
+    function fitted a separate 150-component PCA to each set, as our challenge
+    submission did; the three projections then had unrelated axes and the
+    attack scored 0.50 against every generator.  It also took the ratio of raw
+    densities, which underflow in 100 dimensions.
+    """
     from scipy import stats
-    pca = lambda Z: PCA(n_components=150).fit_transform(Z)  # noqa: E731  (as submitted)
-    t, g, r = pca(X_test), pca(X_G), pca(X_ref)
-    pg = stats.gaussian_kde(g.T)(t.T)
-    pr = stats.gaussian_kde(r.T)(t.T)
-    return pg / (pr + 1e-10)
+    pca = PCA(n_components=min(100, len(X_ref) // 4), random_state=0).fit(X_ref)
+    t, g, r = pca.transform(X_test), pca.transform(X_G), pca.transform(X_ref)
+    return stats.gaussian_kde(g.T).logpdf(t.T) - stats.gaussian_kde(r.T).logpdf(t.T)
 
 
 @dataclass

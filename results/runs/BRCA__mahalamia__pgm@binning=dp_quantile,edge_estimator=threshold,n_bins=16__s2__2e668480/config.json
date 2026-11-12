@@ -1,14 +1,14 @@
 {
   "run_id": "BRCA__mahalamia__pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16__s2__2e668480",
-  "timestamp": "2026-09-24T03:17:48+00:00",
+  "timestamp": "2026-11-12T01:55:01+00:00",
   "dataset": "BRCA",
   "attack": "mahalamia",
   "generator": "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",
   "split": 2,
   "tag": "aux",
-  "experiment": "pgm_structure_sweep",
-  "variant": "dp_quantile16/star|pinv",
-  "notes": "dp_quantile16/star epsilon=10",
+  "experiment": "pgm_eps_sweep",
+  "variant": "mahalamia",
+  "notes": "epsilon=10.0",
   "params": {
     "seed": 42,
     "device": "cpu",

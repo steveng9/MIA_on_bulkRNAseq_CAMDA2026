@@ -1,14 +1,14 @@
 {
   "run_id": "COMBINED__mahalamia__pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16__s1__2e668480",
-  "timestamp": "2026-09-24T05:37:07+00:00",
+  "timestamp": "2026-11-12T01:51:46+00:00",
   "dataset": "COMBINED",
   "attack": "mahalamia",
   "generator": "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16",
   "split": 1,
   "tag": "aux",
-  "experiment": "pgm_structure_sweep",
-  "variant": "dp_quantile16/star|pinv",
-  "notes": "dp_quantile16/star epsilon=10.0",
+  "experiment": "pgm_eps_sweep",
+  "variant": "mahalamia",
+  "notes": "epsilon=10.0",
   "params": {
     "seed": 42,
     "device": "cpu",

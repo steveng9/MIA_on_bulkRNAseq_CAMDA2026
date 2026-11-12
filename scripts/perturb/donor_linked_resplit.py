@@ -15,9 +15,13 @@ which buys two things:
     shadows), so this is what an adversary with good shadow modelling could
     reach, not what MahalaMIA does out of the box.
 
-Attack: MahalaMIA with the ridge, d_aux / (d_syn + d_aux), uncalibrated scores.
-Writes results/perturb/donor_linked_resplit_<dataset>_<generator>.csv (one row
-per sample group) and an npz of all scores under artifacts/perturb/.
+Attack: the paper's MahalaMIA (distance to the candidate's own class in the
+release, class covariance averaged with the pooled one, ridge 1e-4, ratio to
+the reference set where one exists), uncalibrated scores.  A second sample
+takes its donor's class.  `--pooled` scores with the earlier pooled-ridge
+distance instead (outputs without the `_default` suffix).
+Writes results/perturb/donor_linked_resplit_<dataset>_<generator>_default.csv
+(one row per sample group) and an npz of all scores under artifacts/perturb/.
 
     python scripts/perturb/donor_linked_resplit.py --dataset COMBINED --generator mvn --reps 60
 """
@@ -39,12 +43,13 @@ from mia import datasets as D  # noqa: E402
 from mia import generators as G  # noqa: E402
 from mia import paths  # noqa: E402
 from mia import targets as T  # noqa: E402
-from mia.attacks.mahalamia import mahalanobis, precision  # noqa: E402
+from mia.attacks.mahalamia import class_shrunk_distance, mahalanobis, precision  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from donor_linked import extras  # noqa: E402
 
 RIDGE = 1e-4
+SHRINK = 0.5        # the paper's MahalaMIA (configs/experiments/paper_grid_*.yaml)
 
 
 def auc(y, s):
@@ -104,8 +109,11 @@ def main() -> None:
     ap.add_argument("--reps", type=int, default=60)
     ap.add_argument("--device", default="cpu")
     ap.add_argument("--reuse", action="store_true", help="re-analyse the saved scores")
+    ap.add_argument("--pooled", action="store_true",
+                    help="pooled-ridge distance (the attack before 2026-11-11)")
     args = ap.parse_args()
     ds = args.dataset
+    suffix = "" if args.pooled else "_default"
 
     expr = D.load_expression(ds)
     X = expr.values.astype(np.float32)
@@ -113,6 +121,7 @@ def main() -> None:
     donors = np.array([a[:12] for a in expr.index])
     XB, mB = extras(ds)
     XBv = XB.values.astype(np.float64)
+    yB = D.encode_subtypes(ds, mB.label.values)
     ref = D.load_reference(ds)
     X_aux = None if ref is None else ref.values.astype(np.float64)
     tumour = (mB.tier != "matched normal").values
@@ -120,7 +129,7 @@ def main() -> None:
     a_idx = np.array([expr.index.get_loc(a) for a in mB.a_sample])
     params = T.default_params(args.generator, ds)
 
-    cache = paths.ARTIFACTS / "perturb" / f"donor_linked_resplit_{ds}_{args.generator}.npz"
+    cache = paths.ARTIFACTS / "perturb" / f"donor_linked_resplit_{ds}_{args.generator}{suffix}.npz"
     cache.parent.mkdir(parents=True, exist_ok=True)
     R = args.reps
     M = np.zeros((R, len(X)), dtype=np.int8)
@@ -143,14 +152,20 @@ def main() -> None:
                 gen = G.build(args.generator, seed=20_000 + r + 1000 * attempt,
                               device=args.device, **params)
                 gen.fit(X[member], y[member], D.n_classes(ds))
-                Xs, _ = gen.sample(int(member.sum()))
+                Xs, ys = gen.sample(int(member.sum()))
                 break
             except np.linalg.LinAlgError:
                 print(f"rep {r}: SVD did not converge, reseeding", flush=True)
         Xs = np.asarray(Xs, dtype=np.float64)
 
-        def score(Q):
-            d_syn = mahalanobis(Q, Xs.mean(0), precision(Xs, "ridge", RIDGE))
+        ys = np.asarray(ys)
+        P_syn = precision(Xs, "ridge", RIDGE) if args.pooled else None
+
+        def score(Q, yQ):
+            if args.pooled:
+                d_syn = mahalanobis(Q, Xs.mean(0), P_syn)
+            else:
+                d_syn = class_shrunk_distance(Q, yQ, Xs, ys, SHRINK, RIDGE)
             if X_aux is None:
                 return 1.0 / (d_syn + 1e-10)
             d_aux = mahalanobis(Q, X_aux.mean(0), P_aux)
@@ -158,7 +173,7 @@ def main() -> None:
 
         if r == 0 and X_aux is not None:
             P_aux = precision(X_aux, "ridge", RIDGE)
-        M[r], SC[r], SB[r] = member, score(X.astype(np.float64)), score(XBv)
+        M[r], SC[r], SB[r] = member, score(X.astype(np.float64), y), score(XBv, yB)
         if r % 10 == 0:
             print(f"rep {r}: cohort AUC {auc(M[r], SC[r]):.3f}  ({time.time() - t0:.0f}s)", flush=True)
     if not args.reuse:
@@ -183,7 +198,7 @@ def main() -> None:
     df.insert(0, "generator", args.generator)
     df.insert(0, "dataset", ds)
     df["reps"] = R
-    out = paths.RESULTS / "perturb" / f"donor_linked_resplit_{ds}_{args.generator}.csv"
+    out = paths.RESULTS / "perturb" / f"donor_linked_resplit_{ds}_{args.generator}{suffix}.csv"
     df.to_csv(out, index=False)
     pd.set_option("display.width", 220)
     print(df.round(3).to_string(index=False))

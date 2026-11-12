@@ -56,6 +56,12 @@ GENERATORS = ["mvn", "cvae", "nd", "pgg",
               "preprocess=clip:0.001:0.999+standard", "tabpfn"]
 SUBSET_ATTACKS = ["MahalaMIA (as submitted)", "MahalaMIA (ridge 1e-4)", "MAMA-MIA v1",
                   "MAMA-MIA v2", "RedSigma", "GAN-leaks", "GAN-leaks cal."]
+# PERTURB_ATTACKS="MahalaMIA" with --tag _default scores only the listed attacks and skips
+# the baseline dimension-reduction block (2026-11-11, when the paper's MahalaMIA changed).
+import os as _os  # noqa: E402
+ONLY = [a for a in _os.environ.get("PERTURB_ATTACKS", "").split("|") if a]
+if ONLY:
+    SUBSET_ATTACKS = ONLY
 
 
 def std(Z):
@@ -143,7 +149,7 @@ def one_target(args):
                          tpr_at_fpr_0_01=m["tpr_at_fpr_0.01"],
                          tpr_at_fpr_0_1=m["tpr_at_fpr_0.1"]))
 
-    if Xr is not None:
+    if Xr is not None and not ONLY:
         for attack, rule, k, s in baseline_dr(Xt, Xg, Xr, yg, ranks, KS, logan):
             add("baseline_dr", attack, rule, k, s)
 

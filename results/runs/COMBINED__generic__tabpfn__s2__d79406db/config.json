@@ -1,0 +1,35 @@
+{
+  "run_id": "COMBINED__generic__tabpfn__s2__d79406db",
+  "timestamp": "2026-11-12T06:11:15+00:00",
+  "dataset": "COMBINED",
+  "attack": "generic",
+  "generator": "tabpfn",
+  "split": 2,
+  "tag": "conf_rf",
+  "experiment": "paper_grid_combined",
+  "variant": "generic_conf_rf",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "conf_rf",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "953dd799127e4475",
+    "params": {
+      "seed": 2167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 2167,
+    "source": "trained"
+  }
+}

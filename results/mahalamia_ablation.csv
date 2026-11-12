@@ -1,0 +1,769 @@
+dataset,generator,split,group,variant,auc,tpr_at_fpr_1,tpr_at_fpr_10
+BRCA,cvae,1,covariance,$\gamma=0.1$,0.9587629951863827,0.7336394948335246,0.8828932261768083
+BRCA,cvae,1,covariance,$\gamma=0.25$,0.9701387206522083,0.764638346727899,0.9070034443168772
+BRCA,cvae,1,covariance,$\gamma=0.75$,0.9772590821474842,0.835820895522388,0.9322617680826636
+BRCA,cvae,1,covariance,$\gamma=0.9$,0.9772959479244567,0.835820895522388,0.9299655568312285
+BRCA,cvae,1,default,MahalaMIA (default),0.9757739179894459,0.8208955223880597,0.9253731343283582
+BRCA,cvae,1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9766112977806801,0.8335246842709529,0.9265212399540758
+BRCA,cvae,1,covariance,own class only ($\gamma=0$),0.7866577486596658,0.4535017221584386,0.5855338691159586
+BRCA,cvae,1,covariance,"pooled, pseudo-inverse (challenge)",0.9821990962618102,0.7772675086107922,0.9368541905855339
+BRCA,cvae,1,covariance,"pooled, ridge",0.9766112977806801,0.8335246842709529,0.9265212399540758
+BRCA,cvae,1,ridge,ridge $10^{-2}$,0.8656611087119097,0.4569460390355913,0.6796785304247991
+BRCA,cvae,1,ridge,ridge $10^{-6}$,0.9975879248780796,0.9230769230769231,0.9988518943742825
+BRCA,cvae,1,ridge,ridge $10^{-8}$,0.9976037244967821,0.9253731343283582,0.9988518943742825
+BRCA,cvae,2,covariance,$\gamma=0.1$,0.9518374956551048,0.7623421354764638,0.8737083811710677
+BRCA,cvae,2,covariance,$\gamma=0.25$,0.9634396823223332,0.7864523536165328,0.9024110218140069
+BRCA,cvae,2,covariance,$\gamma=0.75$,0.9694804032062693,0.799081515499426,0.912743972445465
+BRCA,cvae,2,covariance,$\gamma=0.9$,0.9685850914797922,0.8002296211251435,0.9092996555683123
+BRCA,cvae,2,default,MahalaMIA (default),0.9687904865229253,0.7967853042479908,0.9104477611940298
+BRCA,cvae,2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.96751071740802,0.7967853042479908,0.904707233065442
+BRCA,cvae,2,covariance,own class only ($\gamma=0$),0.7894279484721769,0.4431687715269805,0.5752009184845006
+BRCA,cvae,2,covariance,"pooled, pseudo-inverse (challenge)",0.9862911975057669,0.7623421354764638,0.965556831228473
+BRCA,cvae,2,covariance,"pooled, ridge",0.96751071740802,0.7967853042479908,0.904707233065442
+BRCA,cvae,2,ridge,ridge $10^{-2}$,0.8607526938349889,0.48105625717566014,0.6842709529276694
+BRCA,cvae,2,ridge,ridge $10^{-6}$,0.9967242123890077,0.9345579793340988,0.9954075774971297
+BRCA,cvae,2,ridge,ridge $10^{-8}$,0.9978407187773202,0.9402985074626866,0.9988518943742825
+BRCA,cvae,3,covariance,$\gamma=0.1$,0.9425525863975815,0.6900114810562572,0.8335246842709529
+BRCA,cvae,3,covariance,$\gamma=0.25$,0.9571409009995893,0.7336394948335246,0.8725602755453502
+BRCA,cvae,3,covariance,$\gamma=0.75$,0.9659307555377663,0.756601607347876,0.9001148105625718
+BRCA,cvae,3,covariance,$\gamma=0.9$,0.9656674285593907,0.756601607347876,0.8989667049368542
+BRCA,cvae,3,default,MahalaMIA (default),0.9640558674517322,0.7554535017221584,0.8932261768082663
+BRCA,cvae,3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9648827141638316,0.7543053960964409,0.894374282433984
+BRCA,cvae,3,covariance,own class only ($\gamma=0$),0.749017790370659,0.27784156142365096,0.5028702640642939
+BRCA,cvae,3,covariance,"pooled, pseudo-inverse (challenge)",0.9737515667955213,0.8082663605051664,0.904707233065442
+BRCA,cvae,3,covariance,"pooled, ridge",0.9648827141638316,0.7543053960964409,0.894374282433984
+BRCA,cvae,3,ridge,ridge $10^{-2}$,0.8392336131621356,0.34902411021814006,0.6016073478760046
+BRCA,cvae,3,ridge,ridge $10^{-6}$,0.9919895933178147,0.9012629161882894,0.9827784156142365
+BRCA,cvae,3,ridge,ridge $10^{-8}$,0.9924899145767283,0.9024110218140069,0.9850746268656716
+BRCA,cvae,4,covariance,$\gamma=0.1$,0.9494938855475621,0.6119402985074627,0.870264064293915
+BRCA,cvae,4,covariance,$\gamma=0.25$,0.9607748133011723,0.6337543053960965,0.8932261768082663
+BRCA,cvae,4,covariance,$\gamma=0.75$,0.9678583090194756,0.722158438576349,0.9070034443168772
+BRCA,cvae,4,covariance,$\gamma=0.9$,0.9675739158828299,0.7416762342135477,0.904707233065442
+BRCA,cvae,4,default,MahalaMIA (default),0.9664521429549501,0.6842709529276694,0.9035591274397244
+BRCA,cvae,4,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9667154699333256,0.7439724454649828,0.9035591274397244
+BRCA,cvae,4,covariance,own class only ($\gamma=0$),0.7775466352078704,0.3823191733639495,0.5901262916188289
+BRCA,cvae,4,covariance,"pooled, pseudo-inverse (challenge)",0.9893773896923288,0.8576349024110218,0.9770378874856487
+BRCA,cvae,4,covariance,"pooled, ridge",0.9667154699333256,0.7439724454649828,0.9035591274397244
+BRCA,cvae,4,ridge,ridge $10^{-2}$,0.8467068328084348,0.39150401836969,0.661308840413318
+BRCA,cvae,4,ridge,ridge $10^{-6}$,0.9931218993248296,0.8576349024110218,0.9908151549942594
+BRCA,cvae,4,ridge,ridge $10^{-8}$,0.9941014756843868,0.8645235361653272,0.9931113662456946
+BRCA,cvae,5,covariance,$\gamma=0.1$,0.9551642497780408,0.786697247706422,0.8899082568807339
+BRCA,cvae,5,covariance,$\gamma=0.25$,0.9668382446201328,0.8256880733944955,0.9105504587155964
+BRCA,cvae,5,covariance,$\gamma=0.75$,0.9741206189489706,0.8486238532110092,0.9277522935779816
+BRCA,cvae,5,covariance,$\gamma=0.9$,0.9740941952395046,0.8463302752293578,0.9277522935779816
+BRCA,cvae,5,default,MahalaMIA (default),0.9723238067052805,0.8451834862385321,0.9243119266055045
+BRCA,cvae,5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9733226229230963,0.8440366972477065,0.926605504587156
+BRCA,cvae,5,covariance,own class only ($\gamma=0$),0.7737179216167083,0.43577981651376146,0.5481651376146789
+BRCA,cvae,5,covariance,"pooled, pseudo-inverse (challenge)",0.9966336194140278,0.944954128440367,0.9942660550458715
+BRCA,cvae,5,covariance,"pooled, ridge",0.9733173381812031,0.8440366972477065,0.926605504587156
+BRCA,cvae,5,ridge,ridge $10^{-2}$,0.8708620470976197,0.481651376146789,0.7006880733944955
+BRCA,cvae,5,ridge,ridge $10^{-6}$,0.9971990867966009,0.9690366972477065,0.9942660550458715
+BRCA,cvae,5,ridge,ridge $10^{-8}$,0.9979019574683973,0.9713302752293578,0.9965596330275229
+BRCA,mvn,1,covariance,$\gamma=0.1$,1.0,1.0,1.0
+BRCA,mvn,1,covariance,$\gamma=0.25$,1.0,1.0,1.0
+BRCA,mvn,1,covariance,$\gamma=0.75$,1.0,1.0,1.0
+BRCA,mvn,1,covariance,$\gamma=0.9$,1.0,1.0,1.0
+BRCA,mvn,1,default,MahalaMIA (default),1.0,1.0,1.0
+BRCA,mvn,1,covariance,"own class mean, pooled covariance ($\gamma=1$)",1.0,1.0,1.0
+BRCA,mvn,1,covariance,own class only ($\gamma=0$),0.9999631342230274,0.9988518943742825,1.0
+BRCA,mvn,1,covariance,"pooled, pseudo-inverse (challenge)",0.942289259419206,0.677382319173364,0.8507462686567164
+BRCA,mvn,1,covariance,"pooled, ridge",1.0,1.0,1.0
+BRCA,mvn,1,ridge,ridge $10^{-2}$,0.9983199738779637,0.9575200918484501,1.0
+BRCA,mvn,1,ridge,ridge $10^{-6}$,1.0,1.0,1.0
+BRCA,mvn,1,ridge,ridge $10^{-8}$,1.0,1.0,1.0
+BRCA,mvn,2,covariance,$\gamma=0.1$,1.0,1.0,1.0
+BRCA,mvn,2,covariance,$\gamma=0.25$,1.0,1.0,1.0
+BRCA,mvn,2,covariance,$\gamma=0.75$,1.0,1.0,1.0
+BRCA,mvn,2,covariance,$\gamma=0.9$,1.0,1.0,1.0
+BRCA,mvn,2,default,MahalaMIA (default),1.0,1.0,1.0
+BRCA,mvn,2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9999947334604325,1.0,1.0
+BRCA,mvn,2,covariance,own class only ($\gamma=0$),1.0,1.0,1.0
+BRCA,mvn,2,covariance,"pooled, pseudo-inverse (challenge)",0.89815039130389,0.5487944890929966,0.6521239954075775
+BRCA,mvn,2,covariance,"pooled, ridge",0.9999947334604325,1.0,1.0
+BRCA,mvn,2,ridge,ridge $10^{-2}$,0.9980566468995882,0.9793340987370838,1.0
+BRCA,mvn,2,ridge,ridge $10^{-6}$,1.0,1.0,1.0
+BRCA,mvn,2,ridge,ridge $10^{-8}$,1.0,1.0,1.0
+BRCA,mvn,3,covariance,$\gamma=0.1$,1.0,1.0,1.0
+BRCA,mvn,3,covariance,$\gamma=0.25$,1.0,1.0,1.0
+BRCA,mvn,3,covariance,$\gamma=0.75$,0.9999947334604325,1.0,1.0
+BRCA,mvn,3,covariance,$\gamma=0.9$,0.9999947334604325,1.0,1.0
+BRCA,mvn,3,default,MahalaMIA (default),0.9999947334604325,1.0,1.0
+BRCA,mvn,3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.999968400762595,1.0,1.0
+BRCA,mvn,3,covariance,own class only ($\gamma=0$),0.999989466920865,1.0,1.0
+BRCA,mvn,3,covariance,"pooled, pseudo-inverse (challenge)",0.9196694719767429,0.7233065442020666,0.799081515499426
+BRCA,mvn,3,covariance,"pooled, ridge",0.999968400762595,1.0,1.0
+BRCA,mvn,3,ridge,ridge $10^{-2}$,0.9942436722527097,0.7967853042479908,1.0
+BRCA,mvn,3,ridge,ridge $10^{-6}$,1.0,1.0,1.0
+BRCA,mvn,3,ridge,ridge $10^{-8}$,1.0,1.0,1.0
+BRCA,mvn,4,covariance,$\gamma=0.1$,1.0,1.0,1.0
+BRCA,mvn,4,covariance,$\gamma=0.25$,1.0,1.0,1.0
+BRCA,mvn,4,covariance,$\gamma=0.75$,1.0,1.0,1.0
+BRCA,mvn,4,covariance,$\gamma=0.9$,1.0,1.0,1.0
+BRCA,mvn,4,default,MahalaMIA (default),1.0,1.0,1.0
+BRCA,mvn,4,covariance,"own class mean, pooled covariance ($\gamma=1$)",1.0,1.0,1.0
+BRCA,mvn,4,covariance,own class only ($\gamma=0$),0.9999947334604325,1.0,1.0
+BRCA,mvn,4,covariance,"pooled, pseudo-inverse (challenge)",0.9374598426357978,0.6544202066590127,0.8507462686567164
+BRCA,mvn,4,covariance,"pooled, ridge",1.0,1.0,1.0
+BRCA,mvn,4,ridge,ridge $10^{-2}$,0.9977933199212126,0.9621125143513203,1.0
+BRCA,mvn,4,ridge,ridge $10^{-6}$,1.0,1.0,1.0
+BRCA,mvn,4,ridge,ridge $10^{-8}$,1.0,1.0,1.0
+BRCA,mvn,5,covariance,$\gamma=0.1$,1.0,1.0,1.0
+BRCA,mvn,5,covariance,$\gamma=0.25$,1.0,1.0,1.0
+BRCA,mvn,5,covariance,$\gamma=0.75$,0.9999947152581068,1.0,1.0
+BRCA,mvn,5,covariance,$\gamma=0.9$,0.9999630068067475,0.9988532110091743,1.0
+BRCA,mvn,5,default,MahalaMIA (default),1.0,1.0,1.0
+BRCA,mvn,5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9998150340337378,0.9988532110091743,0.9988532110091743
+BRCA,mvn,5,covariance,own class only ($\gamma=0$),1.0,1.0,1.0
+BRCA,mvn,5,covariance,"pooled, pseudo-inverse (challenge)",0.9436276582251724,0.551605504587156,0.8084862385321101
+BRCA,mvn,5,covariance,"pooled, ridge",0.9998150340337378,0.9988532110091743,0.9988532110091743
+BRCA,mvn,5,ridge,ridge $10^{-2}$,0.9982190419819896,0.9610091743119266,0.9988532110091743
+BRCA,mvn,5,ridge,ridge $10^{-6}$,1.0,1.0,1.0
+BRCA,mvn,5,ridge,ridge $10^{-8}$,1.0,1.0,1.0
+BRCA,nd,1,covariance,$\gamma=0.1$,0.8190890993164032,0.20436280137772675,0.4362801377726751
+BRCA,nd,1,covariance,$\gamma=0.25$,0.8300119023794226,0.2261768082663605,0.46039035591274396
+BRCA,nd,1,covariance,$\gamma=0.75$,0.8432677824708497,0.2158438576349024,0.5154994259471871
+BRCA,nd,1,covariance,$\gamma=0.9$,0.8439260999167887,0.21010332950631458,0.5223880597014925
+BRCA,nd,1,default,MahalaMIA (default),0.8391546150686231,0.2502870264064294,0.4925373134328358
+BRCA,nd,1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8430044554924742,0.21010332950631458,0.513203214695752
+BRCA,nd,1,covariance,own class only ($\gamma=0$),0.6598763416509548,0.09988518943742825,0.24913892078071181
+BRCA,nd,1,covariance,"pooled, pseudo-inverse (challenge)",0.8217592348771317,0.16762342135476463,0.4661308840413318
+BRCA,nd,1,covariance,"pooled, ridge",0.8429991889529066,0.21010332950631458,0.513203214695752
+BRCA,nd,1,ridge,ridge $10^{-2}$,0.7843826035665006,0.1584385763490241,0.3547646383467279
+BRCA,nd,1,ridge,ridge $10^{-6}$,0.8410821685503324,0.2743972445464983,0.5154994259471871
+BRCA,nd,1,ridge,ridge $10^{-8}$,0.8410611023920622,0.27324913892078073,0.5154994259471871
+BRCA,nd,2,covariance,$\gamma=0.1$,0.812706053360579,0.23076923076923078,0.4535017221584386
+BRCA,nd,2,covariance,$\gamma=0.25$,0.8245399677687779,0.2468427095292767,0.46842709529276694
+BRCA,nd,2,covariance,$\gamma=0.75$,0.8415140247948683,0.2709529276693456,0.5189437428243399
+BRCA,nd,2,covariance,$\gamma=0.9$,0.8431729847586344,0.27898966704936856,0.5269804822043628
+BRCA,nd,2,default,MahalaMIA (default),0.8351520449973141,0.2606199770378875,0.49483352468427094
+BRCA,nd,2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8426884631184234,0.28243398392652125,0.5304247990815155
+BRCA,nd,2,covariance,own class only ($\gamma=0$),0.6840602913449689,0.1549942594718714,0.2927669345579793
+BRCA,nd,2,covariance,"pooled, pseudo-inverse (challenge)",0.8326399056236109,0.2893226176808266,0.5017221584385764
+BRCA,nd,2,covariance,"pooled, ridge",0.8426884631184234,0.28243398392652125,0.5304247990815155
+BRCA,nd,2,ridge,ridge $10^{-2}$,0.781217413286426,0.21699196326061998,0.3811710677382319
+BRCA,nd,2,ridge,ridge $10^{-6}$,0.8345516594866178,0.25487944890929964,0.48794489092996557
+BRCA,nd,2,ridge,ridge $10^{-8}$,0.8342988655873772,0.25602755453501724,0.48679678530424797
+BRCA,nd,3,covariance,$\gamma=0.1$,0.7520934494780859,0.12169919632606199,0.3111366245694604
+BRCA,nd,3,covariance,$\gamma=0.25$,0.7636535038287742,0.13892078071182548,0.33639494833524686
+BRCA,nd,3,covariance,$\gamma=0.75$,0.7799113114736831,0.17106773823191734,0.373134328358209
+BRCA,nd,3,covariance,$\gamma=0.9$,0.7822127892646857,0.1791044776119403,0.3823191733639495
+BRCA,nd,3,default,MahalaMIA (default),0.7735335320574264,0.15729047072330654,0.35706084959816303
+BRCA,nd,3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7826183128113839,0.182548794489093,0.38461538461538464
+BRCA,nd,3,covariance,own class only ($\gamma=0$),0.6263284846059048,0.06199770378874857,0.21469575200918484
+BRCA,nd,3,covariance,"pooled, pseudo-inverse (challenge)",0.7674138130799776,0.17795637198622274,0.3593570608495982
+BRCA,nd,3,covariance,"pooled, ridge",0.7826183128113839,0.182548794489093,0.38461538461538464
+BRCA,nd,3,ridge,ridge $10^{-2}$,0.715469933325609,0.09988518943742825,0.2743972445464983
+BRCA,nd,3,ridge,ridge $10^{-6}$,0.7766460569418259,0.17451205510907003,0.3742824339839265
+BRCA,nd,3,ridge,ridge $10^{-8}$,0.7766671231000958,0.17451205510907003,0.3742824339839265
+BRCA,nd,4,covariance,$\gamma=0.1$,0.7982546687873265,0.20551090700344432,0.42824339839265213
+BRCA,nd,4,covariance,$\gamma=0.25$,0.8069865913902611,0.2261768082663605,0.4397244546498278
+BRCA,nd,4,covariance,$\gamma=0.75$,0.8142175502164548,0.21928817451205512,0.45579793340987373
+BRCA,nd,4,covariance,$\gamma=0.9$,0.8135381666122457,0.22043628013777267,0.45464982778415614
+BRCA,nd,4,default,MahalaMIA (default),0.8130378453533321,0.22043628013777267,0.4489092996555683
+BRCA,nd,4,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8118265412528044,0.2158438576349024,0.452353616532721
+BRCA,nd,4,covariance,own class only ($\gamma=0$),0.671136203246295,0.12169919632606199,0.27898966704936856
+BRCA,nd,4,covariance,"pooled, pseudo-inverse (challenge)",0.8000663583985507,0.22043628013777267,0.4500574052812859
+BRCA,nd,4,covariance,"pooled, ridge",0.8118265412528044,0.2158438576349024,0.452353616532721
+BRCA,nd,4,ridge,ridge $10^{-2}$,0.7620735419585207,0.16991963260619977,0.3685419058553387
+BRCA,nd,4,ridge,ridge $10^{-6}$,0.8139068243819716,0.21928817451205512,0.44202066590126293
+BRCA,nd,4,ridge,ridge $10^{-8}$,0.8138541589862965,0.21928817451205512,0.4431687715269805
+BRCA,nd,5,covariance,$\gamma=0.1$,0.8072390394453135,0.21674311926605505,0.4334862385321101
+BRCA,nd,5,covariance,$\gamma=0.25$,0.8163287955016277,0.21444954128440366,0.45642201834862384
+BRCA,nd,5,covariance,$\gamma=0.75$,0.8252388703335729,0.22591743119266056,0.5057339449541285
+BRCA,nd,5,covariance,$\gamma=0.9$,0.825476683718767,0.22591743119266056,0.5045871559633027
+BRCA,nd,5,default,MahalaMIA (default),0.8223481165179892,0.21674311926605505,0.4919724770642202
+BRCA,nd,5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8246681182091067,0.22591743119266056,0.5034403669724771
+BRCA,nd,5,covariance,own class only ($\gamma=0$),0.6575275863526825,0.14908256880733944,0.24770642201834864
+BRCA,nd,5,covariance,"pooled, pseudo-inverse (challenge)",0.8077622288927409,0.268348623853211,0.43577981651376146
+BRCA,nd,5,covariance,"pooled, ridge",0.8246786876928931,0.22591743119266056,0.5034403669724771
+BRCA,nd,5,ridge,ridge $10^{-2}$,0.7711178286052509,0.17545871559633028,0.36926605504587157
+BRCA,nd,5,ridge,ridge $10^{-6}$,0.8256827886526021,0.19036697247706422,0.5217889908256881
+BRCA,nd,5,ridge,ridge $10^{-8}$,0.8256986428782818,0.19036697247706422,0.5217889908256881
+BRCA,tabpfn,1,covariance,$\gamma=0.1$,0.6017284782860574,0.01951779563719862,0.14351320321469574
+BRCA,tabpfn,1,covariance,$\gamma=0.25$,0.6029134496887475,0.021814006888633754,0.14121699196326062
+BRCA,tabpfn,1,covariance,$\gamma=0.75$,0.5969833261357292,0.022962112514351322,0.1618828932261768
+BRCA,tabpfn,1,covariance,$\gamma=0.9$,0.5945659844742414,0.024110218140068886,0.15958668197474168
+BRCA,tabpfn,1,default,MahalaMIA (default),0.6004539757107195,0.022962112514351322,0.15958668197474168
+BRCA,tabpfn,1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.5929070245104751,0.024110218140068886,0.1584385763490241
+BRCA,tabpfn,1,covariance,own class only ($\gamma=0$),0.5542506240849387,0.01722158438576349,0.1618828932261768
+BRCA,tabpfn,1,covariance,"pooled, pseudo-inverse (challenge)",0.5885884620651154,0.01951779563719862,0.13892078071182548
+BRCA,tabpfn,1,covariance,"pooled, ridge",0.5929122910500426,0.024110218140068886,0.1584385763490241
+BRCA,tabpfn,1,ridge,ridge $10^{-2}$,0.5873824245041553,0.014925373134328358,0.1423650975889782
+BRCA,tabpfn,1,ridge,ridge $10^{-6}$,0.6018654083148127,0.024110218140068886,0.15384615384615385
+BRCA,tabpfn,1,ridge,ridge $10^{-8}$,0.6019075406313528,0.024110218140068886,0.15384615384615385
+BRCA,tabpfn,2,covariance,$\gamma=0.1$,0.6012913555019539,0.04133180252583238,0.1446613088404133
+BRCA,tabpfn,2,covariance,$\gamma=0.25$,0.6014651513076817,0.04362801377726751,0.14925373134328357
+BRCA,tabpfn,2,covariance,$\gamma=0.75$,0.5954191638841781,0.04133180252583238,0.14351320321469574
+BRCA,tabpfn,2,covariance,$\gamma=0.9$,0.5928069602586925,0.04133180252583238,0.14006888633754305
+BRCA,tabpfn,2,default,MahalaMIA (default),0.5990583427253289,0.04247990815154994,0.14121699196326062
+BRCA,tabpfn,2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.5911690664531962,0.040183696900114814,0.13892078071182548
+BRCA,tabpfn,2,covariance,own class only ($\gamma=0$),0.563503934105057,0.03788748564867968,0.15269804822043628
+BRCA,tabpfn,2,covariance,"pooled, pseudo-inverse (challenge)",0.5901526243166665,0.040183696900114814,0.1584385763490241
+BRCA,tabpfn,2,covariance,"pooled, ridge",0.5911585333740612,0.040183696900114814,0.13892078071182548
+BRCA,tabpfn,2,ridge,ridge $10^{-2}$,0.5905423482446623,0.04936854190585534,0.13662456946039037
+BRCA,tabpfn,2,ridge,ridge $10^{-6}$,0.5999641875309409,0.04133180252583238,0.1446613088404133
+BRCA,tabpfn,2,ridge,ridge $10^{-8}$,0.5999799871496435,0.04133180252583238,0.1446613088404133
+BRCA,tabpfn,3,covariance,$\gamma=0.1$,0.5370501058574454,0.016073478760045924,0.08495981630309989
+BRCA,tabpfn,3,covariance,$\gamma=0.25$,0.5358388017569176,0.014925373134328358,0.08495981630309989
+BRCA,tabpfn,3,covariance,$\gamma=0.75$,0.5341956414118539,0.014925373134328358,0.08036739380022963
+BRCA,tabpfn,3,covariance,$\gamma=0.9$,0.5337321859299129,0.014925373134328358,0.08036739380022963
+BRCA,tabpfn,3,default,MahalaMIA (default),0.5349224238721706,0.014925373134328358,0.08036739380022963
+BRCA,tabpfn,3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.5331318004192165,0.014925373134328358,0.08036739380022963
+BRCA,tabpfn,3,covariance,own class only ($\gamma=0$),0.528434047124996,0.012629161882893225,0.08840413318025259
+BRCA,tabpfn,3,covariance,"pooled, pseudo-inverse (challenge)",0.536686714627287,0.016073478760045924,0.10677382319173363
+BRCA,tabpfn,3,covariance,"pooled, ridge",0.5331423334983516,0.014925373134328358,0.08036739380022963
+BRCA,tabpfn,3,ridge,ridge $10^{-2}$,0.5397518406555788,0.021814006888633754,0.08955223880597014
+BRCA,tabpfn,3,ridge,ridge $10^{-6}$,0.5345432330233096,0.013777267508610792,0.08036739380022963
+BRCA,tabpfn,3,ridge,ridge $10^{-8}$,0.5345169003254722,0.013777267508610792,0.08036739380022963
+BRCA,tabpfn,4,covariance,$\gamma=0.1$,0.5707980914060607,0.02525832376578645,0.1446613088404133
+BRCA,tabpfn,4,covariance,$\gamma=0.25$,0.5718619323986982,0.022962112514351322,0.14121699196326062
+BRCA,tabpfn,4,covariance,$\gamma=0.75$,0.5703399024636873,0.02066590126291619,0.14006888633754305
+BRCA,tabpfn,4,covariance,$\gamma=0.9$,0.5693234603271574,0.02066590126291619,0.1423650975889782
+BRCA,tabpfn,4,default,MahalaMIA (default),0.5716881365929702,0.02066590126291619,0.1423650975889782
+BRCA,tabpfn,4,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.5691075322048894,0.01951779563719862,0.1423650975889782
+BRCA,tabpfn,4,covariance,own class only ($\gamma=0$),0.5389723927995871,0.022962112514351322,0.16991963260619977
+BRCA,tabpfn,4,covariance,"pooled, pseudo-inverse (challenge)",0.5637935937812701,0.014925373134328358,0.15040183696900114
+BRCA,tabpfn,4,covariance,"pooled, ridge",0.569102265665322,0.01951779563719862,0.1423650975889782
+BRCA,tabpfn,4,ridge,ridge $10^{-2}$,0.5632827394432214,0.03559127439724455,0.15958668197474168
+BRCA,tabpfn,4,ridge,ridge $10^{-6}$,0.572467584448962,0.02066590126291619,0.13892078071182548
+BRCA,tabpfn,4,ridge,ridge $10^{-8}$,0.5724517848302595,0.02066590126291619,0.13892078071182548
+BRCA,tabpfn,5,covariance,$\gamma=0.1$,0.5634486111698305,0.047018348623853214,0.1811926605504587
+BRCA,tabpfn,5,covariance,$\gamma=0.25$,0.5651661522851223,0.045871559633027525,0.1823394495412844
+BRCA,tabpfn,5,covariance,$\gamma=0.75$,0.562433940726335,0.04243119266055046,0.1823394495412844
+BRCA,tabpfn,5,covariance,$\gamma=0.9$,0.5614985414112375,0.04357798165137615,0.1811926605504587
+BRCA,tabpfn,5,default,MahalaMIA (default),0.5642254682281318,0.04243119266055046,0.1834862385321101
+BRCA,tabpfn,5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.5606318437407518,0.04472477064220184,0.18004587155963303
+BRCA,tabpfn,5,covariance,own class only ($\gamma=0$),0.5351963810087516,0.04931192660550459,0.16743119266055045
+BRCA,tabpfn,5,covariance,"pooled, pseudo-inverse (challenge)",0.5465321523696782,0.051605504587155966,0.16972477064220184
+BRCA,tabpfn,5,covariance,"pooled, ridge",0.5606265589988586,0.04472477064220184,0.18004587155963303
+BRCA,tabpfn,5,ridge,ridge $10^{-2}$,0.5503213123071069,0.05504587155963303,0.17660550458715596
+BRCA,tabpfn,5,ridge,ridge $10^{-6}$,0.5659324398596373,0.04128440366972477,0.18577981651376146
+BRCA,tabpfn,5,ridge,ridge $10^{-8}$,0.5659747177947829,0.04128440366972477,0.18577981651376146
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,$\gamma=0.1$,0.7216475842383003,0.0539609644087256,0.34328358208955223
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,$\gamma=0.25$,0.7209471344758214,0.05510907003444317,0.33639494833524686
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,$\gamma=0.75$,0.7131157901389312,0.04133180252583238,0.3157290470723307
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,$\gamma=0.9$,0.7100295979523694,0.03903559127439724,0.3076923076923077
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,default,MahalaMIA (default),0.7174448856634259,0.04477611940298507,0.32950631458094143
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7074858593412612,0.03673938002296211,0.29850746268656714
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,own class only ($\gamma=0$),0.700660424061766,0.09988518943742825,0.3157290470723307
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,"pooled, pseudo-inverse (challenge)",0.6972793056594235,0.03559127439724455,0.2755453501722158
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,"pooled, ridge",0.7074858593412613,0.03673938002296211,0.29850746268656714
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,ridge,ridge $10^{-2}$,0.7109407092975489,0.06659012629161883,0.3283582089552239
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,ridge,ridge $10^{-6}$,0.718145335425905,0.05166475315729047,0.3283582089552239
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,ridge,ridge $10^{-8}$,0.7181664015841751,0.05166475315729047,0.3283582089552239
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,$\gamma=0.1$,0.7209208017779838,0.1182548794489093,0.33983926521239954
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,$\gamma=0.25$,0.7203256828068549,0.11366245694603903,0.34328358208955223
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,$\gamma=0.75$,0.7127681985274754,0.08381171067738231,0.3145809414466131
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,$\gamma=0.9$,0.7095819420891308,0.07577497129735936,0.31343283582089554
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,default,MahalaMIA (default),0.7170340955771601,0.1010332950631458,0.33983926521239954
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7077649859383393,0.07003444316877153,0.3076923076923077
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,own class only ($\gamma=0$),0.6944617069908046,0.1251435132032147,0.29850746268656714
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,"pooled, pseudo-inverse (challenge)",0.6917441725739686,0.1285878300803674,0.2743972445464983
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,"pooled, ridge",0.7077702524779068,0.07003444316877153,0.3076923076923077
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,ridge,ridge $10^{-2}$,0.707791318636177,0.11595866819747416,0.3111366245694604
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,ridge,ridge $10^{-6}$,0.717650280706559,0.10332950631458095,0.3409873708381171
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,ridge,ridge $10^{-8}$,0.717629214548289,0.10332950631458095,0.3409873708381171
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,$\gamma=0.1$,0.6537829553713437,0.08495981630309989,0.2502870264064294
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,$\gamma=0.25$,0.6537460895943712,0.08381171067738231,0.2537313432835821
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,$\gamma=0.75$,0.6488060754800451,0.06199770378874857,0.2330654420206659
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,$\gamma=0.9$,0.6474420417320594,0.0574052812858783,0.2261768082663605
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,default,MahalaMIA (default),0.651613141069529,0.0711825487944891,0.24913892078071181
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.645872612940941,0.0574052812858783,0.22158438576349024
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,own class only ($\gamma=0$),0.6241534037645226,0.03214695752009185,0.19862227324913892
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,"pooled, pseudo-inverse (challenge)",0.6286299623969074,0.05166475315729047,0.1515499425947187
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,"pooled, ridge",0.6458778794805085,0.0574052812858783,0.22158438576349024
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,ridge,ridge $10^{-2}$,0.6410747953949378,0.03903559127439724,0.1791044776119403
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,ridge,ridge $10^{-6}$,0.6519712657601197,0.06544202066590127,0.2537313432835821
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,ridge,ridge $10^{-8}$,0.6519554661414171,0.06544202066590127,0.2537313432835821
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,$\gamma=0.1$,0.6604135286868409,0.04362801377726751,0.2571756601607348
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,$\gamma=0.25$,0.6616669651039089,0.040183696900114814,0.25947187141216993
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,$\gamma=0.75$,0.6593654873129062,0.05166475315729047,0.24913892078071181
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,$\gamma=0.9$,0.6576696615721673,0.060849598163030996,0.24225028702640644
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,default,MahalaMIA (default),0.6613141069528855,0.045924225028702644,0.25602755453501724
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.6565531551838548,0.06314580941446613,0.23421354764638347
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,own class only ($\gamma=0$),0.6297991341808952,0.06888633754305395,0.2296211251435132
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,"pooled, pseudo-inverse (challenge)",0.6308313759361275,0.04477611940298507,0.2158438576349024
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,"pooled, ridge",0.6565531551838548,0.06314580941446613,0.23421354764638347
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,ridge,ridge $10^{-2}$,0.651007489019265,0.040183696900114814,0.2399540757749713
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,ridge,ridge $10^{-6}$,0.6620461559527697,0.04133180252583238,0.25947187141216993
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,ridge,ridge $10^{-8}$,0.6620619555714722,0.04133180252583238,0.25947187141216993
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,$\gamma=0.1$,0.6934479770008033,0.14908256880733944,0.33256880733944955
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,$\gamma=0.25$,0.6935959497738131,0.13990825688073394,0.34174311926605505
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,$\gamma=0.75$,0.6884591806536169,0.143348623853211,0.3211009174311927
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,$\gamma=0.9$,0.6862818669936159,0.143348623853211,0.32798165137614677
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,default,MahalaMIA (default),0.6916458800152201,0.1341743119266055,0.3291284403669725
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.6846964444256542,0.143348623853211,0.3256880733944954
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,own class only ($\gamma=0$),0.6609838075508393,0.12270642201834862,0.28211009174311924
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,"pooled, pseudo-inverse (challenge)",0.6627964740202089,0.06536697247706422,0.2775229357798165
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,"pooled, ridge",0.6846858749418678,0.143348623853211,0.3256880733944954
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,ridge,ridge $10^{-2}$,0.6788198114404093,0.1158256880733945,0.30963302752293576
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,ridge,ridge $10^{-6}$,0.6924280218154145,0.13302752293577982,0.3451834862385321
+BRCA,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,ridge,ridge $10^{-8}$,0.6924333065573076,0.13188073394495411,0.3451834862385321
+COMBINED,cvae,1,covariance,$\gamma=0.1$,0.7982210974301025,0.27530364372469635,0.5598611914401388
+COMBINED,cvae,1,covariance,$\gamma=0.25$,0.7998522317354078,0.30798149219201854,0.5540775014459225
+COMBINED,cvae,1,covariance,$\gamma=0.75$,0.8087594486438417,0.3209947946790052,0.572006940427993
+COMBINED,cvae,1,covariance,$\gamma=0.9$,0.8105059224316906,0.32764603817235394,0.5769230769230769
+COMBINED,cvae,1,default,MahalaMIA (default),0.8048138353888278,0.3175245806824754,0.56737998843262
+COMBINED,cvae,1,reference,no reference set,0.729734852917086,0.014748409485251591,0.18739155581260844
+COMBINED,cvae,1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8119264368123511,0.34239444765760557,0.5806824754193175
+COMBINED,cvae,1,covariance,own class only ($\gamma=0$),0.7033585520047339,0.18739155581260844,0.32186234817813764
+COMBINED,cvae,1,covariance,"pooled, pseudo-inverse (challenge)",0.6156801519137995,0.045401966454598035,0.22267206477732793
+COMBINED,cvae,1,covariance,"pooled, ridge",0.8119100552626564,0.34239444765760557,0.5806824754193175
+COMBINED,cvae,1,ridge,ridge $10^{-2}$,0.8411019768184356,0.30682475419317523,0.6396761133603239
+COMBINED,cvae,1,ridge,ridge $10^{-6}$,0.7808693588127722,0.2854251012145749,0.5199537304800462
+COMBINED,cvae,1,ridge,ridge $10^{-8}$,0.7790085484944018,0.28050896471949105,0.5237131289762869
+COMBINED,cvae,2,covariance,$\gamma=0.1$,0.7976042819364998,0.3357432041642568,0.5905147484094853
+COMBINED,cvae,2,covariance,$\gamma=0.25$,0.8002704627286312,0.3418160786581839,0.5850202429149798
+COMBINED,cvae,2,covariance,$\gamma=0.75$,0.8057512612121678,0.3773857721226142,0.5942741469057259
+COMBINED,cvae,2,covariance,$\gamma=0.9$,0.8061618029065549,0.3733371891266628,0.589358010410642
+COMBINED,cvae,2,default,MahalaMIA (default),0.803937589638837,0.3649508386350492,0.5899363794100636
+COMBINED,cvae,2,reference,no reference set,0.7328607200526884,0.03325621746674378,0.2466743782533256
+COMBINED,cvae,2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8065944095454287,0.3637941006362059,0.5884904569115096
+COMBINED,cvae,2,covariance,own class only ($\gamma=0$),0.7223738537094181,0.1824754193175246,0.3637941006362059
+COMBINED,cvae,2,covariance,"pooled, pseudo-inverse (challenge)",0.5936339291982736,0.012434933487565067,0.1642567958357432
+COMBINED,cvae,2,covariance,"pooled, ridge",0.8065579689552917,0.3637941006362059,0.5884904569115096
+COMBINED,cvae,2,ridge,ridge $10^{-2}$,0.8296613031021306,0.2851359167148641,0.6350491613649508
+COMBINED,cvae,2,ridge,ridge $10^{-6}$,0.7771082887298282,0.30682475419317523,0.510989010989011
+COMBINED,cvae,2,ridge,ridge $10^{-8}$,0.7739874363543363,0.3039329091960671,0.5098322729901678
+COMBINED,cvae,3,covariance,$\gamma=0.1$,0.7547916032856707,0.2709658762290341,0.47484094852515907
+COMBINED,cvae,3,covariance,$\gamma=0.25$,0.7616939191018899,0.28976286871023715,0.4924812030075188
+COMBINED,cvae,3,covariance,$\gamma=0.75$,0.7732857042561941,0.27559282822440717,0.518796992481203
+COMBINED,cvae,3,covariance,$\gamma=0.9$,0.7746664348733103,0.2724117987275882,0.5260266049739734
+COMBINED,cvae,3,default,MahalaMIA (default),0.769248153732486,0.27559282822440717,0.5034702139965298
+COMBINED,cvae,3,reference,no reference set,0.6988512856173337,0.029496818970503182,0.19519953730480047
+COMBINED,cvae,3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7755991802538805,0.2764603817235396,0.5292076344707923
+COMBINED,cvae,3,covariance,own class only ($\gamma=0$),0.7076167519733081,0.1622325043377675,0.3623481781376518
+COMBINED,cvae,3,covariance,"pooled, pseudo-inverse (challenge)",0.7497771774924195,0.2353961827646038,0.4644303065355697
+COMBINED,cvae,3,covariance,"pooled, ridge",0.7755707632799206,0.2761711972238288,0.5292076344707923
+COMBINED,cvae,3,ridge,ridge $10^{-2}$,0.7903485926911543,0.2689415847310584,0.5534991324465008
+COMBINED,cvae,3,ridge,ridge $10^{-6}$,0.7466670232718301,0.24060150375939848,0.4742625795257374
+COMBINED,cvae,3,ridge,ridge $10^{-8}$,0.7434264852883654,0.24551764025448236,0.4650086755349913
+COMBINED,cvae,4,covariance,$\gamma=0.1$,0.7916586360862163,0.32870771899392887,0.5602775368603643
+COMBINED,cvae,4,covariance,$\gamma=0.25$,0.796574020536871,0.33795894767273776,0.5738652789823648
+COMBINED,cvae,4,covariance,$\gamma=0.75$,0.8065540243915497,0.37872217403873953,0.5790690951141949
+COMBINED,cvae,4,covariance,$\gamma=0.9$,0.8078512977418009,0.37958947672737786,0.5761780861520671
+COMBINED,cvae,4,default,MahalaMIA (default),0.8029392593663337,0.36224342295461115,0.585429314830876
+COMBINED,cvae,4,reference,no reference set,0.7465448427612347,0.022260769008383925,0.2113327551315409
+COMBINED,cvae,4,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8088052637777993,0.37294015611448394,0.5755998843596415
+COMBINED,cvae,4,covariance,own class only ($\gamma=0$),0.7116790739134624,0.1595836947094536,0.2948829141370338
+COMBINED,cvae,4,covariance,"pooled, pseudo-inverse (challenge)",0.558256507447025,0.027464585140213934,0.12691529343740965
+COMBINED,cvae,4,covariance,"pooled, ridge",0.8087794989988543,0.37294015611448394,0.5753107834634288
+COMBINED,cvae,4,ridge,ridge $10^{-2}$,0.8331707140792135,0.322058398381035,0.632263660017346
+COMBINED,cvae,4,ridge,ridge $10^{-6}$,0.7818643394044522,0.3183000867302689,0.5287655391731715
+COMBINED,cvae,4,ridge,ridge $10^{-8}$,0.7806032036662276,0.31569817866435385,0.5232726221451286
+COMBINED,cvae,5,covariance,$\gamma=0.1$,0.7641528942211944,0.28418618097716103,0.4972535414859786
+COMBINED,cvae,5,covariance,$\gamma=0.25$,0.772430080412879,0.30529054640069386,0.5203816131830009
+COMBINED,cvae,5,covariance,$\gamma=0.75$,0.7856065898943176,0.32928592078635444,0.5504481063891298
+COMBINED,cvae,5,covariance,$\gamma=0.9$,0.7871176774490594,0.3177218849378433,0.5539173171436832
+COMBINED,cvae,5,default,MahalaMIA (default),0.7811415871639202,0.30529054640069386,0.5391731714368314
+COMBINED,cvae,5,reference,no reference set,0.6966311045795723,0.045099739809193407,0.21971668112171147
+COMBINED,cvae,5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.788096739048965,0.30933795894767274,0.557964729690662
+COMBINED,cvae,5,covariance,own class only ($\gamma=0$),0.6996245034424422,0.21162185602775369,0.36513443191673894
+COMBINED,cvae,5,covariance,"pooled, pseudo-inverse (challenge)",0.5764340609039221,0.07632263660017347,0.17982075744434808
+COMBINED,cvae,5,covariance,"pooled, ridge",0.7880763279903205,0.30933795894767274,0.5582538305868748
+COMBINED,cvae,5,ridge,ridge $10^{-2}$,0.7922963980169819,0.29199190517490603,0.5524718126626192
+COMBINED,cvae,5,ridge,ridge $10^{-6}$,0.7584384670157293,0.25701069673315985,0.4958080370049147
+COMBINED,cvae,5,ridge,ridge $10^{-8}$,0.7551117990641697,0.2434229546111593,0.4900260190806591
+COMBINED,mvn,1,covariance,$\gamma=0.1$,0.9996192125489357,0.9979757085020243,0.9994216310005783
+COMBINED,mvn,1,covariance,$\gamma=0.25$,0.9991645409655754,0.9832272990167727,0.9991324465008675
+COMBINED,mvn,1,covariance,$\gamma=0.75$,0.9836893255816286,0.8397917871602082,0.9589358010410642
+COMBINED,mvn,1,covariance,$\gamma=0.9$,0.9566193161873113,0.6778484673221515,0.8927125506072875
+COMBINED,mvn,1,default,MahalaMIA (default),0.9964401889561609,0.9577790630422209,0.9919028340080972
+COMBINED,mvn,1,reference,no reference set,0.9111852552680055,0.17437825332562173,0.6124927703875073
+COMBINED,mvn,1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9029821106790987,0.4415847310584153,0.7677848467322151
+COMBINED,mvn,1,covariance,own class only ($\gamma=0$),0.9999695771219957,0.9994216310005783,1.0
+COMBINED,mvn,1,covariance,"pooled, pseudo-inverse (challenge)",0.9003697549788209,0.39300173510699826,0.7336610757663389
+COMBINED,mvn,1,covariance,"pooled, ridge",0.8967333852639603,0.43724696356275305,0.7521688837478311
+COMBINED,mvn,1,ridge,ridge $10^{-2}$,0.9973649107205541,0.9626951995373048,0.9965297860034702
+COMBINED,mvn,1,ridge,ridge $10^{-6}$,0.9960497063022162,0.9508386350491613,0.9919028340080972
+COMBINED,mvn,1,ridge,ridge $10^{-8}$,0.9960456944941278,0.9508386350491613,0.9919028340080972
+COMBINED,mvn,2,covariance,$\gamma=0.1$,0.9998997047977881,0.9971081550028918,1.0
+COMBINED,mvn,2,covariance,$\gamma=0.25$,0.9994022405948175,0.9893001735106999,0.9994216310005783
+COMBINED,mvn,2,covariance,$\gamma=0.75$,0.9839691491957997,0.8701561596298438,0.9612492770387507
+COMBINED,mvn,2,covariance,$\gamma=0.9$,0.9564397877753522,0.7096587622903412,0.8903990746096009
+COMBINED,mvn,2,default,MahalaMIA (default),0.9966584981796421,0.9600925390399074,0.9927703875072296
+COMBINED,mvn,2,reference,no reference set,0.9223327326765112,0.2495662232504338,0.6521110468478889
+COMBINED,mvn,2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9002443859760563,0.503181029496819,0.7591093117408907
+COMBINED,mvn,2,covariance,own class only ($\gamma=0$),1.0,1.0,1.0
+COMBINED,mvn,2,covariance,"pooled, pseudo-inverse (challenge)",0.9040773342872521,0.4898785425101215,0.739733950260266
+COMBINED,mvn,2,covariance,"pooled, ridge",0.8931250982057188,0.4942163100057837,0.7495662232504338
+COMBINED,mvn,2,ridge,ridge $10^{-2}$,0.9984761815610614,0.9791787160208213,0.9982648930017352
+COMBINED,mvn,2,ridge,ridge $10^{-6}$,0.9961670516888042,0.9566223250433776,0.9916136495083864
+COMBINED,mvn,2,ridge,ridge $10^{-8}$,0.9961617026113527,0.9566223250433776,0.9916136495083864
+COMBINED,mvn,3,covariance,$\gamma=0.1$,0.9995784258333695,0.9973973395026027,0.9991324465008675
+COMBINED,mvn,3,covariance,$\gamma=0.25$,0.9989706369079656,0.9806246385193753,0.9991324465008675
+COMBINED,mvn,3,covariance,$\gamma=0.75$,0.9822430687657338,0.7886061307113938,0.9534412955465587
+COMBINED,mvn,3,covariance,$\gamma=0.9$,0.9543152010751645,0.6312897628687102,0.8857721226142279
+COMBINED,mvn,3,default,MahalaMIA (default),0.9958634915434429,0.9331983805668016,0.993637941006362
+COMBINED,mvn,3,reference,no reference set,0.9071991896147662,0.21544245228455755,0.6012145748987854
+COMBINED,mvn,3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8982518546254475,0.42799305957200695,0.7495662232504338
+COMBINED,mvn,3,covariance,own class only ($\gamma=0$),0.9999662339485887,0.9994216310005783,1.0
+COMBINED,mvn,3,covariance,"pooled, pseudo-inverse (challenge)",0.9006318597739346,0.3733371891266628,0.7330827067669173
+COMBINED,mvn,3,covariance,"pooled, ridge",0.8916574450800189,0.4233661075766339,0.7313475997686524
+COMBINED,mvn,3,ridge,ridge $10^{-2}$,0.9972813313853776,0.9600925390399074,0.9976865240023135
+COMBINED,mvn,3,ridge,ridge $10^{-6}$,0.9953519860121623,0.9334875650665124,0.9924812030075187
+COMBINED,mvn,3,ridge,ridge $10^{-8}$,0.9953463026173703,0.9334875650665124,0.9924812030075187
+COMBINED,mvn,4,covariance,$\gamma=0.1$,0.9996453160301093,0.9971089910378722,0.9997108991037872
+COMBINED,mvn,4,covariance,$\gamma=0.25$,0.9990989019519665,0.9838103498120844,0.9988435964151489
+COMBINED,mvn,4,covariance,$\gamma=0.75$,0.9822862125641109,0.825383058687482,0.9589476727377855
+COMBINED,mvn,4,covariance,$\gamma=0.9$,0.9543923259773216,0.6498988146863255,0.8846487424111015
+COMBINED,mvn,4,default,MahalaMIA (default),0.9960241934620366,0.9436253252385083,0.9921942758022549
+COMBINED,mvn,4,reference,no reference set,0.9249619216643646,0.1991905174906042,0.6539462272333044
+COMBINED,mvn,4,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.898152498045892,0.4220873084706563,0.7473258167100318
+COMBINED,mvn,4,covariance,own class only ($\gamma=0$),0.9999815965864679,0.9994217982075745,1.0
+COMBINED,mvn,4,covariance,"pooled, pseudo-inverse (challenge)",0.8988089979977087,0.36600173460537727,0.721017635154669
+COMBINED,mvn,4,covariance,"pooled, ridge",0.8915155579111924,0.406764960971379,0.7372072853425846
+COMBINED,mvn,4,ridge,ridge $10^{-2}$,0.997571753236324,0.9496964440589766,0.997398091934085
+COMBINED,mvn,4,ridge,ridge $10^{-6}$,0.9955279705117085,0.9378433073142527,0.9907487713211911
+COMBINED,mvn,4,ridge,ridge $10^{-8}$,0.9955212783613332,0.9378433073142527,0.9907487713211911
+COMBINED,mvn,5,covariance,$\gamma=0.1$,0.9996914918676989,0.9979762937265105,0.9997108991037872
+COMBINED,mvn,5,covariance,$\gamma=0.25$,0.9993281081023202,0.9910378722174039,0.9985544955189362
+COMBINED,mvn,5,covariance,$\gamma=0.75$,0.9841031313910037,0.8623879734027176,0.9566348655680833
+COMBINED,mvn,5,covariance,$\gamma=0.9$,0.9554296092854926,0.7056952876553917,0.8843596415148887
+COMBINED,mvn,5,default,MahalaMIA (default),0.9969102341717259,0.955767562879445,0.9936397802833189
+COMBINED,mvn,5,reference,no reference set,0.9112179178311008,0.19485400404741254,0.606244579358196
+COMBINED,mvn,5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8979487220669643,0.48193119398670137,0.752240531945649
+COMBINED,mvn,5,covariance,own class only ($\gamma=0$),0.9999973231398498,1.0,1.0
+COMBINED,mvn,5,covariance,"pooled, pseudo-inverse (challenge)",0.8963723860460633,0.4327840416305291,0.7207285342584562
+COMBINED,mvn,5,covariance,"pooled, ridge",0.891193330870622,0.48250939577912694,0.7429893032668401
+COMBINED,mvn,5,ridge,ridge $10^{-2}$,0.9983477080723394,0.9760046256143394,0.9982653946227233
+COMBINED,mvn,5,ridge,ridge $10^{-6}$,0.9964330838499672,0.9514310494362532,0.9924833766984678
+COMBINED,mvn,5,ridge,ridge $10^{-8}$,0.9964247186619982,0.9511419485400405,0.9924833766984678
+COMBINED,nd,1,covariance,$\gamma=0.1$,0.773248260714035,0.07981492192018508,0.26373626373626374
+COMBINED,nd,1,covariance,$\gamma=0.25$,0.81296750101131,0.1570271833429728,0.4363794100636206
+COMBINED,nd,1,covariance,$\gamma=0.75$,0.8157015482236047,0.2943898207056102,0.570561017929439
+COMBINED,nd,1,covariance,$\gamma=0.9$,0.7910242480367214,0.26402544823597457,0.5413533834586466
+COMBINED,nd,1,default,MahalaMIA (default),0.8367772476990609,0.24927703875072296,0.5939849624060151
+COMBINED,nd,1,reference,no reference set,0.6155206825422828,0.04251012145748988,0.1978021978021978
+COMBINED,nd,1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7745978998184656,0.22498554077501445,0.5020242914979757
+COMBINED,nd,1,covariance,own class only ($\gamma=0$),0.6146093334715179,0.0373048004626952,0.15644881434355118
+COMBINED,nd,1,covariance,"pooled, pseudo-inverse (challenge)",0.7689215256906161,0.19288606130711394,0.46385193753614806
+COMBINED,nd,1,covariance,"pooled, ridge",0.7751873012901307,0.22180451127819548,0.4985540775014459
+COMBINED,nd,1,ridge,ridge $10^{-2}$,0.867608661493663,0.34470792365529207,0.6593406593406593
+COMBINED,nd,1,ridge,ridge $10^{-6}$,0.8318149754109596,0.2353961827646038,0.5835743204164257
+COMBINED,nd,1,ridge,ridge $10^{-8}$,0.8317474433081369,0.2353961827646038,0.5835743204164257
+COMBINED,nd,2,covariance,$\gamma=0.1$,0.7961867764119056,0.11249277038750723,0.3021978021978022
+COMBINED,nd,2,covariance,$\gamma=0.25$,0.835333331104551,0.20300751879699247,0.49045691150954307
+COMBINED,nd,2,covariance,$\gamma=0.75$,0.825215885422761,0.33516483516483514,0.603528050896472
+COMBINED,nd,2,covariance,$\gamma=0.9$,0.7955522420992454,0.286871023713129,0.5442452284557547
+COMBINED,nd,2,default,MahalaMIA (default),0.8516219405784358,0.3441295546558704,0.6145170618854829
+COMBINED,nd,2,reference,no reference set,0.6258788367093813,0.0803932909196067,0.2278773857721226
+COMBINED,nd,2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7702410762343832,0.27038750722961247,0.49942163100057835
+COMBINED,nd,2,covariance,own class only ($\gamma=0$),0.6361851716886703,0.05292076344707924,0.1396761133603239
+COMBINED,nd,2,covariance,"pooled, pseudo-inverse (challenge)",0.7751949905889668,0.22845575477154426,0.4699248120300752
+COMBINED,nd,2,covariance,"pooled, ridge",0.7706245382241732,0.2709658762290341,0.5005783689994217
+COMBINED,nd,2,ridge,ridge $10^{-2}$,0.8844478916276908,0.40370156159629844,0.6879699248120301
+COMBINED,nd,2,ridge,ridge $10^{-6}$,0.8462263930167793,0.3397917871602082,0.597165991902834
+COMBINED,nd,2,ridge,ridge $10^{-8}$,0.8461628727220452,0.3395026026604974,0.597165991902834
+COMBINED,nd,3,covariance,$\gamma=0.1$,0.7944062022553049,0.09919028340080972,0.3016194331983806
+COMBINED,nd,3,covariance,$\gamma=0.25$,0.8311058883313219,0.16367842683632158,0.4832272990167727
+COMBINED,nd,3,covariance,$\gamma=0.75$,0.822305652971914,0.30798149219201854,0.5818392134181608
+COMBINED,nd,3,covariance,$\gamma=0.9$,0.7949792221772751,0.2839791787160208,0.545401966454598
+COMBINED,nd,3,default,MahalaMIA (default),0.8468783118311565,0.275882012724118,0.6127819548872181
+COMBINED,nd,3,reference,no reference set,0.6299260824359698,0.05696934644303065,0.197513013302487
+COMBINED,nd,3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7724943751107426,0.24436090225563908,0.5124349334875651
+COMBINED,nd,3,covariance,own class only ($\gamma=0$),0.6590641788998953,0.04684788895315211,0.15442452284557548
+COMBINED,nd,3,covariance,"pooled, pseudo-inverse (challenge)",0.7776903352199975,0.19866975130133024,0.4757085020242915
+COMBINED,nd,3,covariance,"pooled, ridge",0.7726581906076886,0.24493927125506074,0.5104106419895894
+COMBINED,nd,3,ridge,ridge $10^{-2}$,0.8816456436778919,0.3493348756506651,0.6680161943319838
+COMBINED,nd,3,ridge,ridge $10^{-6}$,0.8415332461879464,0.26200115673799884,0.5997686524002314
+COMBINED,nd,3,ridge,ridge $10^{-8}$,0.8414854388082256,0.26200115673799884,0.5991902834008097
+COMBINED,nd,4,covariance,$\gamma=0.1$,0.7840526725771739,0.08210465452442903,0.2769586585718416
+COMBINED,nd,4,covariance,$\gamma=0.25$,0.8216327776171662,0.1503324660306447,0.45041919629950855
+COMBINED,nd,4,covariance,$\gamma=0.75$,0.8122641016992708,0.2760913558832032,0.5666377565770454
+COMBINED,nd,4,covariance,$\gamma=0.9$,0.7841517164027282,0.2486267707429893,0.5365712633709164
+COMBINED,nd,4,default,MahalaMIA (default),0.8387924550019809,0.28158427291124605,0.559410234171726
+COMBINED,nd,4,reference,no reference set,0.6303078790701659,0.04423243712055507,0.22231858918762648
+COMBINED,nd,4,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7635750270362874,0.2127782596126048,0.500722752240532
+COMBINED,nd,4,covariance,own class only ($\gamma=0$),0.6193240526591929,0.02804278693263949,0.14541775079502747
+COMBINED,nd,4,covariance,"pooled, pseudo-inverse (challenge)",0.7639594910753482,0.16681121711477306,0.45533391153512576
+COMBINED,nd,4,covariance,"pooled, ridge",0.763766422537021,0.20786354437698756,0.49522983521248914
+COMBINED,nd,4,ridge,ridge $10^{-2}$,0.866565548274496,0.3723619543220584,0.6227233304423244
+COMBINED,nd,4,ridge,ridge $10^{-6}$,0.8338546518475689,0.2795605666377566,0.5614339404452153
+COMBINED,nd,4,ridge,ridge $10^{-8}$,0.8337900725964472,0.2795605666377566,0.5614339404452153
+COMBINED,nd,5,covariance,$\gamma=0.1$,0.7657884557729167,0.07400982943047124,0.22145128649898815
+COMBINED,nd,5,covariance,$\gamma=0.25$,0.802070952855139,0.14194854004047414,0.37322925701069676
+COMBINED,nd,5,covariance,$\gamma=0.75$,0.8026126824280193,0.2662619254119688,0.5599884359641515
+COMBINED,nd,5,covariance,$\gamma=0.9$,0.7797666848693157,0.2512286788089043,0.5307892454466608
+COMBINED,nd,5,default,MahalaMIA (default),0.8228115999057746,0.24660306446949987,0.5573865278982365
+COMBINED,nd,5,reference,no reference set,0.6099379771503217,0.0465452442902573,0.18271176640647585
+COMBINED,nd,5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7635910881971882,0.22289679098005205,0.49956634865568084
+COMBINED,nd,5,covariance,own class only ($\gamma=0$),0.6073494533851573,0.03295750216825672,0.14599595258745302
+COMBINED,nd,5,covariance,"pooled, pseudo-inverse (challenge)",0.7629750757551422,0.19456490315119976,0.4313385371494652
+COMBINED,nd,5,covariance,"pooled, ridge",0.7638504090242308,0.22231858918762648,0.4978317432784042
+COMBINED,nd,5,ridge,ridge $10^{-2}$,0.8564630780679494,0.28389708008094827,0.6392020815264527
+COMBINED,nd,5,ridge,ridge $10^{-6}$,0.8175539119634233,0.24978317432784042,0.5547846198323215
+COMBINED,nd,5,ridge,ridge $10^{-8}$,0.8174869904596704,0.24978317432784042,0.5547846198323215
+COMBINED,tabpfn,1,covariance,$\gamma=0.1$,0.6025715689847118,0.03990746096009254,0.1495083863504916
+COMBINED,tabpfn,1,covariance,$\gamma=0.25$,0.6180932544790166,0.04684788895315211,0.1587622903412377
+COMBINED,tabpfn,1,covariance,$\gamma=0.75$,0.6400916698148216,0.02631578947368421,0.24146905725853093
+COMBINED,tabpfn,1,covariance,$\gamma=0.9$,0.6227543068431416,0.023423944476576055,0.23105841526894158
+COMBINED,tabpfn,1,default,MahalaMIA (default),0.6421985376959518,0.03990746096009254,0.21428571428571427
+COMBINED,tabpfn,1,reference,no reference set,0.5404931849410097,0.009253903990746095,0.12406015037593984
+COMBINED,tabpfn,1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.6021884413122625,0.025448235974551765,0.21891266628108733
+COMBINED,tabpfn,1,covariance,own class only ($\gamma=0$),0.58791309086411,0.030942741469057258,0.15268941584731058
+COMBINED,tabpfn,1,covariance,"pooled, pseudo-inverse (challenge)",0.5995369704831219,0.021399652978600348,0.15615962984384038
+COMBINED,tabpfn,1,covariance,"pooled, ridge",0.6006148095895586,0.02689415847310584,0.21226142278773857
+COMBINED,tabpfn,1,ridge,ridge $10^{-2}$,0.6752641942784929,0.045980335454019666,0.27530364372469635
+COMBINED,tabpfn,1,ridge,ridge $10^{-6}$,0.6392598882711448,0.0410641989589358,0.2125506072874494
+COMBINED,tabpfn,1,ridge,ridge $10^{-8}$,0.6392297997104812,0.0410641989589358,0.2128397917871602
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,$\gamma=0.1$,0.5502592630977177,0.029786003470213998,0.13649508386350492
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,$\gamma=0.25$,0.5559052143475629,0.03209947946790052,0.14661654135338345
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,$\gamma=0.75$,0.5721289662573508,0.03961827646038173,0.19086176980913824
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,$\gamma=0.9$,0.5691134238441813,0.028629265471370735,0.1844997108155003
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,default,MahalaMIA (default),0.5678914939639004,0.04164256795835743,0.17524580682475419
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,reference,no reference set,0.5257143525777539,0.005494505494505495,0.11104684788895315
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.5628285921562466,0.024002313475997687,0.17235396182764604
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,own class only ($\gamma=0$),0.5366288107997874,0.028050896471949104,0.13533834586466165
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,"pooled, pseudo-inverse (challenge)",0.560038379630713,0.030364372469635626,0.1659919028340081
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,covariance,"pooled, ridge",0.5622886696510061,0.023423944476576055,0.17235396182764604
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,ridge,ridge $10^{-2}$,0.5816723890651484,0.030942741469057258,0.2050318102949682
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,ridge,ridge $10^{-6}$,0.5669935175867636,0.04395604395604396,0.1772700983227299
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1,ridge,ridge $10^{-8}$,0.5669868312399495,0.04395604395604396,0.1772700983227299
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,$\gamma=0.1$,0.5871912997255255,0.04337767495662233,0.145748987854251
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,$\gamma=0.25$,0.5937215203415386,0.05147484094852516,0.1720647773279352
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,$\gamma=0.75$,0.6042946405587111,0.06622325043377675,0.22151532677848468
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,$\gamma=0.9$,0.5931655506039443,0.06275303643724696,0.197513013302487
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,default,MahalaMIA (default),0.6058415268941585,0.051764025448235974,0.2275882012724118
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,reference,no reference set,0.5409485251590515,0.027761711972238288,0.14025448235974552
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.5771046112390804,0.0540775014459225,0.1862348178137652
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,own class only ($\gamma=0$),0.5689225286426381,0.03961827646038173,0.13765182186234817
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,"pooled, pseudo-inverse (challenge)",0.585663803795839,0.03152111046847889,0.1827646038172354
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,covariance,"pooled, ridge",0.5758736547906003,0.04713707345286293,0.1937536148062464
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,ridge,ridge $10^{-2}$,0.6353396831340246,0.09629843840370156,0.2608444187391556
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,ridge,ridge $10^{-6}$,0.603760067130922,0.0503181029496819,0.22325043377674958
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2,ridge,ridge $10^{-8}$,0.6037333217436655,0.0503181029496819,0.22296124927703875
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,$\gamma=0.1$,0.5924407506092935,0.03672643146327357,0.15818392134181608
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,$\gamma=0.25$,0.6022756981381867,0.048582995951417005,0.17090803932909196
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,$\gamma=0.75$,0.6158359437945687,0.04626951995373048,0.2145748987854251
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,$\gamma=0.9$,0.6031780206407527,0.04048582995951417,0.19693464430306534
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,default,MahalaMIA (default),0.617984601343287,0.052342394447657606,0.20098322729901677
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,reference,no reference set,0.5501506099619882,0.016194331983805668,0.1139386928860613
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.5868472871819388,0.032388663967611336,0.18016194331983806
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,own class only ($\gamma=0$),0.5731927640354777,0.030942741469057258,0.1419895893580104
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,"pooled, pseudo-inverse (challenge)",0.5901189166780891,0.035280508964719494,0.19144013880855987
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,covariance,"pooled, ridge",0.5846926119210878,0.03412377096587623,0.18334297281665704
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,ridge,ridge $10^{-2}$,0.6490517088630869,0.06101792943898207,0.2275882012724118
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,ridge,ridge $10^{-6}$,0.6156617644600607,0.048582995951417005,0.20734528629265472
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3,ridge,ridge $10^{-8}$,0.6156360220248265,0.048582995951417005,0.2070561017929439
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,$\gamma=0.1$,0.5817479629094258,0.03353570396068228,0.15235617230413415
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,$\gamma=0.25$,0.593259130769972,0.04018502457357618,0.18184446371783752
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,$\gamma=0.75$,0.6056573431627639,0.056663775657704536,0.21509106678230702
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,$\gamma=0.9$,0.5953370434615013,0.055218271176640646,0.19832321480196588
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,default,MahalaMIA (default),0.6080558098572698,0.041052327262214514,0.20844174616941313
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,reference,no reference set,0.5502035082929126,0.019369760046256145,0.13761202659728244
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.5836492028310474,0.0505926568372362,0.1821335646140503
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,own class only ($\gamma=0$),0.5587577495101346,0.030644694998554496,0.14050303555941024
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,"pooled, pseudo-inverse (challenge)",0.5884672164937416,0.01647875108412836,0.18184446371783752
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,covariance,"pooled, ridge",0.5824700459349201,0.04972535414859786,0.1887828852269442
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,ridge,ridge $10^{-2}$,0.6321636123692354,0.05782017924255565,0.2260769008383926
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,ridge,ridge $10^{-6}$,0.6064443400468986,0.043943336224342294,0.2156692685747326
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4,ridge,ridge $10^{-8}$,0.6064142253702098,0.043943336224342294,0.21595836947094535
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,$\gamma=0.1$,0.5919983296392664,0.04018502457357618,0.13240821046545245
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,$\gamma=0.25$,0.603043723833692,0.04856895056374675,0.15929459381324082
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,$\gamma=0.75$,0.6160639716038675,0.07400982943047124,0.23330442324371206
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,$\gamma=0.9$,0.6039980244772092,0.05753107834634287,0.21624747036715813
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,default,MahalaMIA (default),0.6184697996637863,0.0745880312228968,0.20179242555651922
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,reference,no reference set,0.5408833504652383,0.017346053772766695,0.11679676206996242
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.5881018250832504,0.04134142815842729,0.20410523272622144
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,own class only ($\gamma=0$),0.5697402374910325,0.03295750216825672,0.13790112749349523
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,"pooled, pseudo-inverse (challenge)",0.584006563661088,0.029199190517490606,0.1610291991905175
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,covariance,"pooled, ridge",0.5858790273360959,0.04047412546978896,0.19572130673605087
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,ridge,ridge $10^{-2}$,0.6462870611287784,0.08528476438276959,0.25874530211043656
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,ridge,ridge $10^{-6}$,0.6163413612369235,0.07198612315698179,0.20121422376409367
+COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5,ridge,ridge $10^{-8}$,0.6163172694955725,0.07198612315698179,0.20121422376409367
+GTEX,cvae,1,covariance,$\gamma=0.1$,0.8276768649748343,0.46241947029348607,0.6417322834645669
+GTEX,cvae,1,covariance,$\gamma=0.25$,0.8474341990711656,0.46277738010021474,0.6793128131710809
+GTEX,cvae,1,covariance,$\gamma=0.75$,0.8724721028906689,0.4405869720830351,0.7086614173228346
+GTEX,cvae,1,covariance,$\gamma=0.9$,0.8737520250160117,0.4330708661417323,0.7018611309949893
+GTEX,cvae,1,default,MahalaMIA (default),0.8655195903434609,0.44953471725125266,0.7054402290622763
+GTEX,cvae,1,reference,no reference set,0.872172741629849,0.26664280601288476,0.6023622047244095
+GTEX,cvae,1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8751352980528281,0.42984967788117395,0.7025769506084467
+GTEX,cvae,1,covariance,own class only ($\gamma=0$),0.7466293856679269,0.24767358625626343,0.43199713672154616
+GTEX,cvae,1,covariance,"pooled, pseudo-inverse (challenge)",0.6153095792548755,0.032569792412312094,0.2054402290622763
+GTEX,cvae,1,covariance,"pooled, ridge",0.8751240974614369,0.42984967788117395,0.7025769506084467
+GTEX,cvae,1,ridge,ridge $10^{-2}$,0.8380307934804412,0.34144595561918395,0.6156048675733715
+GTEX,cvae,1,ridge,ridge $10^{-6}$,0.8371887126549372,0.4234073013600573,0.6492483894058697
+GTEX,cvae,1,ridge,ridge $10^{-8}$,0.834291832426934,0.42233357193987114,0.6442376521116678
+GTEX,cvae,2,covariance,$\gamma=0.1$,0.8161683436334849,0.4229531641043976,0.618519842688595
+GTEX,cvae,2,covariance,$\gamma=0.25$,0.8412135451248788,0.41508759385055416,0.6496245977833393
+GTEX,cvae,2,covariance,$\gamma=0.75$,0.8701200265590683,0.425098319628173,0.6857347157668932
+GTEX,cvae,2,covariance,$\gamma=0.9$,0.8713335716839471,0.4247407937075438,0.6767965677511619
+GTEX,cvae,2,default,MahalaMIA (default),0.8624393482813217,0.45799070432606365,0.6832320343224884
+GTEX,cvae,2,reference,no reference set,0.8683906226058532,0.1973543081873436,0.5770468358956025
+GTEX,cvae,2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8723974666734767,0.41580264569181263,0.6714336789417232
+GTEX,cvae,2,covariance,own class only ($\gamma=0$),0.7037816027376269,0.2752949588845191,0.44154451197711836
+GTEX,cvae,2,covariance,"pooled, pseudo-inverse (challenge)",0.8405112620664997,0.4233106900250268,0.6199499463711119
+GTEX,cvae,2,covariance,"pooled, ridge",0.8723826548853364,0.41580264569181263,0.6714336789417232
+GTEX,cvae,2,ridge,ridge $10^{-2}$,0.821593544103376,0.27708258848766537,0.5784769395781194
+GTEX,cvae,2,ridge,ridge $10^{-6}$,0.8393605393533888,0.4018591347872721,0.6274579907043261
+GTEX,cvae,2,ridge,ridge $10^{-8}$,0.8320363654936411,0.40757954951734,0.6074365391490884
+GTEX,cvae,3,covariance,$\gamma=0.1$,0.809308406474684,0.44353109363831306,0.6050750536097212
+GTEX,cvae,3,covariance,$\gamma=0.25$,0.8328557798795584,0.45675482487491065,0.6511794138670479
+GTEX,cvae,3,covariance,$\gamma=0.75$,0.8648994121081787,0.41100786275911366,0.6679771265189421
+GTEX,cvae,3,covariance,$\gamma=0.9$,0.8669221117475082,0.3874195854181558,0.6615439599714081
+GTEX,cvae,3,default,MahalaMIA (default),0.8553718627959273,0.42887776983559683,0.6651179413867048
+GTEX,cvae,3,reference,no reference set,0.9037433237106824,0.3059328091493924,0.6719085060757684
+GTEX,cvae,3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8682121196317418,0.39206576125804143,0.6615439599714081
+GTEX,cvae,3,covariance,own class only ($\gamma=0$),0.708827887485543,0.27769835596854897,0.39635453895639744
+GTEX,cvae,3,covariance,"pooled, pseudo-inverse (challenge)",0.6342467182260781,0.03538241601143674,0.22087205146533237
+GTEX,cvae,3,covariance,"pooled, ridge",0.8681896224668959,0.39206576125804143,0.6611865618298784
+GTEX,cvae,3,ridge,ridge $10^{-2}$,0.8320786050939717,0.3541815582558971,0.6011436740528949
+GTEX,cvae,3,ridge,ridge $10^{-6}$,0.8286661942262048,0.3899213724088635,0.5986418870621872
+GTEX,cvae,3,ridge,ridge $10^{-8}$,0.8263029693189801,0.3895639742673338,0.6025732666190136
+GTEX,cvae,4,covariance,$\gamma=0.1$,0.8413325061856924,0.48695962843872814,0.6638085030367988
+GTEX,cvae,4,covariance,$\gamma=0.25$,0.8600958590409388,0.4901750625223294,0.6970346552340122
+GTEX,cvae,4,covariance,$\gamma=0.75$,0.879953544604039,0.4969632011432655,0.7081100392997499
+GTEX,cvae,4,covariance,$\gamma=0.9$,0.8802473458081119,0.4908896034297964,0.7013219006788138
+GTEX,cvae,4,default,MahalaMIA (default),0.8752440239094805,0.5062522329403358,0.7159699892818864
+GTEX,cvae,4,reference,no reference set,0.8835016803995696,0.1850660950339407,0.6505894962486602
+GTEX,cvae,4,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.880558549870963,0.47624151482672383,0.6973919256877457
+GTEX,cvae,4,covariance,own class only ($\gamma=0$),0.753796126533115,0.2779564130046445,0.46802429439085386
+GTEX,cvae,4,covariance,"pooled, pseudo-inverse (challenge)",0.600870040569135,0.028938906752411574,0.17684887459807075
+GTEX,cvae,4,covariance,"pooled, ridge",0.8805534313830872,0.4765987852804573,0.6977491961414791
+GTEX,cvae,4,ridge,ridge $10^{-2}$,0.8496039825930465,0.3183279742765273,0.6334405144694534
+GTEX,cvae,4,ridge,ridge $10^{-6}$,0.8496787125160337,0.38549481957842086,0.6509467667023937
+GTEX,cvae,4,ridge,ridge $10^{-8}$,0.846094747305372,0.37977849231868527,0.6484458735262594
+GTEX,cvae,5,covariance,$\gamma=0.1$,0.8052915556466489,0.41785714285714287,0.5878571428571429
+GTEX,cvae,5,covariance,$\gamma=0.25$,0.8267124410739906,0.44607142857142856,0.6285714285714286
+GTEX,cvae,5,covariance,$\gamma=0.75$,0.8502064972330396,0.4407142857142857,0.6460714285714285
+GTEX,cvae,5,covariance,$\gamma=0.9$,0.851087825374052,0.435,0.6467857142857143
+GTEX,cvae,5,default,MahalaMIA (default),0.8442401106784178,0.44821428571428573,0.6510714285714285
+GTEX,cvae,5,reference,no reference set,0.8492887886862062,0.19857142857142857,0.5639285714285714
+GTEX,cvae,5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.8520967411354787,0.4307142857142857,0.6364285714285715
+GTEX,cvae,5,covariance,own class only ($\gamma=0$),0.7125819840131175,0.2375,0.41678571428571426
+GTEX,cvae,5,covariance,"pooled, pseudo-inverse (challenge)",0.5765807542529207,0.0125,0.14642857142857144
+GTEX,cvae,5,covariance,"pooled, ridge",0.8520977659356426,0.4307142857142857,0.6364285714285715
+GTEX,cvae,5,ridge,ridge $10^{-2}$,0.8103217872514861,0.2732142857142857,0.5557142857142857
+GTEX,cvae,5,ridge,ridge $10^{-6}$,0.8178950604632097,0.3925,0.5917857142857142
+GTEX,cvae,5,ridge,ridge $10^{-8}$,0.8101967616314818,0.3707142857142857,0.5710714285714286
+GTEX,mvn,1,covariance,$\gamma=0.1$,1.0,1.0,1.0
+GTEX,mvn,1,covariance,$\gamma=0.25$,1.0,1.0,1.0
+GTEX,mvn,1,covariance,$\gamma=0.75$,0.9986920763961792,0.9534717251252685,0.9996420901932713
+GTEX,mvn,1,covariance,$\gamma=0.9$,0.9912721937172828,0.7963493199713673,0.9871152469577666
+GTEX,mvn,1,default,MahalaMIA (default),0.9999938905865139,1.0,1.0
+GTEX,mvn,1,reference,no reference set,0.9987582617089454,0.9749463135289907,0.9996420901932713
+GTEX,mvn,1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9768392134741077,0.6288475304223335,0.9427344309234073
+GTEX,mvn,1,covariance,own class only ($\gamma=0$),1.0,1.0,1.0
+GTEX,mvn,1,covariance,"pooled, pseudo-inverse (challenge)",0.9699045200495676,0.5289906943450251,0.9148174659985684
+GTEX,mvn,1,covariance,"pooled, ridge",0.9762425274236296,0.6245526127415891,0.9402290622763063
+GTEX,mvn,1,ridge,ridge $10^{-2}$,0.999083078859291,0.9742304939155333,0.9996420901932713
+GTEX,mvn,1,ridge,ridge $10^{-6}$,0.9999933814687234,1.0,1.0
+GTEX,mvn,1,ridge,ridge $10^{-8}$,0.9999933814687234,1.0,1.0
+GTEX,mvn,2,covariance,$\gamma=0.1$,1.0,1.0,1.0
+GTEX,mvn,2,covariance,$\gamma=0.25$,1.0,1.0,1.0
+GTEX,mvn,2,covariance,$\gamma=0.75$,0.9983732570611369,0.9574544154451198,0.998569896317483
+GTEX,mvn,2,covariance,$\gamma=0.9$,0.9901123652893407,0.7965677511619592,0.9821237039685378
+GTEX,mvn,2,default,MahalaMIA (default),0.999980591450023,1.0,1.0
+GTEX,mvn,2,reference,no reference set,0.9989917769038256,0.9667500893814801,0.9992849481587415
+GTEX,mvn,2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9747249604167731,0.5992134429746157,0.9410082230961745
+GTEX,mvn,2,covariance,own class only ($\gamma=0$),0.9999989784973696,1.0,1.0
+GTEX,mvn,2,covariance,"pooled, pseudo-inverse (challenge)",0.9714306144338322,0.672506256703611,0.9231319270647121
+GTEX,mvn,2,covariance,"pooled, ridge",0.9742152306042189,0.6110117983553808,0.9374329638898821
+GTEX,mvn,2,ridge,ridge $10^{-2}$,0.998769089330405,0.9717554522702896,0.9992849481587415
+GTEX,mvn,2,ridge,ridge $10^{-6}$,0.9999831452065989,1.0,1.0
+GTEX,mvn,2,ridge,ridge $10^{-8}$,0.9999831452065989,1.0,1.0
+GTEX,mvn,3,covariance,$\gamma=0.1$,1.0,1.0,1.0
+GTEX,mvn,3,covariance,$\gamma=0.25$,1.0,1.0,1.0
+GTEX,mvn,3,covariance,$\gamma=0.75$,0.9977380123345819,0.961758398856326,0.998927805575411
+GTEX,mvn,3,covariance,$\gamma=0.9$,0.9891931800867367,0.7651894210150108,0.9764117226590422
+GTEX,mvn,3,default,MahalaMIA (default),0.9999018305533995,0.9996426018584703,1.0
+GTEX,mvn,3,reference,no reference set,0.9993618985970973,0.9807005003573981,0.9996426018584703
+GTEX,mvn,3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9721459534247332,0.5929235167977126,0.9256611865618298
+GTEX,mvn,3,covariance,own class only ($\gamma=0$),1.0,1.0,1.0
+GTEX,mvn,3,covariance,"pooled, pseudo-inverse (challenge)",0.9738107436233321,0.48070050035739814,0.9370979270907791
+GTEX,mvn,3,covariance,"pooled, ridge",0.9715231909978618,0.5922087205146533,0.9174410293066476
+GTEX,mvn,3,ridge,ridge $10^{-2}$,0.9983812267294951,0.9724803431022159,1.0
+GTEX,mvn,3,ridge,ridge $10^{-6}$,0.9999105226398174,1.0,1.0
+GTEX,mvn,3,ridge,ridge $10^{-8}$,0.9999110339390184,1.0,1.0
+GTEX,mvn,4,covariance,$\gamma=0.1$,1.0,1.0,1.0
+GTEX,mvn,4,covariance,$\gamma=0.25$,1.0,1.0,1.0
+GTEX,mvn,4,covariance,$\gamma=0.75$,0.9986134016344355,0.9667738478027867,1.0
+GTEX,mvn,4,covariance,$\gamma=0.9$,0.9909515371330939,0.8006430868167203,0.9796355841371919
+GTEX,mvn,4,default,MahalaMIA (default),0.9999907867218235,1.0,1.0
+GTEX,mvn,4,reference,no reference set,0.9983846052263855,0.9592711682743837,0.9974991068238657
+GTEX,mvn,4,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.975234196412759,0.6312968917470525,0.9196141479099679
+GTEX,mvn,4,covariance,own class only ($\gamma=0$),1.0,1.0,1.0
+GTEX,mvn,4,covariance,"pooled, pseudo-inverse (challenge)",0.9681420196119982,0.5884244372990354,0.9092533047516971
+GTEX,mvn,4,covariance,"pooled, ridge",0.9746808878733809,0.630939621293319,0.916041443372633
+GTEX,mvn,4,ridge,ridge $10^{-2}$,0.9987766813976748,0.9792783136834584,1.0
+GTEX,mvn,4,ridge,ridge $10^{-6}$,0.9999918104193987,1.0,1.0
+GTEX,mvn,4,ridge,ridge $10^{-8}$,0.9999918104193987,1.0,1.0
+GTEX,mvn,5,covariance,$\gamma=0.1$,1.0,1.0,1.0
+GTEX,mvn,5,covariance,$\gamma=0.25$,1.0,1.0,1.0
+GTEX,mvn,5,covariance,$\gamma=0.75$,0.9983259889321582,0.9482142857142857,0.9996428571428572
+GTEX,mvn,5,covariance,$\gamma=0.9$,0.9902464644394343,0.7435714285714285,0.9853571428571428
+GTEX,mvn,5,default,MahalaMIA (default),0.9999830907972945,0.9996428571428572,1.0
+GTEX,mvn,5,reference,no reference set,0.998655462184874,0.9732142857142857,0.9985714285714286
+GTEX,mvn,5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.9742109038737446,0.6021428571428571,0.9457142857142857
+GTEX,mvn,5,covariance,own class only ($\gamma=0$),1.0,1.0,1.0
+GTEX,mvn,5,covariance,"pooled, pseudo-inverse (challenge)",0.9749313383890141,0.5521428571428572,0.9410714285714286
+GTEX,mvn,5,covariance,"pooled, ridge",0.9734212953474072,0.5864285714285714,0.9403571428571429
+GTEX,mvn,5,ridge,ridge $10^{-2}$,0.9988112318097971,0.9707142857142858,0.9996428571428572
+GTEX,mvn,5,ridge,ridge $10^{-6}$,0.9999856527977045,0.9996428571428572,1.0
+GTEX,mvn,5,ridge,ridge $10^{-8}$,0.9999856527977045,0.9996428571428572,1.0
+GTEX,nd,1,covariance,$\gamma=0.1$,0.8397903045644446,0.24838940586972083,0.5894774516821761
+GTEX,nd,1,covariance,$\gamma=0.25$,0.8454160561495829,0.32462419470293485,0.6027201145311382
+GTEX,nd,1,covariance,$\gamma=0.75$,0.790528067154673,0.1793128131710809,0.5053686471009305
+GTEX,nd,1,covariance,$\gamma=0.9$,0.7684323550465282,0.17072297780959197,0.44452397995705084
+GTEX,nd,1,default,MahalaMIA (default),0.8262584628104727,0.22763063707945597,0.5748031496062992
+GTEX,nd,1,reference,no reference set,0.6233724777031864,0.11130994989262706,0.23657838224767358
+GTEX,nd,1,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7614421677828225,0.15282748747315678,0.4316392269148175
+GTEX,nd,1,covariance,own class only ($\gamma=0$),0.6426502228408569,0.08554044380816034,0.30637079455977095
+GTEX,nd,1,covariance,"pooled, pseudo-inverse (challenge)",0.7438536754740651,0.14137437365783823,0.37401574803149606
+GTEX,nd,1,covariance,"pooled, ridge",0.7623097044978522,0.1481746599856836,0.4302075876879026
+GTEX,nd,1,ridge,ridge $10^{-2}$,0.8004217531776587,0.19183965640658554,0.5082319255547602
+GTEX,nd,1,ridge,ridge $10^{-6}$,0.8259865939103402,0.22512526843235506,0.5780243378668576
+GTEX,nd,1,ridge,ridge $10^{-8}$,0.8259789571434826,0.22512526843235506,0.5780243378668576
+GTEX,nd,2,covariance,$\gamma=0.1$,0.8232820879513765,0.25277082588487665,0.551662495530926
+GTEX,nd,2,covariance,$\gamma=0.25$,0.8280264569181266,0.25134072220235965,0.5598855917053986
+GTEX,nd,2,covariance,$\gamma=0.75$,0.7724684611062873,0.18090811583839828,0.4372542009295674
+GTEX,nd,2,covariance,$\gamma=0.9$,0.7507467184227999,0.16875223453700394,0.3893457275652485
+GTEX,nd,2,default,MahalaMIA (default),0.8081199244088053,0.2391848409009653,0.5294958884519128
+GTEX,nd,2,reference,no reference set,0.6425823586495736,0.06936002860207365,0.2749374329638899
+GTEX,nd,2,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.744086010521477,0.14587057561673222,0.37897747586700037
+GTEX,nd,2,covariance,own class only ($\gamma=0$),0.6356586138209306,0.07794065069717554,0.30782981766178047
+GTEX,nd,2,covariance,"pooled, pseudo-inverse (challenge)",0.7419096991674754,0.15588130139435108,0.39363603861279944
+GTEX,nd,2,covariance,"pooled, ridge",0.744780632310128,0.15874150875938506,0.37826242402574184
+GTEX,nd,2,ridge,ridge $10^{-2}$,0.7862311660452526,0.15731140507686808,0.45656060064354664
+GTEX,nd,2,ridge,ridge $10^{-6}$,0.8075938505541652,0.24490525563103324,0.5309259921344297
+GTEX,nd,2,ridge,ridge $10^{-8}$,0.8076004903212626,0.24490525563103324,0.5309259921344297
+GTEX,nd,3,covariance,$\gamma=0.1$,0.8376962494158406,0.21122230164403144,0.5711222301644031
+GTEX,nd,3,covariance,$\gamma=0.25$,0.8470259259372881,0.25196568977841316,0.5832737669764118
+GTEX,nd,3,covariance,$\gamma=0.75$,0.7912324458201802,0.19907076483202288,0.4639027877055039
+GTEX,nd,3,covariance,$\gamma=0.9$,0.7670633325868365,0.16547533952823446,0.3927805575411008
+GTEX,nd,3,default,MahalaMIA (default),0.8286007479284713,0.22337383845604003,0.547891350964975
+GTEX,nd,3,reference,no reference set,0.6737992905212287,0.12258756254467476,0.31093638313080774
+GTEX,nd,3,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7584387376636286,0.13545389563974267,0.3788420300214439
+GTEX,nd,3,covariance,own class only ($\gamma=0$),0.6617091096133454,0.10221586847748391,0.3209435310936383
+GTEX,nd,3,covariance,"pooled, pseudo-inverse (challenge)",0.7709885765532503,0.15475339528234452,0.4421015010721944
+GTEX,nd,3,covariance,"pooled, ridge",0.7587148392321922,0.13545389563974267,0.3856325947105075
+GTEX,nd,3,ridge,ridge $10^{-2}$,0.8151402851617904,0.18120085775553968,0.504288777698356
+GTEX,nd,3,ridge,ridge $10^{-6}$,0.827593488502415,0.21837026447462474,0.5553967119370979
+GTEX,nd,3,ridge,ridge $10^{-8}$,0.8275771269279814,0.21837026447462474,0.5553967119370979
+GTEX,nd,4,covariance,$\gamma=0.1$,0.8589180949807085,0.2765273311897106,0.5984280100035727
+GTEX,nd,4,covariance,$\gamma=0.25$,0.8639424026796307,0.30903894247945696,0.6320114326545194
+GTEX,nd,4,covariance,$\gamma=0.75$,0.8059258781533724,0.2015005359056806,0.5001786352268668
+GTEX,nd,4,covariance,$\gamma=0.9$,0.7815454967031819,0.17327617006073598,0.43837084673097537
+GTEX,nd,4,default,MahalaMIA (default),0.8435160531135251,0.2604501607717042,0.5980707395498392
+GTEX,nd,4,reference,no reference set,0.6566221460591226,0.09682029296177207,0.3026080743122544
+GTEX,nd,4,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7712435161554833,0.15362629510539477,0.41550553769203286
+GTEX,nd,4,covariance,own class only ($\gamma=0$),0.6543203620613585,0.1486245087531261,0.32868881743479816
+GTEX,nd,4,covariance,"pooled, pseudo-inverse (challenge)",0.7495119521810389,0.15576991782779565,0.3933547695605573
+GTEX,nd,4,covariance,"pooled, ridge",0.7719119906720677,0.15434083601286175,0.41693461950696675
+GTEX,nd,4,ridge,ridge $10^{-2}$,0.8109982996383276,0.18828152911754198,0.49053233297606286
+GTEX,nd,4,ridge,ridge $10^{-6}$,0.843592318582875,0.2600928903179707,0.5919971418363701
+GTEX,nd,4,ridge,ridge $10^{-8}$,0.8435989726171137,0.2600928903179707,0.5919971418363701
+GTEX,nd,5,covariance,$\gamma=0.1$,0.8486590489854478,0.32571428571428573,0.5828571428571429
+GTEX,nd,5,covariance,$\gamma=0.25$,0.8503125640500102,0.3003571428571429,0.6
+GTEX,nd,5,covariance,$\gamma=0.75$,0.7910791145726583,0.18178571428571427,0.4785714285714286
+GTEX,nd,5,covariance,$\gamma=0.9$,0.7690756302521009,0.14642857142857144,0.4278571428571429
+GTEX,nd,5,default,MahalaMIA (default),0.8272950399672063,0.24357142857142858,0.5425
+GTEX,nd,5,reference,no reference set,0.6689782742365239,0.07892857142857143,0.28785714285714287
+GTEX,nd,5,covariance,"own class mean, pooled covariance ($\gamma=1$)",0.7621700143472023,0.12142857142857143,0.4060714285714286
+GTEX,nd,5,covariance,own class only ($\gamma=0$),0.6567708546833367,0.11821428571428572,0.33785714285714286
+GTEX,nd,5,covariance,"pooled, pseudo-inverse (challenge)",0.7726229760196762,0.165,0.4253571428571429
+GTEX,nd,5,covariance,"pooled, ridge",0.7627664480426317,0.12178571428571429,0.4082142857142857
+GTEX,nd,5,ridge,ridge $10^{-2}$,0.8095665095306416,0.1725,0.48964285714285716
+GTEX,nd,5,ridge,ridge $10^{-6}$,0.8266253330600534,0.2425,0.5460714285714285
+GTEX,nd,5,ridge,ridge $10^{-8}$,0.826604837056774,0.2425,0.5460714285714285

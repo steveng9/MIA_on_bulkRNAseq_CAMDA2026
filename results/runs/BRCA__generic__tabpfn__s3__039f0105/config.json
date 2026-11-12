@@ -1,0 +1,35 @@
+{
+  "run_id": "BRCA__generic__tabpfn__s3__039f0105",
+  "timestamp": "2026-11-11T22:35:23+00:00",
+  "dataset": "BRCA",
+  "attack": "generic",
+  "generator": "tabpfn",
+  "split": 3,
+  "tag": "gan_leaks",
+  "experiment": "paper_grid_brca",
+  "variant": "generic_gan_leaks",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "gan_leaks",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "9642b263da2f9ada",
+    "params": {
+      "seed": 3167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 3167,
+    "source": "trained"
+  }
+}

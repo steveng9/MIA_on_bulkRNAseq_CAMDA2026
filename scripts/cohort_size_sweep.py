@@ -33,8 +33,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from mia import datasets as D            # noqa: E402
 from mia import metrics as M             # noqa: E402
 from mia import runs as R                # noqa: E402
-from mia.attacks.mahalamia import (mahalanobis, precision,  # noqa: E402
-                                   sigmoid_calibrate)
+from mia.attacks.mahalamia import (class_shrunk_distance, mahalanobis,  # noqa: E402
+                                   precision, sigmoid_calibrate)
 from mia import generators as G           # noqa: E402
 from mia import targets as TG              # noqa: E402
 
@@ -42,7 +42,10 @@ DEFAULT_SIZES = (500, 700, 871, 1100, 1500, 2000, 2800, 3458)
 # Both ends of the alpha range: on BRCA (n < p) the small alpha wins and the
 # large one loses, and on COMBINED (n > p) that ordering inverts.  Carrying
 # both through the sweep shows where the crossover actually is.
-COVARIANCES = (("pinv", 0.0), ("ridge", 1e-6), ("ridge", 1e-2))
+# "shrink" is the paper's MahalaMIA (2026-11-11): distance to the own class, class
+# covariance averaged with the pooled one, ridge 1e-4.
+SHRINK = 0.5
+COVARIANCES = (("shrink", 1e-4), ("pinv", 0.0), ("ridge", 1e-6), ("ridge", 1e-2))
 
 
 def stratified_sample(y: np.ndarray, n: int, rng: np.random.RandomState) -> np.ndarray:
@@ -75,10 +78,14 @@ def stratified_sample(y: np.ndarray, n: int, rng: np.random.RandomState) -> np.n
     return np.concatenate(picked)
 
 
-def score(X_real, X_syn, X_aux, covariance, ridge_alpha, aux_cache):
+def score(X_real, X_syn, X_aux, covariance, ridge_alpha, aux_cache, y_real=None, y_syn=None):
     """MahalaMIA's score, composed from the attack module's own helpers."""
-    d_syn = mahalanobis(X_real, X_syn.mean(axis=0),
-                        precision(X_syn, covariance, ridge_alpha))
+    if covariance == "shrink":
+        d_syn = class_shrunk_distance(X_real, y_real, X_syn, y_syn, SHRINK, ridge_alpha)
+        covariance = "ridge"             # the reference set has no labels: pooled ridge
+    else:
+        d_syn = mahalanobis(X_real, X_syn.mean(axis=0),
+                            precision(X_syn, covariance, ridge_alpha))
     if X_aux is None:
         raw = 1.0 / (d_syn + 1e-10)
     else:
@@ -104,6 +111,8 @@ def main() -> None:
     p.add_argument("--sizes", type=int, nargs="+", default=list(DEFAULT_SIZES))
     p.add_argument("--trials", type=int, default=3)
     p.add_argument("--no-save", action="store_true")
+    p.add_argument("--covariances", nargs="+", default=None,
+                   help="restrict to these (shrink, pinv, ridge); default all")
     args = p.parse_args()
 
     df = D.load_expression(args.dataset)
@@ -146,15 +155,18 @@ def main() -> None:
                           device=args.device, verbose=False,
                           **TG.default_params(args.generator, args.dataset))
             gen.fit(X_all[train_idx].astype(np.float32), y_all[train_idx], n_classes)
-            X_syn = gen.sample(len(train_idx))[0].astype(np.float64)
+            X_syn, y_syn = gen.sample(len(train_idx))[:2]
+            X_syn, y_syn = X_syn.astype(np.float64), np.asarray(y_syn)
 
             for cov, alpha in COVARIANCES:
-                sc = score(X_all, X_syn, X_aux, cov, alpha, aux_cache)
+                if args.covariances and cov not in args.covariances:
+                    continue
+                sc = score(X_all, X_syn, X_aux, cov, alpha, aux_cache, y_all, y_syn)
                 met = M.evaluate(y_member, sc)
                 results.setdefault((cov, alpha), []).append(met)
 
                 if not args.no_save:
-                    tag = f"n{n}_{cov}" + (f"{alpha:g}" if cov == "ridge" else "")
+                    tag = f"n{n}_{cov}" + (f"{alpha:g}" if cov == "ridge" else f"{SHRINK:g}" if cov == "shrink" else "")
                     R.save_run(
                         dataset=args.dataset, attack="mahalamia",
                         generator=args.generator,

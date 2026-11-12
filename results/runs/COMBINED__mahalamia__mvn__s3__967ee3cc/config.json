@@ -1,0 +1,22 @@
+{
+  "run_id": "COMBINED__mahalamia__mvn__s3__967ee3cc",
+  "timestamp": "2026-11-11T23:32:22+00:00",
+  "dataset": "COMBINED",
+  "attack": "mahalamia",
+  "generator": "mvn",
+  "split": 3,
+  "tag": "n2000_shrink0.5",
+  "experiment": "cohort_size",
+  "variant": "n2000_shrink0.5",
+  "notes": "cohort-size sweep at fixed gene count",
+  "params": {
+    "attack": "mahalamia",
+    "covariance": "shrink",
+    "ridge_alpha": 0.0001,
+    "use_reference": true,
+    "n_train": 2000,
+    "n_genes": 978,
+    "sweep_generator": "mvn"
+  },
+  "target": null
+}

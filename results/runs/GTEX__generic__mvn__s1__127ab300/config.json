@@ -1,0 +1,31 @@
+{
+  "run_id": "GTEX__generic__mvn__s1__127ab300",
+  "timestamp": "2026-11-11T23:24:03+00:00",
+  "dataset": "GTEX",
+  "attack": "generic",
+  "generator": "mvn",
+  "split": 1,
+  "tag": "domias_kde",
+  "experiment": "paper_grid_gtex",
+  "variant": "generic_domias_kde",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "generic",
+    "method": "domias_kde",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "87840e748da5d8de",
+    "params": {
+      "seed": 1958,
+      "device": "cuda",
+      "verbose": true,
+      "name": "mvn",
+      "noise_level": 0.7
+    },
+    "seed": 1958,
+    "source": "trained"
+  }
+}

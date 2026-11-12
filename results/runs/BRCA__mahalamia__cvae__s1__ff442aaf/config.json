@@ -1,0 +1,46 @@
+{
+  "run_id": "BRCA__mahalamia__cvae__s1__ff442aaf",
+  "timestamp": "2026-11-11T23:07:54+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "cvae",
+  "split": 1,
+  "tag": "aux_ridge0.0001_shrink0.5",
+  "experiment": "paper_grid_brca",
+  "variant": "mahalamia",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ridge",
+    "ridge_alpha": 0.0001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "class_shrink": 0.5,
+    "pca_per_class": false,
+    "calibrate": true,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "03407e1b1fd9c1f2",
+    "params": {
+      "preprocess": "standard",
+      "optimizer": "adam",
+      "scheduler": "none",
+      "lr": 0.001,
+      "batch_size": 64,
+      "num_iters": 10000,
+      "z_dim": 128,
+      "beta": 0.001,
+      "condition_type": "embedding",
+      "early_stopping": false
+    },
+    "seed": 1097,
+    "source": "trained"
+  }
+}

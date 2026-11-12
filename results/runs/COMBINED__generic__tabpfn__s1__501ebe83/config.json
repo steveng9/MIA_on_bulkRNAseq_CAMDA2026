@@ -1,0 +1,35 @@
+{
+  "run_id": "COMBINED__generic__tabpfn__s1__501ebe83",
+  "timestamp": "2026-11-11T22:34:57+00:00",
+  "dataset": "COMBINED",
+  "attack": "generic",
+  "generator": "tabpfn",
+  "split": 1,
+  "tag": "logan_d1",
+  "experiment": "paper_grid_combined",
+  "variant": "generic_logan_d1",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "generic",
+    "method": "logan_d1",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "54a199bd1a29cca3",
+    "params": {
+      "seed": 1167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 1167,
+    "source": "trained"
+  }
+}

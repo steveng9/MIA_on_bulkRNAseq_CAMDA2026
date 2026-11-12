@@ -181,6 +181,41 @@ def precision(X: np.ndarray, method: str, ridge_alpha: float) -> np.ndarray:
     raise ValueError(f"Unknown covariance method {method!r}")
 
 
+def class_shrunk_distance(X_query, y_query, X_fit, y_fit, shrink: float,
+                          ridge_alpha: float) -> np.ndarray:
+    """Distance of each query row to its own class, class covariance shrunk to the pooled one.
+
+    The covariance used for class c is (1 - shrink) * S_c + shrink * S, where
+    S_c is the covariance of the fitted rows of class c and S that of all
+    fitted rows, with the usual ridge on top (regularised discriminant
+    analysis, Friedman 1989).  shrink = 1 is the pooled covariance around the
+    class mean; shrink = 0 is the pure per-class distance.  The class term
+    keeps the directions in which a class of the release does not vary, which
+    is where a per-class generator such as MVN leaves its members; the pooled
+    term makes a class of 30 rows usable and puts the classes on one scale.
+    Classes with fewer than three fitted rows, and query classes the release
+    never emitted, fall back to the pooled distance.
+    """
+    S = nearest_psd(np.cov(X_fit, rowvar=False))
+    p = S.shape[0]
+
+    def inv(C):
+        return np.linalg.inv(C + ridge_alpha * np.trace(C) / p * np.eye(p))
+
+    d = np.full(len(X_query), np.nan)
+    for c in np.unique(y_fit):
+        rows = X_fit[y_fit == c]
+        take = y_query == c
+        if len(rows) < 3 or not take.any():
+            continue
+        C = (1.0 - shrink) * np.cov(rows, rowvar=False) + shrink * S
+        d[take] = mahalanobis(X_query[take], rows.mean(axis=0), inv(C))
+    missing = np.isnan(d)
+    if missing.any():
+        d[missing] = mahalanobis(X_query[missing], X_fit.mean(axis=0), inv(S))
+    return d
+
+
 class Projection:
     """Gene space -> attack space: optional gene z-score, then a PCA band.
 
@@ -230,6 +265,8 @@ class MahalaMIA(Attack):
     pca_basis: str = "synthetic"       # "synthetic" | "reference" | "pooled"
     standardize: bool = False          # z-score genes before PCA
     class_conditional: bool = False    # per-class mean and covariance
+    class_shrink: float | None = None  # distance to the own class, class covariance shrunk
+                                       # this far toward the pooled one (the paper's default: 0.5)
     pca_per_class: bool = False        # ...and a per-class PCA basis with it
     calibrate: bool = True
 
@@ -251,6 +288,8 @@ class MahalaMIA(Attack):
             t += "_std"
         if self.class_conditional:
             t += "_cc" + ("pc" if self.pca_per_class else "")
+        if self.class_shrink is not None:
+            t += f"_shrink{self.class_shrink:g}"
         return t
 
     # ── Distance models ─────────────────────────────────────────────────────
@@ -321,7 +360,15 @@ class MahalaMIA(Attack):
             if X_aux is not None:
                 X_aux = proj(X_aux)
 
-        if self.class_conditional:
+        if self.class_shrink is not None:
+            # The paper's MahalaMIA.  The reference set has no labels, so its
+            # distance stays pooled.
+            y_real = D.encode_subtypes(dataset, D.load_subtypes(dataset).values)
+            d_syn = class_shrunk_distance(X_real, y_real, X_syn, y_syn,
+                                          self.class_shrink, self.ridge_alpha)
+            if X_aux is not None:
+                d_aux = self._pooled_distance(X_real, X_aux)
+        elif self.class_conditional:
             y_real = D.encode_subtypes(dataset, D.load_subtypes(dataset).values)
             d_syn = self._conditional_distance(X_real, y_real, X_syn, y_syn)
             if X_aux is not None:

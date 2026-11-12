@@ -1,0 +1,36 @@
+{
+  "run_id": "COMBINED__generic__cvae__s1__127ab300",
+  "timestamp": "2026-11-11T23:16:17+00:00",
+  "dataset": "COMBINED",
+  "attack": "generic",
+  "generator": "cvae",
+  "split": 1,
+  "tag": "domias_kde",
+  "experiment": "paper_grid_combined",
+  "variant": "generic_domias_kde",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "generic",
+    "method": "domias_kde",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "9ba57dff0b3eec8e",
+    "params": {
+      "preprocess": "standard",
+      "optimizer": "adam",
+      "scheduler": "none",
+      "lr": 0.001,
+      "batch_size": 64,
+      "num_iters": 10000,
+      "z_dim": 128,
+      "beta": 0.001,
+      "condition_type": "embedding",
+      "early_stopping": false
+    },
+    "seed": 1583,
+    "source": "trained"
+  }
+}

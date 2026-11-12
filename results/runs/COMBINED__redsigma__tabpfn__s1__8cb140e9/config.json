@@ -1,0 +1,36 @@
+{
+  "run_id": "COMBINED__redsigma__tabpfn__s1__8cb140e9",
+  "timestamp": "2026-11-11T22:34:25+00:00",
+  "dataset": "COMBINED",
+  "attack": "redsigma",
+  "generator": "tabpfn",
+  "split": 1,
+  "tag": "auto",
+  "experiment": "paper_grid_combined",
+  "variant": "redsigma",
+  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "redsigma",
+    "rule": "auto",
+    "use_labels": false,
+    "attack": "redsigma"
+  },
+  "target": {
+    "fingerprint": "54a199bd1a29cca3",
+    "params": {
+      "seed": 1167,
+      "device": "cuda",
+      "verbose": true,
+      "name": "tabpfn",
+      "preprocess": "none",
+      "temperature": 1.0,
+      "n_permutations": 3,
+      "n_estimators": null,
+      "model_version": "default"
+    },
+    "seed": 1167,
+    "source": "trained"
+  }
+}
