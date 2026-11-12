@@ -1,0 +1,47 @@
+{
+  "run_id": "BRCA__generic__cvae@preprocess=robust__s3__34a3b966",
+  "timestamp": "2026-11-12T20:12:48+00:00",
+  "dataset": "BRCA",
+  "attack": "generic",
+  "generator": "cvae@preprocess=robust",
+  "split": 3,
+  "tag": "mc",
+  "experiment": "paper_preprocess_brca",
+  "variant": "generic_mc",
+  "notes": "normalisation ablation: CVAE (and TabSyn on BRCA) under each preprocessing spec",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "generic",
+    "method": "mc",
+    "attack": "generic"
+  },
+  "target": {
+    "fingerprint": "b1a14e75ff22f458",
+    "params": {
+      "seed": 3850,
+      "device": "cpu",
+      "verbose": true,
+      "name": "cvae",
+      "z_dim": 128,
+      "beta": 0.001,
+      "transform": "none",
+      "condition_type": "embedding",
+      "disease_embed_dim": 20,
+      "preprocess": "robust",
+      "batch_size": 64,
+      "num_iters": 10000,
+      "epochs": null,
+      "lr": 0.001,
+      "weight_decay": 0.0,
+      "optimizer": "adam",
+      "scheduler": "none",
+      "early_stopping": false,
+      "patience": 50,
+      "min_delta": 0.0001,
+      "condition_mode": null
+    },
+    "seed": 3850,
+    "source": "trained"
+  }
+}

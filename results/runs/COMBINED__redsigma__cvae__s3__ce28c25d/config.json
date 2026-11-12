@@ -1,14 +1,14 @@
 {
   "run_id": "COMBINED__redsigma__cvae__s3__ce28c25d",
-  "timestamp": "2026-10-04T20:58:57+00:00",
+  "timestamp": "2026-11-12T20:14:14+00:00",
   "dataset": "COMBINED",
   "attack": "redsigma",
   "generator": "cvae",
   "split": 3,
   "tag": "auto",
-  "experiment": "redsigma_combined",
+  "experiment": "paper_preprocess_combined",
   "variant": "redsigma",
-  "notes": "RedSigma (Tucker et al.) as submitted, plus each of its four rules against every generator",
+  "notes": "normalisation ablation: CVAE (and TabSyn on BRCA) under each preprocessing spec",
   "params": {
     "seed": 42,
     "device": "cpu",

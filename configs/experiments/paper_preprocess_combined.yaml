@@ -1,0 +1,32 @@
+# Normalisation ablation (2026-11-12): the generator retrained with each model-level
+# preprocessing spec, 5 splits, scored with the paper's shadow-free attacks at the
+# paper grid's settings.  Targets are built by scripts/preprocess_ablation.py
+# (fidelity rows in results/preprocess_ablation.csv); queue: scripts/queue_preprocess_ablation.sh.
+name: paper_preprocess_combined
+dataset: COMBINED
+notes: "normalisation ablation: CVAE (and TabSyn on BRCA) under each preprocessing spec"
+device: cpu
+
+generators:
+  - cvae
+  - "cvae@preprocess=quantile"
+  - "cvae@preprocess=minmax"
+  - "cvae@preprocess=robust"
+  - "cvae@preprocess=clip:0.001:0.999+standard"
+  - "cvae@preprocess=classcenter+standard"
+  - "cvae@preprocess=standard+pca:64"
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  mahalamia:
+    class: mahalamia
+    params: {use_reference: true, covariance: ridge, ridge_alpha: 1.0e-4, class_shrink: 0.5}
+  redsigma:
+    class: redsigma
+    params: {rule: auto}
+  generic_gan_leaks:
+    class: generic
+    params: {method: gan_leaks}
+  generic_mc:
+    class: generic
+    params: {method: mc}

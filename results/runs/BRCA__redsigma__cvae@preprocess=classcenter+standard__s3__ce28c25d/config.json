@@ -1,0 +1,48 @@
+{
+  "run_id": "BRCA__redsigma__cvae@preprocess=classcenter+standard__s3__ce28c25d",
+  "timestamp": "2026-11-12T20:12:11+00:00",
+  "dataset": "BRCA",
+  "attack": "redsigma",
+  "generator": "cvae@preprocess=classcenter+standard",
+  "split": 3,
+  "tag": "auto",
+  "experiment": "paper_preprocess_brca",
+  "variant": "redsigma",
+  "notes": "normalisation ablation: CVAE (and TabSyn on BRCA) under each preprocessing spec",
+  "params": {
+    "seed": 42,
+    "device": "cpu",
+    "name": "redsigma",
+    "rule": "auto",
+    "use_labels": false,
+    "attack": "redsigma"
+  },
+  "target": {
+    "fingerprint": "9a191e9473f22e7c",
+    "params": {
+      "seed": 3850,
+      "device": "cpu",
+      "verbose": true,
+      "name": "cvae",
+      "z_dim": 128,
+      "beta": 0.001,
+      "transform": "none",
+      "condition_type": "embedding",
+      "disease_embed_dim": 20,
+      "preprocess": "classcenter+standard",
+      "batch_size": 64,
+      "num_iters": 10000,
+      "epochs": null,
+      "lr": 0.001,
+      "weight_decay": 0.0,
+      "optimizer": "adam",
+      "scheduler": "none",
+      "early_stopping": false,
+      "patience": 50,
+      "min_delta": 0.0001,
+      "condition_mode": null
+    },
+    "seed": 3850,
+    "source": "trained"
+  }
+}

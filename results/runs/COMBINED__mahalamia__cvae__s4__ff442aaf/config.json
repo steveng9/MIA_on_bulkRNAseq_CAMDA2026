@@ -1,14 +1,14 @@
 {
   "run_id": "COMBINED__mahalamia__cvae__s4__ff442aaf",
-  "timestamp": "2026-11-11T23:09:23+00:00",
+  "timestamp": "2026-11-12T20:13:12+00:00",
   "dataset": "COMBINED",
   "attack": "mahalamia",
   "generator": "cvae",
   "split": 4,
   "tag": "aux_ridge0.0001_shrink0.5",
-  "experiment": "paper_grid_combined",
+  "experiment": "paper_preprocess_combined",
   "variant": "mahalamia",
-  "notes": "paper grid: default attack settings, all main-text generators, 5 splits",
+  "notes": "normalisation ablation: CVAE (and TabSyn on BRCA) under each preprocessing spec",
   "params": {
     "seed": 42,
     "device": "cpu",

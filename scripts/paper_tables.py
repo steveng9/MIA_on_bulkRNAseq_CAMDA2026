@@ -19,6 +19,7 @@ and the MahalaMIA ablation is `mahalamia_ablation.py --latex`.
   donor       a second sample of a training donor (TCGA)
   tissue      another tissue of a training donor (GTEx)
   epsilon     the corrected DP-PGM across epsilon
+  preprocess  the generator's normalisation: fidelity beside attack success
 """
 
 from __future__ import annotations
@@ -248,9 +249,47 @@ def epsilon() -> None:
                   f"{r.utility:.2f} & {r.w1:.2f} \\\\")
 
 
+PP_LABEL = {"standard": "standardise (default)", "quantile": "quantile to normal",
+            "minmax": "min--max to $[0,1]$", "robust": "median and IQR",
+            "clip:0.001:0.999+standard": "clip 0.1\\%, standardise",
+            "classcenter+standard": "subtract class mean, standardise",
+            "standard+pca:64": "standardise, 64 PCs",
+            "standard+pca:64+standard": "standardise, 64 PCs"}
+
+
+def preprocess() -> None:
+    """Normalisation ablation: each preprocessing spec's fidelity beside attack success, 5 splits."""
+    f = pd.read_csv(RES / "preprocess_ablation.csv")
+    idx = pd.read_csv(RES / "index.csv")
+    for ds in ("BRCA", "COMBINED"):
+        a = idx[idx.experiment == f"paper_preprocess_{ds.lower()}"]
+        a = a.sort_values("timestamp").drop_duplicates(["generator", "variant", "split"], keep="last")
+        auc = a.groupby(["generator", "variant"]).auc.mean()
+        tpr = a.groupby(["generator", "variant"])["tpr_at_fpr_0.01"].mean()
+        for gen, name in (("cvae", "CVAE"), ("tabsyn", "TabSyn")):
+            g = f[(f.dataset == ds) & (f.generator == gen) & f.preprocess.isin(PP_LABEL)]
+            if gen == "tabsyn":
+                g = g[g.target.str.contains("latent_scale=std")]
+            if g.empty:
+                continue
+            print(f"% ---- {COHORT[ds]} {name}: spec, splits, utility, W1, corr err, disc AUC, "
+                  "MahalaMIA AUC, TPR@1%, RedSigma AUC, GAN-leaks AUC")
+            for spec in PP_LABEL:
+                h = g[g.preprocess == spec]
+                if h.empty:
+                    continue
+                t = h.target.iloc[0]
+                def v(m, s=auc):
+                    return s.get((t, m), np.nan)
+                print(f"  {PP_LABEL[spec]} & {h.split.nunique()} & {f2(h.utility_ratio.mean())} & "
+                      f"{f2(h.wasserstein_mean.mean())} & {f2(h.corr_mae.mean(), 3)} & "
+                      f"{f2(h.discriminator_auc.mean())} & {f2(v('mahalamia'))} & "
+                      f"{f2(v('mahalamia', tpr))} & {f2(v('redsigma'))} & {f2(v('generic_gan_leaks'))} \\\\")
+
+
 TABLES = {"quality": quality, "quality_all": quality_all, "bio": bio_table, "aux": aux,
           "candidates": candidates, "genes": genes, "donor": donor, "tissue": tissue,
-          "epsilon": epsilon}
+          "epsilon": epsilon, "preprocess": preprocess}
 
 if __name__ == "__main__":
     for name in (sys.argv[1:] or TABLES):
