@@ -213,6 +213,9 @@ class PGMGenerator(Generator):
         _import_upstream()  # make the unpickled classes importable
         with open(Path(path), "rb") as f:
             self._gen = pickle.load(f)
+        # `sample` restores the canonical gene order from these; without them a
+        # loaded generator (white-box access) could not sample.
+        self._gene_names = list(self._gen._gene_names)
         return self
 
 

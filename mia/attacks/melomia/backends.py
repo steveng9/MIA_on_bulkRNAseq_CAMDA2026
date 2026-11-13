@@ -39,6 +39,25 @@ ND_TIMESTEPS = (1, 2, 5, 10, 20, 30, 40, 50, 75, 100, 150, 200, 300, 500, 750)
 CVAE_TEMPERATURES = (0.0, 0.5, 1.0, 1.5, 2.0, 3.0)
 
 
+def _record_labels(gen, conditional: bool, y, n: int) -> np.ndarray:
+    """The class each record is read under.
+
+    A label-free model (every probe) is read under its single dummy class 0.  A
+    label-conditional one (a white-box target or shadow) must be read under the
+    record's own class: under any other its losses measure the wrong
+    conditional distribution, members included.
+    """
+    if not conditional:
+        return np.zeros(n, dtype=np.int64)
+    if y is None:
+        raise ValueError(f"{type(gen).__name__} is label-conditional: reading it needs "
+                         "each record's class (white-box MeLoMIA passes them)")
+    y = np.asarray(y, dtype=np.int64)
+    if len(y) != n or y.min() < 0:
+        raise ValueError("record classes must be one non-negative class index per record")
+    return y
+
+
 @dataclass
 class Backend(ABC):
     dataset: str
@@ -151,7 +170,8 @@ class NDBackend(Backend):
         rng = torch.Generator(device="cpu").manual_seed(self.seed)
         bank = torch.randn(n_noise, dim, generator=rng).to(self.device)
         X_gpu = torch.tensor(X, dtype=torch.float32, device=self.device)
-        labels = torch.zeros(len(X), dtype=torch.long, device=self.device)
+        labels = torch.as_tensor(_record_labels(gen, not gen.unconditional, y, n),
+                                 dtype=torch.long, device=self.device)
         batch = max(1, self.rows_per_forward // n_noise)
 
         for si, t_val in enumerate(self.sweep_points):
@@ -243,13 +263,16 @@ class CVAEBackend(Backend):
         norms = np.empty((n, 2), dtype=np.float32)
 
         X_gpu = torch.tensor(X, dtype=torch.float32, device=self.device)
-        labels = torch.zeros(n, dtype=torch.long, device=self.device)
+        conditional = gen.condition_mode != "none"
+        labels = torch.as_tensor(_record_labels(gen, conditional, y, n),
+                                 dtype=torch.long, device=self.device)
 
         for start in range(0, n, self.batch_size):
             end = min(start + self.batch_size, n)
             xb = X_gpu[start:end]
             B = end - start
-            y_vec = model.encode_condition(labels[start:end], condition_mode="none")
+            y_vec = model.encode_condition(labels[start:end],
+                                           condition_mode=gen.condition_mode)
 
             mu, logvar = model.encode(xb, y_vec)
             kl[start:end] = (

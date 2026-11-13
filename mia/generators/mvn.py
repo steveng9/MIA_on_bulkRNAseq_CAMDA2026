@@ -17,6 +17,7 @@ Ported from the challenge starter package
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 
@@ -79,6 +80,42 @@ class MVNGenerator(Generator):
         y = np.concatenate(parts_y)
         order = rng.permutation(len(X))[:n]
         return X[order], y[order]
+
+    def moments(self) -> dict:
+        """Class c is drawn from N(mu_c, Sigma_c) plus N(0, noise_level Sigma_c)."""
+        total = sum(self._counts.values())
+        return {c: (self._means[c], (1.0 + self.noise_level) * self._covs[c],
+                    self._counts[c] / total)
+                for c in self._counts}
+
+    # ── Persistence ─────────────────────────────────────────────────────────
+    # The targets were built before MVN could be saved; the fit is a
+    # deterministic function of the training split, so
+    # scripts/whitebox/materialise_mvn_models.py refits each one, checks that
+    # it re-emits the released data, and saves it with this.
+
+    def save(self, path: Path) -> None:
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        classes = sorted(self._counts)
+        with open(path, "wb") as f:        # a file object: np.savez must not append .npz
+            np.savez(f, classes=np.array(classes, dtype=np.int64),
+                     means=np.stack([self._means[c] for c in classes]),
+                     covs=np.stack([self._covs[c] for c in classes]),
+                     counts=np.array([self._counts[c] for c in classes], dtype=np.int64),
+                     noise_level=np.float64(self.noise_level))
+
+    def load(self, path: Path) -> "MVNGenerator":
+        d = np.load(Path(path))
+        if float(d["noise_level"]) != float(self.noise_level):
+            raise ValueError(f"{path} was fitted with noise_level={float(d['noise_level'])}, "
+                             f"this generator has {self.noise_level}")
+        classes = [int(c) for c in d["classes"]]
+        self._means = {c: d["means"][i] for i, c in enumerate(classes)}
+        self._covs = {c: d["covs"][i] for i, c in enumerate(classes)}
+        self._counts = {c: int(d["counts"][i]) for i, c in enumerate(classes)}
+        self._n_genes = d["means"].shape[1]
+        return self
 
 
 register(MVNGenerator)

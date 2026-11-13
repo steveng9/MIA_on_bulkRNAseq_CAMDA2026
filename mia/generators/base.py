@@ -67,6 +67,16 @@ class Generator(ABC):
     def load(self, path: Path) -> "Generator":  # pragma: no cover - optional
         raise NotImplementedError(f"{type(self).__name__} does not support load()")
 
+    def moments(self) -> dict:  # pragma: no cover - optional
+        """Exact first two moments of the fitted model, per class.
+
+        Returns {class: (mean (p,), covariance (p, p), weight)}, the weights
+        summing to one: what `sample` draws from, without sampling noise.  Only
+        generators whose distribution has these in closed form implement it;
+        white-box attacks that need moments estimate them by sampling otherwise.
+        """
+        raise NotImplementedError(f"{type(self).__name__} has no closed-form moments")
+
     def resolved_params(self) -> dict:
         """Every hyperparameter as actually used, defaults included."""
         from dataclasses import asdict

@@ -512,19 +512,90 @@ def shadow_cliques(params: dict, Ba: np.ndarray, ya: np.ndarray, K: int,
             "weights": {fam: np.array(list(w[fam].values())) for fam in w}}
 
 
-def _log_ratio(codes_real, codes_syn, codes_aux, n_tables, n_cells, alpha):
-    """log p_syn/p_aux at each real row's cell, per table.  codes: (n, T)."""
+def _table_probs(codes, n_tables, n_cells, alpha):
+    """Cell frequencies of every table, with pseudo-count `alpha`.  codes: (n, T)."""
     off = (np.arange(n_tables, dtype=np.int64) * n_cells)[None, :]
-    size = n_tables * n_cells
+    cnt = np.bincount((codes + off).ravel(), minlength=n_tables * n_cells).astype(np.float64)
+    cnt = cnt.reshape(n_tables, n_cells) + alpha
+    return cnt / cnt.sum(axis=1, keepdims=True)
 
-    def probs(c):
-        cnt = np.bincount((c + off).ravel(), minlength=size).astype(np.float64)
-        cnt = cnt.reshape(n_tables, n_cells) + alpha
-        return cnt / cnt.sum(axis=1, keepdims=True)
 
-    ps, pa = probs(codes_syn), probs(codes_aux)
+def _log_ratio(codes_real, codes_syn, codes_aux, n_tables, n_cells, alpha, ps=None):
+    """log p_syn/p_aux at each real row's cell, per table.  codes: (n, T).
+
+    `ps` (T, n_cells) replaces the release's frequencies with given ones -- the
+    fitted model's own marginals, white box.
+    """
+    if ps is None:
+        ps = _table_probs(codes_syn, n_tables, n_cells, alpha)
+    pa = _table_probs(codes_aux, n_tables, n_cells, alpha)
     t = np.arange(n_tables)[None, :]
     return np.log(ps[t, codes_real]) - np.log(pa[t, codes_real])
+
+
+class ModelMarginals:
+    """White box: the fitted graphical model of a DP-PGM target.
+
+    What the generator samples its release from is a graphical model fitted to
+    the noisy measurements of its tables.  Reading that model's marginal of a
+    measured table gives the cell probabilities the release only estimates
+    with n draws, so the attack sees the measurement noise -- what the DP
+    guarantee covers -- without the sampling noise on top.
+
+    Cells are indexed exactly as `MAMAMIAv2.family_scores` indexes them:
+    bin b of a gene, and for a (gene, label) table b * n_classes + c with c the
+    cohort's class index.  Real rows are binned by the target's own discretiser.
+    """
+
+    def __init__(self, dataset: str, generator: str, split: int):
+        gen = _load_generator(dataset, generator, split)
+        fitter = getattr(gen, "_joint_fitter", None)
+        if fitter is None or getattr(fitter, "_model", None) is None:
+            raise ValueError(f"{dataset}/{generator}/split_{split}: the saved generator "
+                             "kept no fitted model (slim checkpoint or stratified mode)")
+        self.model = fitter._model
+        self.gen = gen
+        self.ncl = D.n_classes(dataset)
+        # cohort class c -> the model's label index
+        enc = gen._label_encoder
+        missing = [c for c in range(self.ncl) if str(c) not in enc]
+        if missing:
+            raise ValueError(f"classes {missing} are not in the model's label domain")
+        self.label_index = np.array([enc[str(c)] for c in range(self.ncl)])
+
+    def bins(self, X: np.ndarray, n_genes: int) -> np.ndarray:
+        """Bin index of every value under the target's discretiser, canonical gene order."""
+        pos = {f"gene_{i}": i for i in range(n_genes)}
+        sel = [pos[g] for g in self.gen.selected_gene_names]
+        if len(sel) != n_genes:
+            raise ValueError("the model binned only some genes; white-box scoring needs all")
+        out = np.empty(X.shape, dtype=np.int64)
+        out[:, sel] = self.gen._discretizer.transform(X[:, sel])
+        return out
+
+    def _marginal(self, attrs: tuple) -> np.ndarray:
+        v = np.asarray(self.model.project(attrs).datavector(flatten=False), dtype=np.float64)
+        return v / v.sum()
+
+    def oneway(self, genes) -> np.ndarray:
+        """(T, K): P(gene g in bin b)."""
+        return np.stack([self._marginal((f"gene_{g}",)) for g in genes])
+
+    def gene_label(self, genes) -> np.ndarray:
+        """(T, K * n_classes): P(gene g in bin b, class c) at b * n_classes + c."""
+        return np.stack([self._marginal((f"gene_{g}", LABEL))[:, self.label_index].ravel()
+                         for g in genes])
+
+    def pairs(self, pairs, with_label: bool) -> np.ndarray:
+        """(T, K*K[*n_classes]): the codes of `family_scores`' tree family."""
+        out = []
+        for a, b in pairs:
+            if with_label:
+                v = self._marginal((f"gene_{a}", f"gene_{b}", LABEL))[:, :, self.label_index]
+            else:
+                v = self._marginal((f"gene_{a}", f"gene_{b}"))
+            out.append(v.ravel())
+        return np.stack(out)
 
 
 @dataclass
@@ -541,13 +612,27 @@ class MAMAMIAv2(Attack):
     #: ND).  The attack then treats the release as if it came from a star
     #: DP-PGM with `n_bins` equal-depth bins read off the release itself.
     n_bins: int = 16
+    #: Where p_syn comes from.  "release": cell frequencies of the synthetic
+    #: data (every black-box path, and the white-box diagnostic of true tables
+    #: and edges).  "model": the fitted graphical model's own marginals
+    #: (`ModelMarginals`) -- full white box, so it needs cliques="true" and
+    #: edges="known".
+    synth: str = "release"
 
     name = "mamamia_v2"
+
+    def __post_init__(self):
+        if self.synth not in ("release", "model"):
+            raise ValueError(f"synth must be 'release' or 'model', not {self.synth!r}")
+        if self.synth == "model" and (self.cliques, self.edges) != ("true", "known"):
+            raise ValueError("synth='model' reads the target's own model, so it scores the "
+                             "target's own tables on its own bins: cliques='true', edges='known'")
 
     def tag(self) -> str:
         fam = "" if tuple(self.families) == FAMILIES else "_" + "+".join(self.families)
         cc = "_cc" if self.class_centre else ""
-        return f"cl-{self.cliques}_ed-{self.edges}{fam}{cc}"
+        sy = "_sy-model" if self.synth == "model" else ""
+        return f"cl-{self.cliques}_ed-{self.edges}{fam}{cc}{sy}"
 
     @staticmethod
     def access(cliques: str, edges: str, binning: str) -> str:
@@ -584,6 +669,16 @@ class MAMAMIAv2(Attack):
         G = Br.shape[1]
         allg = list(range(G))
         aux_note = ""
+        mm = None
+        if self.synth == "model":
+            mm = ModelMarginals(dataset, generator, split)
+            # The known edges and the target's discretiser must agree on every
+            # candidate's cell, or the model's probabilities would be read at
+            # the wrong cells.
+            mismatch = float(np.mean(mm.bins(Xr, G) != Br))
+            if mismatch:
+                raise RuntimeError(f"known edges and the target's discretiser disagree on "
+                                   f"{mismatch:.2%} of cells")
 
         if self.cliques == "true":
             cl = true_cliques(dataset, generator, split)
@@ -613,12 +708,14 @@ class MAMAMIAv2(Attack):
         if "1way" in self.families and cl["one"]:
             g = np.array(cl["one"])
             out["1way"], n_tab["1way"] = wmean(
-                _log_ratio(Br[:, g], Bs[:, g], Br[:, g], len(g), K, self.alpha), "one")
+                _log_ratio(Br[:, g], Bs[:, g], Br[:, g], len(g), K, self.alpha,
+                           ps=mm.oneway(g) if mm else None), "one")
         if "gl" in self.families and cl["gl"]:
             g = np.array(cl["gl"])
             out["gl"], n_tab["gl"] = wmean(
                 _log_ratio(Br[:, g] * ncl + yr[:, None], Bs[:, g] * ncl + ys[:, None],
-                           Br[:, g] * ncl + yr[:, None], len(g), K * ncl, self.alpha), "gl")
+                           Br[:, g] * ncl + yr[:, None], len(g), K * ncl, self.alpha,
+                           ps=mm.gene_label(g) if mm else None), "gl")
         tree = cl["pairs"]
         if "tree" in self.families and tree:
             a = np.array([p[0] for p in tree])
@@ -631,8 +728,10 @@ class MAMAMIAv2(Attack):
                 return c * ncl + y[:, None] if pl else c
             out["tree"], n_tab["tree"] = wmean(
                 _log_ratio(code(Br, yr), code(Bs, ys), code(Br, yr), len(tree),
-                           ncell, self.alpha), "pairs")
+                           ncell, self.alpha, ps=mm.pairs(tree, pl) if mm else None), "pairs")
         access = self.access(self.cliques, edges, params.get("binning", "quantile"))
+        if mm is not None:
+            access += " (model marginals)"
         if "OPTIMISTIC" in aux_note:
             access += " (optimistic aux)"
         return {"scores": out, "tree": tree, "cliques": cl, "edges": E, "y": yr,

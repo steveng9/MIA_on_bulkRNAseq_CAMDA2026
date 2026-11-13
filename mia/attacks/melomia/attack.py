@@ -430,6 +430,34 @@ class MeLoMIA(Attack):
             del gen
             self._free_gpu()
 
+    #: Recorded target parameters that do not change the trained model.
+    _RECIPE_IGNORE = frozenset({"seed", "device", "verbose", "name"})
+
+    def _check_white_box_recipe(self, be, generator: str, meta: dict) -> None:
+        """Refuse a white-box run whose shadows were not trained like the target.
+
+        The white-box classifier learns what a member looks like to *this
+        recipe* trained on real data, and is then applied to the target, so the
+        two must be the same recipe: same family, and every hyperparameter the
+        target recorded equal to the shadow's.  Off the diagonal (another
+        family's target) there is nothing this backend can read.
+        """
+        shadow = self._base_shadow(be)
+        family = TG.split_name(generator)[0]
+        if family != shadow.name:
+            raise ValueError(f"white-box MeLoMIA-{self.backend} reads {shadow.name} models; "
+                             f"{generator} is a {family}")
+
+        def norm(v):
+            return list(v) if isinstance(v, tuple) else v
+        have = shadow.resolved_params()
+        recorded = meta.get("params") or {}
+        diff = {k: (v, have.get(k)) for k, v in recorded.items()
+                if k not in self._RECIPE_IGNORE and norm(have.get(k)) != norm(v)}
+        if diff:
+            raise ValueError(f"white-box shadows differ from the target {generator} in "
+                             f"(target, shadow): {diff}")
+
     def _read_model(self, be, path: Path):
         return be.load_base(path) if self.white_box else be.load_probe(path)
 
@@ -766,6 +794,7 @@ class MeLoMIA(Attack):
                 raise FileNotFoundError(
                     f"white-box MeLoMIA needs the target model; {dataset}/{generator}/"
                     f"split_{split} has no saved generator")
+            self._check_white_box_recipe(be, generator, target["meta"])
             gen = be.load_base(Path(model))
         else:
             gen = be.probe()

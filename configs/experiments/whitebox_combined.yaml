@@ -1,0 +1,63 @@
+# White box against black box (Steven, 2026-11-13): the adversary holds the
+# trained target model, not only its release.  Same cohort, splits and attack
+# settings as the paper grid (paper_grid_combined.yaml); only the access changes.
+#
+#   MahalaMIA   the class moments come from the target model instead of its
+#               3,458-row release: exact for MVN (the model is a Gaussian per
+#               class), from 100k fresh draws otherwise.  The reference side
+#               is unchanged.
+#   MeLoMIA     no synthetic layer and no proxy: shadows are the target's own
+#               recipe trained on real splits, and the classifier trained on
+#               their losses is applied to the losses of the target model
+#               itself.  Diagonal only (the backend reads its own family).
+#               MeLoMIA-TabSyn's white box is in melomia_tabsyn_combined.yaml.
+#   MAMA-MIA    "true/known" scores the target's actual tables on its actual
+#               bins but still counts cells in the release; "model" reads the
+#               fitted graphical model's marginals instead.
+#
+# Generators: those whose targets saved their model.  MVN's were rebuilt and
+# checked by scripts/whitebox/materialise_mvn_models.py.  NoisyDiffusion's
+# targets are the blue team's published data, TabPFN keeps no model and the
+# challenge's DP-PGM release was not saved, so those three have no white box.
+# Runner: scripts/whitebox/run_whitebox.sh; table: scripts/whitebox/whitebox_table.py
+name: whitebox_combined
+dataset: COMBINED
+notes: "white box vs black box: MahalaMIA model moments, MeLoMIA on the target model, MAMA-MIA model marginals"
+device: cuda
+
+generators:
+  - mvn
+  - cvae
+  - "tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard"
+  - "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16"
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  mahalamia:                       # the paper's MahalaMIA, black box (as in the grid)
+    class: mahalamia
+    params: &mahala {use_reference: true, covariance: ridge, ridge_alpha: 1.0e-4, class_shrink: 0.5}
+  mahalamia_wb:
+    class: mahalamia
+    params: {<<: *mahala, white_box: true, model_samples: 100000}
+
+  # DP-PGM only (scripts/whitebox/run_whitebox.sh passes --generators)
+  mamamia_v2:                      # the paper's MAMA-MIA, black box (as in the grid)
+    class: mamamia_v2
+    params: {cliques: public, edges: auto, class_centre: true}
+  mamamia_v2_wb_release:
+    class: mamamia_v2
+    params: {cliques: "true", edges: known, class_centre: true}
+  mamamia_v2_wb_model:
+    class: mamamia_v2
+    params: {cliques: "true", edges: known, class_centre: true, synth: model}
+
+  # CVAE only
+  melomia_cvae_wb:                 # the grid's MeLoMIA-CVAE settings, white box
+    class: melomia_cvae
+    params:
+      n_shadows: 20
+      n_noise: 50
+      optuna_trials: 60
+      classifiers: [xgb, rf, lgbm, cat, mlp]
+      per_record_calibration: true
+      white_box: true

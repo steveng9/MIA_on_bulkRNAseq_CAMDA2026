@@ -181,39 +181,106 @@ def precision(X: np.ndarray, method: str, ridge_alpha: float) -> np.ndarray:
     raise ValueError(f"Unknown covariance method {method!r}")
 
 
-def class_shrunk_distance(X_query, y_query, X_fit, y_fit, shrink: float,
-                          ridge_alpha: float) -> np.ndarray:
+@dataclass
+class ClassMoments:
+    """What the paper's MahalaMIA reads from a distribution: per-class means and
+    covariances, and the pooled mean and covariance.
+
+    Black box, they are the sample moments of the release (`from_rows`).  White
+    box, they are the moments of the target model itself (`from_mixture` when
+    the model has them in closed form, `from_rows` on a large sample from it
+    otherwise), so the only thing that changes between the two is how much
+    sampling noise sits on top of what the generator learnt.
+    """
+    means: dict                 # class -> (p,)
+    covs: dict                  # class -> (p, p); classes too small to estimate are absent
+    pooled_mean: np.ndarray
+    pooled_cov: np.ndarray      # already made PSD
+
+    @classmethod
+    def from_rows(cls, X: np.ndarray, y: np.ndarray, min_rows: int = 3) -> "ClassMoments":
+        means, covs = {}, {}
+        for c in np.unique(y):
+            rows = X[y == c]
+            means[int(c)] = rows.mean(axis=0)
+            if len(rows) >= min_rows:
+                covs[int(c)] = np.cov(rows, rowvar=False)
+        return cls(means, covs, X.mean(axis=0), nearest_psd(np.cov(X, rowvar=False)))
+
+    @classmethod
+    def from_mixture(cls, components: dict) -> "ClassMoments":
+        """Exact moments of a mixture {class: (mean, cov, weight)}.
+
+        The pooled covariance is the law of total covariance: the weighted
+        within-class covariances plus the spread of the class means.
+        """
+        w = np.array([components[c][2] for c in components], dtype=np.float64)
+        w = w / w.sum()
+        mu = {c: np.asarray(components[c][0], dtype=np.float64) for c in components}
+        cov = {c: np.asarray(components[c][1], dtype=np.float64) for c in components}
+        m = sum(wi * mu[c] for wi, c in zip(w, components))
+        S = sum(wi * (cov[c] + np.outer(mu[c] - m, mu[c] - m)) for wi, c in zip(w, components))
+        return cls(mu, cov, m, nearest_psd(S))
+
+
+def class_shrunk_distance_from_moments(X_query, y_query, mom: ClassMoments, shrink: float,
+                                       ridge_alpha: float) -> np.ndarray:
     """Distance of each query row to its own class, class covariance shrunk to the pooled one.
 
     The covariance used for class c is (1 - shrink) * S_c + shrink * S, where
-    S_c is the covariance of the fitted rows of class c and S that of all
-    fitted rows, with the usual ridge on top (regularised discriminant
-    analysis, Friedman 1989).  shrink = 1 is the pooled covariance around the
-    class mean; shrink = 0 is the pure per-class distance.  The class term
-    keeps the directions in which a class of the release does not vary, which
-    is where a per-class generator such as MVN leaves its members; the pooled
-    term makes a class of 30 rows usable and puts the classes on one scale.
-    Classes with fewer than three fitted rows, and query classes the release
-    never emitted, fall back to the pooled distance.
+    S_c is class c's covariance and S the pooled one, with the usual ridge on
+    top (regularised discriminant analysis, Friedman 1989).  shrink = 1 is the
+    pooled covariance around the class mean; shrink = 0 is the pure per-class
+    distance.  The class term keeps the directions in which a class of the
+    release does not vary, which is where a per-class generator such as MVN
+    leaves its members; the pooled term makes a class of 30 rows usable and
+    puts the classes on one scale.  Classes without a covariance (fewer than
+    three rows), and query classes the distribution never emitted, fall back
+    to the pooled distance.
     """
-    S = nearest_psd(np.cov(X_fit, rowvar=False))
+    S = mom.pooled_cov
     p = S.shape[0]
 
     def inv(C):
         return np.linalg.inv(C + ridge_alpha * np.trace(C) / p * np.eye(p))
 
     d = np.full(len(X_query), np.nan)
-    for c in np.unique(y_fit):
-        rows = X_fit[y_fit == c]
+    for c, S_c in mom.covs.items():
         take = y_query == c
-        if len(rows) < 3 or not take.any():
+        if not take.any():
             continue
-        C = (1.0 - shrink) * np.cov(rows, rowvar=False) + shrink * S
-        d[take] = mahalanobis(X_query[take], rows.mean(axis=0), inv(C))
+        C = (1.0 - shrink) * S_c + shrink * S
+        d[take] = mahalanobis(X_query[take], mom.means[c], inv(C))
     missing = np.isnan(d)
     if missing.any():
-        d[missing] = mahalanobis(X_query[missing], X_fit.mean(axis=0), inv(S))
+        d[missing] = mahalanobis(X_query[missing], mom.pooled_mean, inv(S))
     return d
+
+
+def class_shrunk_distance(X_query, y_query, X_fit, y_fit, shrink: float,
+                          ridge_alpha: float) -> np.ndarray:
+    """`class_shrunk_distance_from_moments` on the sample moments of (X_fit, y_fit)."""
+    return class_shrunk_distance_from_moments(
+        X_query, y_query, ClassMoments.from_rows(X_fit, y_fit), shrink, ridge_alpha)
+
+
+def model_moments(gen, n_samples: int, seed: int) -> tuple[ClassMoments, str]:
+    """A trained generator's moments: exact if it has them, else from a large sample.
+
+    Returns the moments and how they were obtained ("exact" or "sampled:<n>").
+    The sample is drawn with its own seed, independent of the release's.
+    """
+    try:
+        return ClassMoments.from_mixture(gen.moments()), "exact"
+    except NotImplementedError:
+        pass
+    import torch
+    gen.seed = seed
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    X, y = gen.sample(n_samples)
+    return ClassMoments.from_rows(np.asarray(X, dtype=np.float64), np.asarray(y)), \
+        f"sampled:{n_samples}"
 
 
 class Projection:
@@ -269,8 +336,20 @@ class MahalaMIA(Attack):
                                        # this far toward the pooled one (the paper's default: 0.5)
     pca_per_class: bool = False        # ...and a per-class PCA basis with it
     calibrate: bool = True
+    #: White box: read the class moments from the target *model* instead of
+    #: estimating them from its release -- exactly for a generator that has them
+    #: in closed form (MVN), from `model_samples` fresh draws otherwise.  The
+    #: reference side is unchanged.  Only the paper's form (`class_shrink`).
+    white_box: bool = False
+    model_samples: int = 100_000
 
     name = "mahalamia"
+
+    def __post_init__(self):
+        if self.white_box and (self.class_shrink is None or self.n_components
+                               or self.drop_leading or self.standardize):
+            raise ValueError("white-box MahalaMIA is defined for the paper's form only: "
+                             "class_shrink set, no PCA band, no gene standardisation")
 
     def tag(self) -> str:
         t = "aux" if self.use_reference else "noaux"
@@ -290,6 +369,8 @@ class MahalaMIA(Attack):
             t += "_cc" + ("pc" if self.pca_per_class else "")
         if self.class_shrink is not None:
             t += f"_shrink{self.class_shrink:g}"
+        if self.white_box:
+            t += f"_whitebox{self.model_samples}"
         return t
 
     # ── Distance models ─────────────────────────────────────────────────────
@@ -346,13 +427,33 @@ class MahalaMIA(Attack):
 
     # ── Scoring ─────────────────────────────────────────────────────────────
 
+    def _target_moments(self, dataset: str, generator: str, split: int) -> ClassMoments:
+        """White box: the moments of the target model (see `model_moments`)."""
+        gen = T.load_model(dataset, generator, split, device=self.device)
+        mom, how = model_moments(gen, self.model_samples, seed=self.seed + 61_000 + split)
+        self.last_moments_source = how
+        if self.verbose:
+            print(f"  [mahalamia] white box {dataset}/{generator}/split_{split}: "
+                  f"moments {how}", flush=True)
+        return mom
+
     def score(self, dataset: str, generator: str, split: int) -> np.ndarray:
         X_real = D.load_expression(dataset).values.astype(np.float64)
+        ref = D.load_reference(dataset) if self.use_reference else None
+        X_aux = ref.values.astype(np.float64) if ref is not None else None
+
+        if self.white_box:
+            # No projection (refused in __post_init__), so gene space throughout.
+            y_real = D.encode_subtypes(dataset, D.load_subtypes(dataset).values)
+            d_syn = class_shrunk_distance_from_moments(
+                X_real, y_real, self._target_moments(dataset, generator, split),
+                self.class_shrink, self.ridge_alpha)
+            return self._finish(d_syn, self._pooled_distance(X_real, X_aux)
+                                if X_aux is not None else None)
+
         target = T.load_target(dataset, generator, split)
         X_syn = target["X"].astype(np.float64)
         y_syn = target["y_int"]
-        ref = D.load_reference(dataset) if self.use_reference else None
-        X_aux = ref.values.astype(np.float64) if ref is not None else None
 
         proj = self._projection(X_syn, X_aux)
         if not self.pca_per_class:
@@ -379,7 +480,11 @@ class MahalaMIA(Attack):
             if X_aux is not None:
                 d_aux = self._pooled_distance(X_real, X_aux)
 
-        if X_aux is None:
+        return self._finish(d_syn, d_aux if X_aux is not None else None)
+
+    def _finish(self, d_syn: np.ndarray, d_aux: np.ndarray | None) -> np.ndarray:
+        """Distances -> membership score: closeness to the release, relative to the reference."""
+        if d_aux is None:
             raw = 1.0 / (d_syn + 1e-10)
         else:
             raw = d_aux / (d_syn + d_aux + 1e-10)

@@ -312,3 +312,22 @@ def load_target(dataset: str, generator: str, split: int,
     vocab = {c: i for i, c in enumerate(D.class_names(dataset))}
     y_int = np.array([vocab.get(l, -1) for l in y_str], dtype=np.int64)
     return {"X": X, "y_str": y_str, "y_int": y_int, "meta": meta, "paths": f}
+
+
+def load_model(dataset: str, generator: str, split: int, device: str = "cuda") -> G.Generator:
+    """The target's own trained generator: what a white-box adversary holds.
+
+    Rebuilt from the recipe recorded in the target's meta.json and loaded from
+    its generator.pt.  Raises if the target never saved one (the published ND
+    data, TabPFN, the challenge's DP-PGM).
+    """
+    f = _files(dataset, generator, split)
+    if not f["model"].exists():
+        raise FileNotFoundError(
+            f"{dataset}/{generator}/split_{split} has no saved generator, so it cannot "
+            "be attacked white-box")
+    meta = json.loads(f["meta"].read_text())
+    base, _ = split_name(generator)
+    gen = G.build(base, seed=meta["seed"], device=device, verbose=False,
+                  **(meta.get("params") or {}))
+    return gen.load(f["model"])
