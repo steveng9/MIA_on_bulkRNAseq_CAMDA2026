@@ -100,7 +100,8 @@ def latex() -> None:
         cells = []
         for ds, g in cols:
             v = mean.get((ds, g, label), np.nan)
-            cells.append("--" if np.isnan(v) else f"{v:.2f}")
+            n = df[(df.dataset == ds) & (df.generator == g) & (df.variant == label)].split.nunique()
+            cells.append("--" if np.isnan(v) else f"{v:.2f}" + ("$^{*}$" if n < 5 else ""))
         print(f"{label} & " + " & ".join(cells) + " \\\\")
     print("% columns: " + ", ".join(f"{ds}/{NAMES[g]}" for ds, g in cols))
 

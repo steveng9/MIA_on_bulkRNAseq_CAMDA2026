@@ -2980,3 +2980,111 @@ ref_tpm_aligned,COMBINED,tabpfn,1.0,MahalaMIA (ridge 1e-4),824.0,0.6112588050829
 ref_tpm_aligned,COMBINED,tabpfn,1.0,RedSigma,824.0,0.5262549437176758,0.0057836899942163,0.1107576633892423
 ref_tpm_aligned,COMBINED,tabpfn,1.0,GAN-leaks cal.,824.0,0.5470085284353614,0.0,0.0
 ref_tpm_aligned,COMBINED,tabpfn,1.0,DOMIAS-KDE,824.0,0.5555150660109589,0.0228455754771544,0.1561596298438403
+none,COMBINED,tabpfn,2.0,MahalaMIA (ridge 1e-4),0.0,0.52411230388109,0.0182186234817813,0.1402544823597455
+none,COMBINED,tabpfn,2.0,"MahalaMIA (no aux, ridge 1e-4)",0.0,0.52411230388109,0.0182186234817813,0.1402544823597455
+ref_vst,COMBINED,tabpfn,2.0,MahalaMIA (ridge 1e-4),824.0,0.5946552686741308,0.0289184499710815,0.1888374783111625
+ref_vst,COMBINED,tabpfn,2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.52411230388109,0.0182186234817813,0.1402544823597455
+ref_vst_n84,COMBINED,tabpfn,2.0,MahalaMIA (ridge 1e-4),84.0,0.5792195027363873,0.0159051474840948,0.1445922498554077
+ref_vst_n84,COMBINED,tabpfn,2.0,"MahalaMIA (no aux, ridge 1e-4)",84.0,0.52411230388109,0.0182186234817813,0.1402544823597455
+ref_vst_own,COMBINED,tabpfn,2.0,MahalaMIA (ridge 1e-4),824.0,0.6003911512886262,0.0280508964719491,0.1949103528050896
+ref_vst_own,COMBINED,tabpfn,2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.52411230388109,0.0182186234817813,0.1402544823597455
+ref_log2tpm,COMBINED,tabpfn,2.0,MahalaMIA (ridge 1e-4),824.0,0.5299621887087661,0.020242914979757,0.1396761133603239
+ref_log2tpm,COMBINED,tabpfn,2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.52411230388109,0.0182186234817813,0.1402544823597455
+ref_tpm,COMBINED,tabpfn,2.0,MahalaMIA (ridge 1e-4),824.0,0.5241811732532755,0.0167727009832273,0.1376518218623481
+ref_tpm,COMBINED,tabpfn,2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.52411230388109,0.0182186234817813,0.1402544823597455
+ref_vst_own_aligned,COMBINED,tabpfn,2.0,MahalaMIA (ridge 1e-4),824.0,0.5942604398947569,0.0456911509543088,0.1998264893001735
+ref_vst_own_aligned,COMBINED,tabpfn,2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.52411230388109,0.0182186234817813,0.1402544823597455
+ref_log2tpm_aligned,COMBINED,tabpfn,2.0,MahalaMIA (ridge 1e-4),824.0,0.5884724037751115,0.0251590514748409,0.178716020821284
+ref_log2tpm_aligned,COMBINED,tabpfn,2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.52411230388109,0.0182186234817813,0.1402544823597455
+ref_tpm_aligned,COMBINED,tabpfn,2.0,MahalaMIA (ridge 1e-4),824.0,0.5884724037751115,0.0251590514748409,0.178716020821284
+ref_tpm_aligned,COMBINED,tabpfn,2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.52411230388109,0.0182186234817813,0.1402544823597455
+none,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (ridge 1e-4),0.0,0.5198701511448697,0.0083863504916136,0.1046847888953152
+none,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,"MahalaMIA (no aux, ridge 1e-4)",0.0,0.5198701511448697,0.0083863504916136,0.1046847888953152
+ref_vst,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (ridge 1e-4),824.0,0.5622886696510061,0.023423944476576,0.172353961827646
+ref_vst,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5198701511448697,0.0083863504916136,0.1046847888953152
+ref_vst_n84,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (ridge 1e-4),84.0,0.5617089633822216,0.0069404279930595,0.1321573163678426
+ref_vst_n84,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,"MahalaMIA (no aux, ridge 1e-4)",84.0,0.5198701511448697,0.0083863504916136,0.1046847888953152
+ref_vst_own,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (ridge 1e-4),824.0,0.5612703390312153,0.0271833429728166,0.1743782533256217
+ref_vst_own,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5198701511448697,0.0083863504916136,0.1046847888953152
+ref_log2tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (ridge 1e-4),824.0,0.5260239304352478,0.0052053209947946,0.1069982648930017
+ref_log2tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5198701511448697,0.0083863504916136,0.1046847888953152
+ref_tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (ridge 1e-4),824.0,0.5210696817633234,0.0083863504916136,0.1006362058993638
+ref_tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5198701511448697,0.0083863504916136,0.1046847888953152
+ref_vst_own_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (ridge 1e-4),824.0,0.5629713456607282,0.0205320994794679,0.1544245228455754
+ref_vst_own_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5198701511448697,0.0083863504916136,0.1046847888953152
+ref_log2tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (ridge 1e-4),824.0,0.5642447604114778,0.0248698669751301,0.169172932330827
+ref_log2tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5198701511448697,0.0083863504916136,0.1046847888953152
+ref_tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (ridge 1e-4),824.0,0.5642447604114778,0.0248698669751301,0.169172932330827
+ref_tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5198701511448697,0.0083863504916136,0.1046847888953152
+none,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (ridge 1e-4),0.0,0.5231956057328737,0.0170618854829381,0.1376518218623481
+none,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,"MahalaMIA (no aux, ridge 1e-4)",0.0,0.5231956057328737,0.0170618854829381,0.1376518218623481
+ref_vst,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (ridge 1e-4),824.0,0.5758736547906003,0.0471370734528629,0.1937536148062464
+ref_vst,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5231956057328737,0.0170618854829381,0.1376518218623481
+ref_vst_n84,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (ridge 1e-4),84.0,0.5731014954014649,0.0173510699826489,0.1659919028340081
+ref_vst_n84,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,"MahalaMIA (no aux, ridge 1e-4)",84.0,0.5231956057328737,0.0170618854829381,0.1376518218623481
+ref_vst_own,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (ridge 1e-4),824.0,0.580542062136221,0.0656448814343551,0.1928860613071139
+ref_vst_own,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5231956057328737,0.0170618854829381,0.1376518218623481
+ref_log2tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (ridge 1e-4),824.0,0.529425275059592,0.0196645459803354,0.1359167148640833
+ref_log2tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5231956057328737,0.0170618854829381,0.1376518218623481
+ref_tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (ridge 1e-4),824.0,0.5232741703079398,0.0176402544823597,0.1330248698669751
+ref_tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5231956057328737,0.0170618854829381,0.1376518218623481
+ref_vst_own_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (ridge 1e-4),824.0,0.5852044517697088,0.0320994794679005,0.158183921341816
+ref_vst_own_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5231956057328737,0.0170618854829381,0.1376518218623481
+ref_log2tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (ridge 1e-4),824.0,0.5923565026394354,0.0248698669751301,0.1781376518218623
+ref_log2tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5231956057328737,0.0170618854829381,0.1376518218623481
+ref_tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (ridge 1e-4),824.0,0.5923565026394354,0.0248698669751301,0.1781376518218623
+ref_tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5231956057328737,0.0170618854829381,0.1376518218623481
+none,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (ridge 1e-4),0.0,0.5339405650631692,0.0133024869866975,0.0980335454019664
+none,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,"MahalaMIA (no aux, ridge 1e-4)",0.0,0.5339405650631692,0.0133024869866975,0.0980335454019664
+ref_vst,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (ridge 1e-4),824.0,0.5846926119210878,0.0341237709658762,0.183342972816657
+ref_vst,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5339405650631692,0.0133024869866975,0.0980335454019664
+ref_vst_n84,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (ridge 1e-4),84.0,0.5855675204017157,0.0150375939849624,0.158183921341816
+ref_vst_n84,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,"MahalaMIA (no aux, ridge 1e-4)",84.0,0.5339405650631692,0.0133024869866975,0.0980335454019664
+ref_vst_own,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (ridge 1e-4),824.0,0.5890694945456125,0.031231925968768,0.1842105263157894
+ref_vst_own,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5339405650631692,0.0133024869866975,0.0980335454019664
+ref_log2tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (ridge 1e-4),824.0,0.5393792395617769,0.0135916714864083,0.1035280508964719
+ref_log2tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5339405650631692,0.0133024869866975,0.0980335454019664
+ref_tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (ridge 1e-4),824.0,0.5348422189310538,0.0127241179872758,0.0957200694042799
+ref_tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5339405650631692,0.0133024869866975,0.0980335454019664
+ref_vst_own_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (ridge 1e-4),824.0,0.5893051882708104,0.0260266049739733,0.1827646038172354
+ref_vst_own_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5339405650631692,0.0133024869866975,0.0980335454019664
+ref_log2tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (ridge 1e-4),824.0,0.5964442007642494,0.0251590514748409,0.1923076923076923
+ref_log2tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5339405650631692,0.0133024869866975,0.0980335454019664
+ref_tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (ridge 1e-4),824.0,0.5964442007642494,0.0251590514748409,0.1923076923076923
+ref_tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5339405650631692,0.0133024869866975,0.0980335454019664
+none,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (ridge 1e-4),0.0,0.5367683471994689,0.0109858340560855,0.1315409077768141
+none,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,"MahalaMIA (no aux, ridge 1e-4)",0.0,0.5367683471994689,0.0109858340560855,0.1315409077768141
+ref_vst,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (ridge 1e-4),824.0,0.5824700459349201,0.0497253541485978,0.1887828852269442
+ref_vst,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5367683471994689,0.0109858340560855,0.1315409077768141
+ref_vst_n84,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (ridge 1e-4),84.0,0.5719610275930744,0.0109858340560855,0.1439722463139635
+ref_vst_n84,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,"MahalaMIA (no aux, ridge 1e-4)",84.0,0.5367683471994689,0.0109858340560855,0.1315409077768141
+ref_vst_own,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (ridge 1e-4),824.0,0.5865696572548263,0.039028620988725,0.1913847932928592
+ref_vst_own,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5367683471994689,0.0109858340560855,0.1315409077768141
+ref_log2tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (ridge 1e-4),824.0,0.5424560058034328,0.0167678519803411,0.1410812373518357
+ref_log2tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5367683471994689,0.0109858340560855,0.1315409077768141
+ref_tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (ridge 1e-4),824.0,0.5361811110040368,0.0112749349522983,0.1303845041919629
+ref_tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5367683471994689,0.0109858340560855,0.1315409077768141
+ref_vst_own_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (ridge 1e-4),824.0,0.6018190603150129,0.0370049147152356,0.1757733448973691
+ref_vst_own_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5367683471994689,0.0109858340560855,0.1315409077768141
+ref_log2tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (ridge 1e-4),824.0,0.5866088063345218,0.0176351546689794,0.185024573576178
+ref_log2tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5367683471994689,0.0109858340560855,0.1315409077768141
+ref_tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (ridge 1e-4),824.0,0.5866088063345218,0.0176351546689794,0.185024573576178
+ref_tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5367683471994689,0.0109858340560855,0.1315409077768141
+none,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (ridge 1e-4),0.0,0.5259715663914855,0.0141659439144261,0.0991616074009829
+none,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,"MahalaMIA (no aux, ridge 1e-4)",0.0,0.5259715663914855,0.0141659439144261,0.0991616074009829
+ref_vst,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (ridge 1e-4),824.0,0.5858790273360959,0.0404741254697889,0.1957213067360508
+ref_vst,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5259715663914855,0.0141659439144261,0.0991616074009829
+ref_vst_n84,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (ridge 1e-4),84.0,0.5953283436660135,0.0124313385371494,0.1801098583405608
+ref_vst_n84,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,"MahalaMIA (no aux, ridge 1e-4)",84.0,0.5259715663914855,0.0141659439144261,0.0991616074009829
+ref_vst_own,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (ridge 1e-4),824.0,0.5879295022110864,0.0534836657993639,0.1879155825383058
+ref_vst_own,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5259715663914855,0.0141659439144261,0.0991616074009829
+ref_log2tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (ridge 1e-4),824.0,0.5312764339939824,0.0147441457068516,0.100318010985834
+ref_log2tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5259715663914855,0.0141659439144261,0.0991616074009829
+ref_tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (ridge 1e-4),824.0,0.526636431531271,0.0141659439144261,0.1008962127782596
+ref_tpm,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5259715663914855,0.0141659439144261,0.0991616074009829
+ref_vst_own_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (ridge 1e-4),824.0,0.5916272499009562,0.033824804856895,0.1864700780572419
+ref_vst_own_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5259715663914855,0.0141659439144261,0.0991616074009829
+ref_log2tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (ridge 1e-4),824.0,0.5758946735836733,0.02601908065915,0.1679676206996241
+ref_log2tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5259715663914855,0.0141659439144261,0.0991616074009829
+ref_tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (ridge 1e-4),824.0,0.5758946735836733,0.02601908065915,0.1679676206996241
+ref_tpm_aligned,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,"MahalaMIA (no aux, ridge 1e-4)",824.0,0.5259715663914855,0.0141659439144261,0.0991616074009829

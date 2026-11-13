@@ -208,6 +208,7 @@ def fig_attack_grid(c: pd.DataFrame, cohorts=("BRCA", "COMBINED", "GTEX"), rows=
     norm = Normalize(0.5, 1.0, clip=True)
     tabs = {ds: heat_table(c, ds, rows) for ds in cohorts}
     gens = list(GENERATORS)
+    nsp = {(r.dataset, r.generator, r.row): r.n_splits for r in c.itertuples()} if "n_splits" in c else {}
     split_at = sum(g not in DP for g in gens)
     small = width < 5
     row_h = 0.185
@@ -240,7 +241,8 @@ def fig_attack_grid(c: pd.DataFrame, cohorts=("BRCA", "COMBINED", "GTEX"), rows=
                                        linewidth=1.2))
                 lum = 0.2126 * rgba[0] + 0.7152 * rgba[1] + 0.0722 * rgba[2]
                 bold = r == best_ours[g] and v >= 0.55
-                ax.text(j + 0.5, y + 0.47, f"{v:.2f}", ha="center", va="center",
+                n = nsp.get((ds, g, r), nsp.get((ds, GENERATORS[g], r), 5))
+                ax.text(j + 0.5, y + 0.47, f"{v:.2f}" + ("*" if n < 5 else ""), ha="center", va="center",
                         fontsize=6.3 if small else 6.8, color="white" if lum < 0.5 else INK,
                         fontweight="bold" if bold else "normal")
                 out.append(dict(dataset=ds, attack=r, generator=GENERATORS[g], auc=round(v, 4)))
@@ -326,7 +328,7 @@ def fig_exposure(c: pd.DataFrame, name="exposure") -> None:
                         mew=0.7, zorder=5)
                 n = o.n_splits.iloc[0]
                 if n < 5:
-                    ax.text(hi, y, f"{n} split{'s' if n > 1 else ''}", ha="right",
+                    ax.text(hi, y, f"* {n} of 5 splits", ha="right",
                             va="center", fontsize=5.5, color=MUTED)
             ax.set_xlim(lo, hi)
             if log:
@@ -525,7 +527,7 @@ def latex_grid(c: pd.DataFrame, cohorts=("BRCA", "COMBINED", "GTEX")) -> str:
                     cellstr.append("")
                     continue
                 r = pick.loc[g]
-                mark = r"$^{%d}$" % r.n_splits if r.n_splits < 5 else ""
+                mark = r"$^{*}$" if r.n_splits < 5 else ""
                 cellstr.append(f"{r.auc:.2f} / {r['tpr_at_fpr_0.01']:.2f}{mark}")
             name = {"MahalaMIA": r"\mahala{}", "MAMA-MIA": r"\mama{}", "RedSigma": r"\redsigma{}"}.get(
                 row, row.replace("MeLoMIA", r"\melo{}"))

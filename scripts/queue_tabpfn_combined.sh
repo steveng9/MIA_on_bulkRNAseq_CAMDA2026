@@ -10,6 +10,7 @@ export CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_T
 stamp() { echo "### [$(date -u +%m-%d\ %H:%M)] $*" | tee -a $L/progress.log; }
 for s in ${SPLITS:-2 3 4 5}; do
   [ -e $L/STOP_TABPFN ] && { stamp "TabPFN COMBINED queue stopped before split $s"; exit 0; }
+  while [ -e $L/GPU_LOCK_TABSYN_GTEX ]; do sleep 120; done   # TabSyn GTEx shares GPU 0; wait for its builds
   if [ ! -f artifacts/targets/COMBINED/tabpfn/split_$s/synthetic_data.csv ]; then
     nice -n 5 taskset -c 22,46 $PY -W ignore scripts/build_targets.py --dataset COMBINED --generators tabpfn --splits $s \
       > $L/tabpfn_combined_s$s.log 2>&1

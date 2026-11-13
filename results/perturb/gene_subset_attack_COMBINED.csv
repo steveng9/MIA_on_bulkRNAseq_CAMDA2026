@@ -599,3 +599,283 @@ hvg,978,COMBINED,nd,5.0,MahalaMIA,0.8228115999057746,0.2466030644694998,0.557386
 hvg,978,COMBINED,nd,5.0,MahalaMIA (no reference),0.6099379771503217,0.0465452442902573,0.1827117664064758
 random,978,COMBINED,nd,5.0,MahalaMIA,0.8228115999057746,0.2466030644694998,0.5573865278982365
 random,978,COMBINED,nd,5.0,MahalaMIA (no reference),0.6099379771503217,0.0465452442902573,0.1827117664064758
+hvg,5,COMBINED,tabpfn,1.0,MahalaMIA,0.5036778250651083,0.0112781954887218,0.1110468478889531
+hvg,5,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5046088988589749,0.0109890109890109,0.1075766338924233
+random,5,COMBINED,tabpfn,1.0,MahalaMIA,0.4967012907992524,0.0133024869866975,0.117408906882591
+random,5,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.4953145424700033,0.0080971659919028,0.0962984384037015
+hvg,10,COMBINED,tabpfn,1.0,MahalaMIA,0.5021717254452271,0.0170618854829381,0.1035280508964719
+hvg,10,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5065091586235486,0.0098322729901677,0.1130711393869288
+random,10,COMBINED,tabpfn,1.0,MahalaMIA,0.5037774516326388,0.0106998264893001,0.1058415268941584
+random,10,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.4912789978503395,0.0054945054945054,0.1069982648930017
+hvg,20,COMBINED,tabpfn,1.0,MahalaMIA,0.5018250383629148,0.0080971659919028,0.0942741469057258
+hvg,20,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.4982093963231778,0.0057836899942163,0.097165991902834
+random,20,COMBINED,tabpfn,1.0,MahalaMIA,0.511522581464778,0.0109890109890109,0.1043956043956044
+random,20,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5052838855698607,0.0147484094852515,0.0936957779063042
+hvg,30,COMBINED,tabpfn,1.0,MahalaMIA,0.513332575547361,0.0072296124927703,0.1067090803932909
+hvg,30,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5032030944413056,0.0063620589936379,0.0989010989010989
+random,30,COMBINED,tabpfn,1.0,MahalaMIA,0.5244964345055614,0.015615962984384,0.0942741469057258
+random,30,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5042755844702909,0.004626951995373,0.0989010989010989
+hvg,50,COMBINED,tabpfn,1.0,MahalaMIA,0.5214019931999853,0.018796992481203,0.0980335454019664
+hvg,50,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5112283822049566,0.007807981492192,0.1110468478889531
+random,50,COMBINED,tabpfn,1.0,MahalaMIA,0.5274113473991783,0.0147484094852515,0.0994794679005205
+random,50,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5136879548805316,0.0060728744939271,0.1006362058993638
+hvg,98,COMBINED,tabpfn,1.0,MahalaMIA,0.5501322225082493,0.0292076344707923,0.1203007518796992
+hvg,98,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5212271452307959,0.009253903990746,0.1032388663967611
+random,98,COMBINED,tabpfn,1.0,MahalaMIA,0.5635075906752207,0.018796992481203,0.1223250433776749
+random,98,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5181029496818971,0.0083863504916136,0.1032388663967611
+hvg,150,COMBINED,tabpfn,1.0,MahalaMIA,0.5703758061226878,0.0222672064777327,0.1483516483516483
+hvg,150,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5274731961072089,0.0072296124927703,0.1136495083863504
+random,150,COMBINED,tabpfn,1.0,MahalaMIA,0.5684919279078087,0.020242914979757,0.1417004048582996
+random,150,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5235670322983983,0.0040485829959514,0.0951417004048583
+hvg,300,COMBINED,tabpfn,1.0,MahalaMIA,0.6289461983103601,0.0315211104684788,0.2223828802776171
+hvg,300,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5308508042003631,0.009253903990746,0.1171197223828802
+random,300,COMBINED,tabpfn,1.0,MahalaMIA,0.6165600751545381,0.0164835164835164,0.2160208212839791
+random,300,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5309912174834597,0.0083863504916136,0.1162521688837478
+hvg,500,COMBINED,tabpfn,1.0,MahalaMIA,0.635279840330038,0.0271833429728166,0.2550607287449393
+hvg,500,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5361748078511084,0.0083863504916136,0.1214574898785425
+random,500,COMBINED,tabpfn,1.0,MahalaMIA,0.6147343681569419,0.0329670329670329,0.1992481203007518
+random,500,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5324495097236198,0.0083863504916136,0.123770965876229
+hvg,978,COMBINED,tabpfn,1.0,MahalaMIA,0.6421985376959518,0.0399074609600925,0.2142857142857142
+hvg,978,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5404931849410097,0.009253903990746,0.1240601503759398
+random,978,COMBINED,tabpfn,1.0,MahalaMIA,0.6421985376959518,0.0399074609600925,0.2142857142857142
+random,978,COMBINED,tabpfn,1.0,MahalaMIA (no reference),0.5404931849410097,0.009253903990746,0.1240601503759398
+hvg,5,COMBINED,tabpfn,2.0,MahalaMIA,0.5107392759355035,0.0127241179872758,0.1075766338924233
+hvg,5,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5167877452635591,0.0112781954887218,0.1052631578947368
+random,5,COMBINED,tabpfn,2.0,MahalaMIA,0.5052979268981702,0.0052053209947946,0.075187969924812
+random,5,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5002995483372727,0.0063620589936379,0.1000578368999421
+hvg,10,COMBINED,tabpfn,2.0,MahalaMIA,0.5168355526432801,0.0159051474840948,0.1035280508964719
+hvg,10,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.517704777729116,0.0104106419895893,0.1113360323886639
+random,10,COMBINED,tabpfn,2.0,MahalaMIA,0.5080182670994962,0.0147484094852515,0.0989010989010989
+random,10,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5070527586195369,0.0095430884904569,0.1069982648930017
+hvg,20,COMBINED,tabpfn,2.0,MahalaMIA,0.5187642293818138,0.0052053209947946,0.109600925390399
+hvg,20,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.517464737878489,0.0089647194910352,0.1185656448814343
+random,20,COMBINED,tabpfn,2.0,MahalaMIA,0.524439934874982,0.0147484094852515,0.1084441873915558
+random,20,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5144247902994481,0.0115673799884326,0.1093117408906882
+hvg,30,COMBINED,tabpfn,2.0,MahalaMIA,0.5290638780142887,0.0037593984962406,0.1052631578947368
+hvg,30,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5186027541062528,0.0098322729901677,0.1246385193753614
+random,30,COMBINED,tabpfn,2.0,MahalaMIA,0.543368982705764,0.015615962984384,0.1234817813765182
+random,30,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5089904619262696,0.009253903990746,0.1055523423944476
+hvg,50,COMBINED,tabpfn,2.0,MahalaMIA,0.5435959841801035,0.0098322729901677,0.1272411798727588
+hvg,50,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5221792810171271,0.0075187969924812,0.1434355118565645
+random,50,COMBINED,tabpfn,2.0,MahalaMIA,0.5440215701548224,0.0205320994794679,0.1417004048582996
+random,50,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5088196257651688,0.0147484094852515,0.1220358588779641
+hvg,98,COMBINED,tabpfn,2.0,MahalaMIA,0.57685821935898,0.0205320994794679,0.1544245228455754
+hvg,98,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5243516750970356,0.020242914979757,0.1344707923655292
+random,98,COMBINED,tabpfn,2.0,MahalaMIA,0.5750846658665338,0.0283400809716599,0.1764025448235974
+random,98,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5181731563234453,0.0141700404858299,0.1350491613649508
+hvg,150,COMBINED,tabpfn,2.0,MahalaMIA,0.6030921010841911,0.0329670329670329,0.164545980335454
+hvg,150,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.529156818235005,0.0133024869866975,0.1414112203585887
+random,150,COMBINED,tabpfn,2.0,MahalaMIA,0.6003540420638078,0.0268941584731058,0.178716020821284
+random,150,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5280452130771571,0.0222672064777327,0.1298438403701561
+hvg,300,COMBINED,tabpfn,2.0,MahalaMIA,0.6243814293403585,0.0231347599768652,0.2058993637941006
+hvg,300,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.529336680964305,0.0193753614806246,0.1408328513591671
+random,300,COMBINED,tabpfn,2.0,MahalaMIA,0.6348910292627967,0.0292076344707923,0.2148640832851359
+random,300,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5325280742986858,0.0208212839791787,0.139386928860613
+hvg,500,COMBINED,tabpfn,2.0,MahalaMIA,0.6384836034060251,0.0283400809716599,0.2368421052631578
+hvg,500,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5357926831306813,0.018796992481203,0.1463273568536726
+random,500,COMBINED,tabpfn,2.0,MahalaMIA,0.627990719350622,0.031231925968768,0.1980913823019086
+random,500,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5338599945840591,0.0245806824754193,0.1451706188548293
+hvg,978,COMBINED,tabpfn,2.0,MahalaMIA,0.6423091967357255,0.0445344129554655,0.2515905147484095
+hvg,978,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5406005008073764,0.0257374204742625,0.1451706188548293
+random,978,COMBINED,tabpfn,2.0,MahalaMIA,0.6423091967357255,0.0445344129554655,0.2515905147484095
+random,978,COMBINED,tabpfn,2.0,MahalaMIA (no reference),0.5406005008073764,0.0257374204742625,0.1451706188548293
+hvg,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.511652296592972,0.0150375939849624,0.1035280508964719
+hvg,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5077521504962941,0.0205320994794679,0.1119144013880856
+random,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5037266353968514,0.0063620589936379,0.109600925390399
+random,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.496969078989158,0.004626951995373,0.0983227299016772
+hvg,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5083682973552155,0.0106998264893001,0.1217466743782533
+hvg,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.509994751217751,0.0109890109890109,0.1292654713707345
+random,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5008708966725395,0.0098322729901677,0.0815500289184499
+random,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.4916019484014616,0.0080971659919028,0.0989010989010989
+hvg,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.503624668607936,0.009253903990746,0.109600925390399
+hvg,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.4979459542587015,0.0069404279930595,0.1136495083863504
+random,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5025481667708622,0.0101214574898785,0.1012145748987854
+random,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5045590855752098,0.0069404279930595,0.0980335454019664
+hvg,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.507235630204903,0.0127241179872758,0.1257952573742047
+hvg,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5013770531263687,0.0075187969924812,0.1078658183921341
+random,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5191048987519933,0.0205320994794679,0.104973973395026
+random,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5017317638248578,0.0121457489878542,0.0948525159051474
+hvg,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5078745106429926,0.0069404279930595,0.0974551764025448
+hvg,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5060213896234584,0.0130133024869866,0.0997686524002313
+random,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5164367120558176,0.0095430884904569,0.1101792943898207
+random,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5082850523373796,0.0049161364950838,0.0942741469057258
+hvg,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5248243998167941,0.0263157894736842,0.1301330248698669
+hvg,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5145127157600538,0.0112781954887218,0.0951417004048583
+random,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5440860934015787,0.0109890109890109,0.1139386928860613
+random,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5108285386654721,0.0063620589936379,0.0965876229034123
+hvg,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5301881872310835,0.0208212839791787,0.1417004048582996
+hvg,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.516510261870773,0.0054945054945054,0.0951417004048583
+random,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5256250898477852,0.0109890109890109,0.1055523423944476
+random,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5103360892226119,0.0057836899942163,0.0997686524002313
+hvg,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5704781072289438,0.0370156159629843,0.1529786003470214
+hvg,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5185643076120715,0.0075187969924812,0.1020821283979178
+random,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5608758445691819,0.0179294389820705,0.1448814343551185
+random,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5188086935881278,0.0075187969924812,0.1093117408906882
+hvg,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5624153759231338,0.0315211104684788,0.1853672643146327
+hvg,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5211800064857565,0.0083863504916136,0.1090225563909774
+random,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5570268490256322,0.0228455754771544,0.169172932330827
+random,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.520196444869399,0.0069404279930595,0.1150954308849045
+hvg,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5678914939639004,0.0416425679583574,0.1752458068247541
+hvg,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5257143525777539,0.0054945054945054,0.1110468478889531
+random,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA,0.5678914939639004,0.0416425679583574,0.1752458068247541
+random,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",1.0,MahalaMIA (no reference),0.5257143525777539,0.0054945054945054,0.1110468478889531
+hvg,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5050374936897601,0.0083863504916136,0.1075766338924233
+hvg,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.510196010256856,0.0069404279930595,0.108155002891845
+random,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5065071527195044,0.0106998264893001,0.1026604973973395
+random,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5036925350280994,0.0109890109890109,0.1043956043956044
+hvg,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.511465747516858,0.0083863504916136,0.1107576633892423
+hvg,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5144622338416072,0.0072296124927703,0.0980335454019664
+random,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5098590183774243,0.0112781954887218,0.0997686524002313
+random,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5090633431065437,0.0121457489878542,0.0945633314054366
+hvg,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5132185733341803,0.0089647194910352,0.1208791208791208
+hvg,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5149861091144936,0.0112781954887218,0.1341816078658184
+random,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5150379283023031,0.0211104684788895,0.1067090803932909
+random,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5089242670928098,0.0095430884904569,0.1298438403701561
+hvg,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5187087327032566,0.0130133024869866,0.1084441873915558
+hvg,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5145605231397747,0.0086755349913244,0.1301330248698669
+random,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5441285517038483,0.0170618854829381,0.1385193753614806
+random,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5087510907103241,0.0147484094852515,0.104973973395026
+hvg,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5308170381489518,0.015615962984384,0.1171197223828802
+hvg,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5183289482042144,0.0095430884904569,0.1437246963562753
+random,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.531200165821401,0.0190861769809138,0.1211683053788316
+random,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.503909172664877,0.0274725274725274,0.1156737998843262
+hvg,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5554485368601584,0.015615962984384,0.1451706188548293
+hvg,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5193907400782971,0.0153267784846732,0.1350491613649508
+random,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5739239160596021,0.0358588779641411,0.1576055523423944
+random,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.51703915190377,0.0161943319838056,0.1344707923655292
+hvg,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.575918453314255,0.0294968189705031,0.1642567958357432
+hvg,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5224564300925725,0.0225563909774436,0.145748987854251
+random,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5890240273872765,0.0190861769809138,0.1862348178137652
+random,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5243553525877833,0.0167727009832273,0.1333140543666859
+hvg,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.5994443645797465,0.0399074609600925,0.198958935801041
+hvg,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5260540189959113,0.0237131289762868,0.1477732793522267
+random,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.6084037349933303,0.0451127819548872,0.2145748987854251
+random,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5285480263575791,0.0213996529786003,0.1399652978600347
+hvg,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.6028788066208206,0.0488721804511278,0.2128397917871602
+hvg,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.531519773199116,0.0242914979757085,0.1474840948525159
+random,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.6062002494007361,0.0413533834586466,0.1957779063042221
+random,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5347211960537182,0.023423944476576,0.139386928860613
+hvg,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.6058415268941585,0.0517640254482359,0.2275882012724118
+hvg,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5409485251590515,0.0277617119722382,0.1402544823597455
+random,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA,0.6058415268941585,0.0517640254482359,0.2275882012724118
+random,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",2.0,MahalaMIA (no reference),0.5409485251590515,0.0277617119722382,0.1402544823597455
+hvg,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.499226389673606,0.004626951995373,0.0769230769230769
+hvg,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.4945920826967374,0.0040485829959514,0.0818392134181607
+random,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.4974431409782794,0.0115673799884326,0.0887796414112203
+random,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.4978202509385959,0.0049161364950838,0.0977443609022556
+hvg,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.5031074796818636,0.009253903990746,0.1061307113938692
+hvg,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5087052892346473,0.0075187969924812,0.0928282244071717
+random,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.5064138781814473,0.0182186234817813,0.1188548293811451
+random,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.4955886826893824,0.0066512434933487,0.0887796414112203
+hvg,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.510380219111585,0.0138808559861191,0.1061307113938692
+hvg,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5101157740950866,0.0069404279930595,0.1041064198958935
+random,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.5198624618460335,0.0112781954887218,0.1090225563909774
+random,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5004764022105063,0.0040485829959514,0.093984962406015
+hvg,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.5218740492850623,0.0164835164835164,0.1046847888953152
+hvg,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5180066662877737,0.0095430884904569,0.1020821283979178
+random,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.5284768167640087,0.012434933487565,0.1223250433776749
+random,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5121363881023145,0.015615962984384,0.0957200694042799
+hvg,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.5323535606468371,0.0208212839791787,0.1032388663967611
+hvg,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5156390308808928,0.0101214574898785,0.0879120879120879
+random,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.5354306174506966,0.0080971659919028,0.1231925968768074
+random,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5174132530080202,0.0133024869866975,0.1061307113938692
+hvg,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.558047519866808,0.0219780219780219,0.1440138808559861
+hvg,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5216035865564311,0.0101214574898785,0.0855986119144013
+random,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.5608373980750008,0.0240023134759976,0.1593406593406593
+random,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5197879090790559,0.0144592249855407,0.1009253903990746
+hvg,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.5722921131196155,0.0245806824754193,0.1685945633314054
+hvg,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5242229629208637,0.0109890109890109,0.0887796414112203
+random,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.5904839912141402,0.0260266049739733,0.2024291497975708
+random,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5226078758479124,0.0170618854829381,0.1075766338924233
+hvg,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.608149319497053,0.0352805089647194,0.2157316367842683
+hvg,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5359447975207026,0.0147484094852515,0.097165991902834
+random,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.6142599718504799,0.0196645459803354,0.2050318102949682
+random,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5336540551021841,0.012434933487565,0.0968768074031232
+hvg,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.6086213755821301,0.0384615384615384,0.1876807403123192
+hvg,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5408234904736273,0.0153267784846732,0.1055523423944476
+random,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.6211586101759512,0.0349913244650086,0.2139965297860034
+random,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5419310838233868,0.0159051474840948,0.1058415268941584
+hvg,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.617984601343287,0.0523423944476576,0.2009832272990167
+hvg,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5501506099619882,0.0161943319838056,0.1139386928860613
+random,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA,0.617984601343287,0.0523423944476576,0.2009832272990167
+random,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",3.0,MahalaMIA (no reference),0.5501506099619882,0.0161943319838056,0.1139386928860613
+hvg,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5030208366794086,0.0124313385371494,0.0916449840994507
+hvg,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5084511821014422,0.0109858340560855,0.0994507082971957
+random,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5159875472465816,0.0153223474992772,0.1225787799942179
+random,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5090431028021372,0.0173460537727666,0.1144839549002601
+hvg,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5068500851241527,0.007805724197745,0.0968488002312807
+hvg,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5032212665831486,0.0098294304712344,0.0919340849956634
+random,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5119729262364416,0.0161896501879155,0.1046545244290257
+random,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5083487922007003,0.0161896501879155,0.1063891298063024
+hvg,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5163793726510552,0.01040763226366,0.0982943047123446
+hvg,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5146250254301714,0.01561144839549,0.0988725065047701
+random,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5033664862462925,0.0121422376409366,0.1032090199479618
+random,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5048153368025441,0.0092512286788089,0.1121711477305579
+hvg,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5224665526324244,0.0118531367447239,0.1199768719283029
+hvg,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5198291761695202,0.0101185313674472,0.1043654235328129
+random,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.503896504556016,0.0121422376409366,0.1078346342873663
+random,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5122881265191181,0.0109858340560855,0.1084128360797918
+hvg,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5372086906941633,0.0161896501879155,0.1286498988146863
+hvg,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5236283099375756,0.0147441457068516,0.118531367447239
+random,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5350661987515124,0.01561144839549,0.1280716970222607
+random,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.513804902401679,0.0190806591500433,0.1292281006071118
+hvg,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5512407916010835,0.0138768430182133,0.1488869615495808
+hvg,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5282706546529183,0.0115640358485111,0.1405030355594102
+random,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5590254355251465,0.0193697600462561,0.1540907776814108
+random,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5264249595794117,0.0161896501879155,0.1104365423532812
+hvg,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5735350213613439,0.0265972824515756,0.1754842440011564
+hvg,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5326091757412226,0.01561144839549,0.1289389997108991
+random,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5661776712387439,0.0167678519803411,0.1592945938132408
+random,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5259939850952426,0.0196588609424689,0.1306736050881757
+hvg,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5762038509310119,0.0474125469788956,0.1896501879155825
+hvg,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5398648051781183,0.0144550448106389,0.1451286498988147
+random,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5864157377961945,0.0398959236773634,0.1665221162185602
+random,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5346275282944117,0.0141659439144261,0.1318300086730268
+hvg,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.5953919190945788,0.0398959236773634,0.1936976004625614
+hvg,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5458275111625068,0.0185024573576178,0.1425267418328996
+random,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.601295399548146,0.0381613183000867,0.194275802254987
+random,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5419517522726542,0.0159005492917028,0.1361665221162185
+hvg,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.6080558098572698,0.0410523272622145,0.2084417461694131
+hvg,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5502035082929126,0.0193697600462561,0.1376120265972824
+random,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA,0.6080558098572698,0.0410523272622145,0.2084417461694131
+random,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",4.0,MahalaMIA (no reference),0.5502035082929126,0.0193697600462561,0.1376120265972824
+hvg,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.4922933196278093,0.0132986412257878,0.1058109280138768
+hvg,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.4841703875022753,0.0205261636311072,0.102919919051749
+random,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5073084974248606,0.0161896501879155,0.0962705984388551
+random,5,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.506260841283608,0.0118531367447239,0.1043654235328129
+hvg,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.4960001017206857,0.0072275224053194,0.0959814975426423
+hvg,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.4794681480410737,0.0095403295750216,0.1034981208441746
+random,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5173915603953188,0.0060711188204683,0.1095692396646429
+random,10,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5199884493484522,0.0086730268863833,0.1115929459381324
+hvg,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5041103187605067,0.0138768430182133,0.1240242844752818
+hvg,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.4883767386206675,0.013009540329575,0.1000289100896212
+random,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5152644603985309,0.0202370627348944,0.1066782307025151
+random,20,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5067657640294241,0.0150332466030644,0.1072564324949407
+hvg,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5031747561380403,0.0248626770742989,0.1188204683434518
+hvg,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.4859692375231548,0.01561144839549,0.0939577912691529
+random,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5206128269784673,0.0161896501879155,0.1130384504191963
+random,30,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5078321581917273,0.0138768430182133,0.1098583405608557
+hvg,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5228275941451715,0.0147441457068516,0.1286498988146863
+hvg,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.4918850984549163,0.0132986412257878,0.0997398091934085
+random,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5393060106217811,0.0196588609424689,0.1370338248048569
+random,50,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5098478338847665,0.0135877421220005,0.1032090199479618
+hvg,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5448159926332808,0.0274645851402139,0.1410812373518357
+hvg,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.4996657270887539,0.0132986412257878,0.0988725065047701
+random,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5581638211643271,0.0170569528765539,0.145995952587453
+random,98,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5164392673969141,0.0106967331598727,0.1017635154668979
+hvg,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5685500385467862,0.0231280716970222,0.1711477305579647
+hvg,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5074490325827417,0.01561144839549,0.0974270020237062
+random,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5880676951163364,0.0508817577334489,0.2032379300375831
+random,150,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5207985341513818,0.0092512286788089,0.1147730557964729
+hvg,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.6066969687235659,0.0248626770742989,0.2026597282451575
+hvg,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5207386394055229,0.0167678519803411,0.102919919051749
+random,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.5967340298523444,0.0569528765539173,0.2165365712633709
+random,300,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5271356659492681,0.0141659439144261,0.1162185602775368
+hvg,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.6161646884670158,0.0448106389129806,0.2165365712633709
+hvg,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5290696974077286,0.0144550448106389,0.1043654235328129
+random,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.6168707103316093,0.0508817577334489,0.230702515177797
+random,500,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5325650075487456,0.0161896501879155,0.1092801387684301
+hvg,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.6184697996637863,0.0745880312228968,0.2017924255565192
+hvg,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5408833504652383,0.0173460537727666,0.1167967620699624
+random,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA,0.6184697996637863,0.0745880312228968,0.2017924255565192
+random,978,COMBINED,"tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard",5.0,MahalaMIA (no reference),0.5408833504652383,0.0173460537727666,0.1167967620699624

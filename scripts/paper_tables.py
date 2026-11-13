@@ -85,7 +85,7 @@ def quality(cohorts=("BRCA",), extra=("COMBINED",)) -> None:
             if g == "pgg":
                 print("  \\midrule")
             r, q, x = fid.loc[(ds, g)], b.loc[(ds, g)], ex.loc[(ds, g)]
-            cells = [name, f2(r.utility), f2(r.w1), f2(r["corr"], 3), f2(r.disc),
+            cells = [name + (STAR if r.fid_splits < 5 else ""), f2(r.utility), f2(r.w1), f2(r["corr"], 3), f2(r.disc),
                      f"{f2(q.de_tpr)} / {f2(q.de_precision)}",
                      f"{f2(q.coex_recall)} / {f2(q.coex_precision)}",
                      f2(x["auc"]), f2(x["tpr_at_fpr_0.01"])]
@@ -93,7 +93,7 @@ def quality(cohorts=("BRCA",), extra=("COMBINED",)) -> None:
                 mark = ""
                 if (o, g) in fid.index:
                     if fid.loc[(o, g)].fid_splits < 5:
-                        mark = "$^{\\dagger}$"
+                        mark = STAR
                     cells += [f2(fid.loc[(o, g)].utility) + mark, f2(ex.loc[(o, g)]["auc"]) + mark]
                 else:
                     cells += ["--", "--"]
@@ -123,7 +123,9 @@ def bio_table() -> None:
             if (ds, g) not in a.index:
                 continue
             x, y = a.loc[(ds, g)], s.loc[(ds, g)]
-            print(f"  {name} & {f2(x.de_tpr)} & {f2(x.de_precision)} & {f2(y.de_tpr)} & "
+            nb = pd.read_csv(RES / "bio.csv").query("dataset == @ds and generator == @g").split.nunique()
+            star = STAR if g != "real_heldout" and 0 < nb < 5 else ""
+            print(f"  {name}{star} & {f2(x.de_tpr)} & {f2(x.de_precision)} & {f2(y.de_tpr)} & "
                   f"{f2(y.de_precision)} & {f2(x.coex_recall)} & {f2(x.coex_precision)} & "
                   f"{x.coex_edges_syn:,.0f} & {f2(y.coex_recall)} & {f2(y.coex_precision)} \\\\")
         print("  \\midrule")
@@ -147,7 +149,20 @@ def aux() -> None:
         print(f"% ---- {COHORT[ds]}: MVN, CVAE, ND, TabSyn, TabPFN")
         for label, cond in items:
             m = _mean("aux_mismatch_default.csv", dict(dataset=ds, condition=cond))
-            print(f"  {label} & " + " & ".join(f2(m.get(g, np.nan)) for g in list(GEN)[:5]) + " \\\\")
+            print(f"  {label} & " + " & ".join(f2(m.get(g, np.nan)) + _star("aux_mismatch_default.csv", ds, g, condition=cond)
+                                               for g in list(GEN)[:5]) + " \\\\")
+
+
+STAR = "$^{*}$"   # fewer than five splits so far (TabPFN on TCGA-COMBINED and GTEx is still building)
+
+
+def _star(file: str, ds: str, g: str, **cond) -> str:
+    """STAR when the robustness file holds fewer than five splits for this cohort and generator."""
+    d = pd.read_csv(RES / "perturb" / file)
+    d = d[(d.dataset == ds) & (d.generator == g)]
+    for k, v in cond.items():
+        d = d[d[k] == v]
+    return STAR if "split" in d and 0 < d.split.nunique() < 5 else ""
 
 
 def candidates() -> None:
@@ -156,12 +171,16 @@ def candidates() -> None:
              ("TOIL TPM, aligned", "toil_log2tpm_aligned"),
              ("TOIL, adversary's VST", "toil_vst_own"),
              ("TOIL, adversary's VST, aligned", "toil_vst_own_aligned")]
-    for label, cond in items:
-        cells = []
-        for ds, ref in (("BRCA", "none"), ("COMBINED", "ref_vst")):
-            m = _mean("candidate_mismatch_default.csv", dict(dataset=ds, condition=f"{cond}|{ref}"))
-            cells += [f2(m.get(g, np.nan)) for g in ("mvn", "cvae", "nd")]
-        print(f"  {label} & " + " & ".join(cells) + " \\\\")
+    for ds, ref in (("BRCA", "none"), ("COMBINED", "ref_vst")):
+        print(f"  \\multicolumn{{6}}{{l}}{{\\emph{{{COHORT[ds]}}}}} \\\\")
+        for label, cond in items:
+            c = f"{cond}|{ref}"
+            m = _mean("candidate_mismatch_default.csv", dict(dataset=ds, condition=c))
+            print(f"  {label} & " + " & ".join(
+                f2(m.get(g, np.nan)) + _star("candidate_mismatch_default.csv", ds, g, condition=c)
+                for g in list(GEN)[:5]) + " \\\\")
+        if ds == "BRCA":
+            print("  \\midrule")
     t = _mean("candidate_mismatch_default.csv", dict(dataset="BRCA"), "tpr_at_fpr_0_01")
     d = pd.read_csv(RES / "perturb" / "candidate_mismatch_default.csv")
     d = d[(d.dataset == "BRCA") & (d.generator == "mvn")]
@@ -184,14 +203,48 @@ def genes() -> None:
     print("% ---- TCGA-BRCA")
     for g in ("mvn", "cvae", "nd"):
         print(f"  \\mahala{{}} / {GEN[g] if g != 'nd' else 'ND'} & {row(new, 'BRCA', g, 'MahalaMIA')} \\\\")
+    print(f"  \\mahala{{}} / TabSyn & {row(new, 'BRCA', TABSYN, 'MahalaMIA')} \\\\")
+    print(f"  \\mahala{{}} / TabPFN & {row(new, 'BRCA', 'tabpfn', 'MahalaMIA')} \\\\")
     print(f"  GAN-leaks / TabSyn & {row(old, 'BRCA', TABSYN, 'GAN-leaks')} \\\\")
     print("% ---- TCGA-COMBINED")
     print(f"  \\mahala{{}} / MVN & {row(new, 'COMBINED', 'mvn', 'MahalaMIA')} \\\\")
+    print(f"  \\mahala{{}} / CVAE & {row(new, 'COMBINED', 'cvae', 'MahalaMIA')} \\\\")
+    print(f"  \\mahala{{}} / ND & {row(new, 'COMBINED', 'nd', 'MahalaMIA')} \\\\")
+    print(f"  \\mahala{{}} / TabSyn & {row(new, 'COMBINED', TABSYN, 'MahalaMIA')} \\\\")
+    print(f"  \\mahala{{}} / TabPFN{_star('gene_subsets_default.csv', 'COMBINED', 'tabpfn')} & {row(new, 'COMBINED', 'tabpfn', 'MahalaMIA')}"
+          " \\\\")
     print(f"  \\mama{{}} / DP-PGM & {row(old, 'COMBINED', 'pgg', 'MAMA-MIA v2')} \\\\")
+
+
+def genes_needed() -> None:
+    """Genes MahalaMIA needs for a given AUC: random panels, interpolated in log k."""
+    for ds in ("BRCA", "COMBINED"):
+        d = pd.read_csv(RES / "perturb" / f"gene_subset_attack_{ds}.csv")
+        d = d[(d.attack == "MahalaMIA") & (d.rule == "random")]
+        print(f"  \\multicolumn{{5}}{{l}}{{\\emph{{{COHORT[ds]}}}}} \\\\")
+        for g in ("mvn", "cvae", "nd", "tabsyn", "tabpfn"):
+            x = d[d.generator.astype(str).str.startswith(g)]
+            if x.empty:
+                continue
+            m = x.groupby("k").auc.mean()
+            ks, a = np.array(m.index, float), m.values
+            cells = []
+            for thr in (0.6, 0.7, 0.8, 0.9):
+                i = int(np.argmax(a >= thr))
+                if a[i] < thr:
+                    cells.append("--")
+                else:
+                    k = ks[0] if i == 0 else np.exp(np.interp(thr, [a[i - 1], a[i]], np.log(ks[i - 1:i + 1])))
+                    cells.append(f"{k:,.0f}")
+            star = STAR if x.split.nunique() < 5 else ""
+            name = {"nd": "ND", "tabsyn": "TabSyn", "tabpfn": "TabPFN"}.get(g, g.upper())
+            print(f"  {name}{star} & " + " & ".join(cells) + " \\\\")
 
 
 def donor() -> None:
     new = pd.read_csv(RES / "perturb" / "donor_linked_default.csv")
+    # donor_linked.py names the tuned TabSyn without its default preprocess spec; same target
+    new["generator"] = new.generator.replace({TABSYN.rsplit(",preprocess=", 1)[0]: TABSYN})
     old = pd.read_csv(RES / "perturb" / "donor_linked.csv")
     mel = pd.read_csv(RES / "perturb" / "donor_linked_melomia.csv")
     sep, nor = "separate tumour sample (other vial or other lesion)", "matched normal"
@@ -204,8 +257,9 @@ def donor() -> None:
 
     for ds in ("COMBINED", "BRCA"):
         print(f"% ---- {COHORT[ds]}: sample A, separate tumour (95% interval), matched normal")
-        for g, short in (("mvn", "MVN"), ("cvae", "CVAE"), ("nd", "ND")):
-            row(new, ds, g, "MahalaMIA", f"\\mahala{{}} / {short}")
+        for g, short in (("mvn", "MVN"), ("cvae", "CVAE"), ("nd", "ND"), (TABSYN, "TabSyn"), ("tabpfn", "TabPFN")):
+            if ((new.dataset == ds) & (new.generator == g)).any():
+                row(new, ds, g, "MahalaMIA", f"\\mahala{{}} / {short}")
         row(mel, ds, "cvae", "MeLoMIA-CVAE", "\\melo{} / CVAE")
         row(mel, ds, "nd", "MeLoMIA-ND", "\\melo{} / ND")
         row(old, ds, "pgg", "MAMA-MIA v2", "\\mama{} / DP-PGM (challenge)")
@@ -287,7 +341,7 @@ def preprocess() -> None:
                       f"{f2(v('mahalamia', tpr))} & {f2(v('redsigma'))} & {f2(v('generic_gan_leaks'))} \\\\")
 
 
-TABLES = {"quality": quality, "quality_all": quality_all, "bio": bio_table, "aux": aux,
+TABLES = {"genes_needed": genes_needed, "quality": quality, "quality_all": quality_all, "bio": bio_table, "aux": aux,
           "candidates": candidates, "genes": genes, "donor": donor, "tissue": tissue,
           "epsilon": epsilon, "preprocess": preprocess}
 
