@@ -54,7 +54,8 @@ TABSYN = ("tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,"
           "preprocess=clip:0.001:0.999+standard")
 PGM = "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16"
 GENERATORS = {"mvn": "MVN", "cvae": "CVAE", "nd": "NoisyDiffusion", TABSYN: "TabSyn",
-              "tabpfn": "TabPFN", "pgg": "DP-PGM (challenge)", PGM: "DP-PGM (corrected)"}
+              "tabpfn": "TabPFN", PGM: "DP-PGM", "pgg": "DP-PGM (challenge)"}
+STRIP = [g for g in GENERATORS if g != "pgg"]   # main text: one DP graphical model
 SPLIT = 1
 N_MAX = 1200
 REAL, SYN = "#2a78d6", "#eb6834"
@@ -130,10 +131,9 @@ def draw(E) -> None:
     import matplotlib.pyplot as plt
     plt.rcParams.update({"font.family": "sans-serif", "pdf.fonttype": 42, "savefig.dpi": 300,
                          "font.sans-serif": ["Liberation Sans", "Arial", "DejaVu Sans"]})
-    short = {**GENERATORS, "nd": "NoisyDiffusion", "pgg": "DP-PGM (challenge)",
-             PGM: "DP-PGM (corrected)"}
+    short = dict(GENERATORS)
 
-    gens = present(E, "BRCA")
+    gens = [g for g in present(E, "BRCA") if g in STRIP]
     fig, axes = plt.subplots(1, len(gens), figsize=(7.0, 1.12))
     for ax, g in zip(axes, gens):
         panel(ax, E[f"BRCA|{g}|tsne_joint_real"], E[f"BRCA|{g}|tsne_joint"], short[g])

@@ -4,93 +4,78 @@ BRCA,MahalaMIA,CVAE,0.9695
 BRCA,MahalaMIA,NoisyDiffusion,0.8166
 BRCA,MahalaMIA,TabSyn,0.6878
 BRCA,MahalaMIA,TabPFN,0.5741
-BRCA,MahalaMIA,DP-PGM (challenge),0.5087
-BRCA,MahalaMIA,DP-PGM (corrected),0.4991
+BRCA,MahalaMIA,DP-PGM,0.4991
 BRCA,MeLoMIA,MVN,0.9289
 BRCA,MeLoMIA,CVAE,0.807
 BRCA,MeLoMIA,NoisyDiffusion,0.9691
 BRCA,MeLoMIA,TabSyn,0.7881
 BRCA,MeLoMIA,TabPFN,0.7474
-BRCA,MeLoMIA,DP-PGM (challenge),0.5039
-BRCA,MeLoMIA,DP-PGM (corrected),0.5043
+BRCA,MeLoMIA,DP-PGM,0.5043
 BRCA,MAMA-MIA,MVN,0.5155
 BRCA,MAMA-MIA,CVAE,0.5391
 BRCA,MAMA-MIA,NoisyDiffusion,0.6129
 BRCA,MAMA-MIA,TabSyn,0.5679
 BRCA,MAMA-MIA,TabPFN,0.6309
-BRCA,MAMA-MIA,DP-PGM (challenge),0.6387
-BRCA,MAMA-MIA,DP-PGM (corrected),0.7561
+BRCA,MAMA-MIA,DP-PGM,0.7561
 BRCA,RedSigma,MVN,1.0
 BRCA,RedSigma,CVAE,0.7949
 BRCA,RedSigma,NoisyDiffusion,0.5165
 BRCA,RedSigma,TabSyn,0.6748
 BRCA,RedSigma,TabPFN,0.5645
-BRCA,RedSigma,DP-PGM (challenge),0.5044
-BRCA,RedSigma,DP-PGM (corrected),0.5073
+BRCA,RedSigma,DP-PGM,0.5073
 BRCA,Best generic attack,MVN,0.5637
 BRCA,Best generic attack,CVAE,0.7087
 BRCA,Best generic attack,NoisyDiffusion,0.5442
 BRCA,Best generic attack,TabSyn,0.7727
 BRCA,Best generic attack,TabPFN,0.5296
-BRCA,Best generic attack,DP-PGM (challenge),0.5066
-BRCA,Best generic attack,DP-PGM (corrected),0.5063
+BRCA,Best generic attack,DP-PGM,0.5063
 COMBINED,MahalaMIA,MVN,0.9964
 COMBINED,MahalaMIA,CVAE,0.7924
 COMBINED,MahalaMIA,NoisyDiffusion,0.8394
 COMBINED,MahalaMIA,TabSyn,0.6036
 COMBINED,MahalaMIA,TabPFN,0.6423
-COMBINED,MahalaMIA,DP-PGM (challenge),0.5046
-COMBINED,MahalaMIA,DP-PGM (corrected),0.5032
+COMBINED,MahalaMIA,DP-PGM,0.5032
 COMBINED,MeLoMIA,MVN,0.714
 COMBINED,MeLoMIA,CVAE,0.87
 COMBINED,MeLoMIA,NoisyDiffusion,0.8024
 COMBINED,MeLoMIA,TabSyn,0.8165
 COMBINED,MeLoMIA,TabPFN,0.6838
-COMBINED,MeLoMIA,DP-PGM (challenge),0.5027
-COMBINED,MeLoMIA,DP-PGM (corrected),0.5013
+COMBINED,MeLoMIA,DP-PGM,0.5013
 COMBINED,MAMA-MIA,MVN,0.508
 COMBINED,MAMA-MIA,CVAE,0.5172
 COMBINED,MAMA-MIA,NoisyDiffusion,0.5471
 COMBINED,MAMA-MIA,TabSyn,0.519
 COMBINED,MAMA-MIA,TabPFN,0.6023
-COMBINED,MAMA-MIA,DP-PGM (challenge),0.6588
-COMBINED,MAMA-MIA,DP-PGM (corrected),0.6486
+COMBINED,MAMA-MIA,DP-PGM,0.6486
 COMBINED,RedSigma,MVN,0.6807
 COMBINED,RedSigma,CVAE,0.8474
 COMBINED,RedSigma,NoisyDiffusion,0.5059
 COMBINED,RedSigma,TabSyn,0.5268
 COMBINED,RedSigma,TabPFN,0.5242
-COMBINED,RedSigma,DP-PGM (challenge),0.5025
-COMBINED,RedSigma,DP-PGM (corrected),0.5026
+COMBINED,RedSigma,DP-PGM,0.5026
 COMBINED,Best generic attack,MVN,0.5903
 COMBINED,Best generic attack,CVAE,0.6848
 COMBINED,Best generic attack,NoisyDiffusion,0.5393
 COMBINED,Best generic attack,TabSyn,0.6835
 COMBINED,Best generic attack,TabPFN,0.5611
-COMBINED,Best generic attack,DP-PGM (challenge),0.5073
-COMBINED,Best generic attack,DP-PGM (corrected),0.5061
+COMBINED,Best generic attack,DP-PGM,0.5061
 GTEX,MahalaMIA,MVN,1.0
 GTEX,MahalaMIA,CVAE,0.8606
 GTEX,MahalaMIA,NoisyDiffusion,0.8268
-GTEX,MahalaMIA,DP-PGM (challenge),0.5069
-GTEX,MahalaMIA,DP-PGM (corrected),0.5054
+GTEX,MahalaMIA,DP-PGM,0.5054
 GTEX,MeLoMIA,MVN,0.8255
 GTEX,MeLoMIA,CVAE,0.8808
 GTEX,MeLoMIA,NoisyDiffusion,0.8545
-GTEX,MeLoMIA,DP-PGM (challenge),0.5035
-GTEX,MeLoMIA,DP-PGM (corrected),0.5061
+GTEX,MeLoMIA,DP-PGM,0.5061
 GTEX,MAMA-MIA,MVN,0.5095
 GTEX,MAMA-MIA,CVAE,0.5228
 GTEX,MAMA-MIA,NoisyDiffusion,0.5308
-GTEX,MAMA-MIA,DP-PGM (challenge),0.6311
-GTEX,MAMA-MIA,DP-PGM (corrected),0.6476
+GTEX,MAMA-MIA,DP-PGM,0.6476
 GTEX,RedSigma,MVN,0.8285
 GTEX,RedSigma,CVAE,0.8146
 GTEX,RedSigma,NoisyDiffusion,0.504
-GTEX,RedSigma,DP-PGM (challenge),0.5014
-GTEX,RedSigma,DP-PGM (corrected),0.5015
+GTEX,RedSigma,DP-PGM,0.5015
 GTEX,Best generic attack,MVN,0.5756
 GTEX,Best generic attack,CVAE,0.7623
 GTEX,Best generic attack,NoisyDiffusion,0.5728
-GTEX,Best generic attack,DP-PGM (challenge),0.505
-GTEX,Best generic attack,DP-PGM (corrected),0.5039
+GTEX,Best generic attack,DP-PGM,0.5039

@@ -54,10 +54,13 @@ GENERATORS = {  # target name -> label, in the order of the figures
     "nd": "NoisyDiffusion",
     TABSYN: "TabSyn",
     "tabpfn": "TabPFN",
+    PGM: "DP-PGM",
     "pgg": "DP-PGM (challenge)",
-    PGM: "DP-PGM (corrected)",
 }
 DP = {"pgg", PGM}
+# The main text shows one DP graphical model, the one that is private end to end;
+# the challenge's implementation ("pgg") is in the supplement's figures and tables.
+MAIN_GENERATORS = [g for g in GENERATORS if g != "pgg"]
 
 # Our attacks, as (attack, tag) per cohort.  MeLoMIA uses K=30 shadows on BRCA
 # and K=20 elsewhere, all with per-record calibration and black box.  MahalaMIA
@@ -152,7 +155,7 @@ FAMILY_MARKER = {"MahalaMIA": "o", "MeLoMIA": "s", "MAMA-MIA": "^"}
 # Sequential blue, chance (AUC 0.5) near white, AUC 1.0 darkest.
 SEQ = ["#f7f9fc", "#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
 SHORT = {"mvn": "MVN", "cvae": "CVAE", "nd": "Noisy-\nDiffusion", TABSYN: "TabSyn",
-         "tabpfn": "TabPFN", "pgg": "DP-PGM\nchallenge", PGM: "DP-PGM\ncorrected"}
+         "tabpfn": "TabPFN", "pgg": "DP-PGM\n(challenge)", PGM: "DP-PGM"}
 
 
 def style():
@@ -195,7 +198,7 @@ def heat_table(c: pd.DataFrame, dataset: str, rows=None) -> pd.DataFrame:
 
 
 def fig_attack_grid(c: pd.DataFrame, cohorts=("BRCA", "COMBINED", "GTEX"), rows=None,
-                    name="attack_grid", width=3.5) -> None:
+                    name="attack_grid", width=3.5, gens=None) -> None:
     """One panel per cohort, stacked; a generator that was not built for a cohort
     (TabSyn and TabPFN on GTEx) and a backend that was not run leave an empty cell."""
     import matplotlib.pyplot as plt
@@ -207,7 +210,7 @@ def fig_attack_grid(c: pd.DataFrame, cohorts=("BRCA", "COMBINED", "GTEX"), rows=
     cmap = LinearSegmentedColormap.from_list("seq", SEQ)
     norm = Normalize(0.5, 1.0, clip=True)
     tabs = {ds: heat_table(c, ds, rows) for ds in cohorts}
-    gens = list(GENERATORS)
+    gens = list(gens or GENERATORS)
     nsp = {(r.dataset, r.generator, r.row): r.n_splits for r in c.itertuples()} if "n_splits" in c else {}
     split_at = sum(g not in DP for g in gens)
     small = width < 5
@@ -288,15 +291,17 @@ def exposure_table(c: pd.DataFrame) -> pd.DataFrame:
     return t
 
 
-def fig_exposure(c: pd.DataFrame, name="exposure") -> None:
+def fig_exposure(c: pd.DataFrame, name="exposure", gens=None) -> None:
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
 
     t = exposure_table(c)
-    gens = list(GENERATORS)
+    gens = list(gens or GENERATORS)
+    t = t[t.generator.isin(gens)]
+    n_dp = sum(g in DP for g in gens)
     ypos = {g: len(gens) - 1 - i + (0.0 if g in DP else 0.5) for i, g in enumerate(gens)}
     cohorts = list(COHORTS)
-    fig, axes = plt.subplots(2, len(cohorts), figsize=(7.1, 4.3), sharey=True,
+    fig, axes = plt.subplots(2, len(cohorts), figsize=(7.1, 0.9 + 0.485 * len(gens)), sharey=True,
                              gridspec_kw=dict(hspace=0.42, wspace=0.08))
     for r, m in enumerate(METRICS):
         for k, ds in enumerate(cohorts):
@@ -343,7 +348,7 @@ def fig_exposure(c: pd.DataFrame, name="exposure") -> None:
             ax.set_axisbelow(True)
             for s in ("top", "right", "left"):
                 ax.spines[s].set_visible(False)
-            ax.axhline(1.75, color=AXIS, lw=0.5)  # DP generators below
+            ax.axhline(n_dp - 0.25, color=AXIS, lw=0.5)  # DP generators below
             ax.set_ylim(-0.6, len(gens) + 0.1)
             if r == 0:
                 ax.set_title(COHORTS[ds], fontweight="bold", color=INK, loc="left")
@@ -384,47 +389,82 @@ def cohort_size_table() -> pd.DataFrame:
     return t.rename(columns={"tpr_at_fpr_0_01": "tpr_at_fpr_0.01"})
 
 
+def gene_count_table() -> pd.DataFrame:
+    """MahalaMIA on TCGA-BRCA when release and candidates are cut to the k most variable genes.
+
+    From scripts/perturb/gene_subset_attack.py.  For MVN, cutting a Gaussian release to
+    k genes gives exactly the release MVN would produce from those k genes.
+    """
+    d = pd.read_csv(ROOT / "results" / "perturb" / "gene_subset_attack_BRCA.csv")
+    d = d[(d.rule == "hvg") & (d.attack == "MahalaMIA") & d.generator.isin(["mvn", "cvae"])]
+    t = (d.groupby(["generator", "k"])
+           .agg(auc=("auc", "mean"), tpr=("tpr_at_fpr_0_01", "mean"), trials=("split", "size"))
+           .reset_index())
+    return t.rename(columns={"tpr": "tpr_at_fpr_0.01", "k": "n"})
+
+
 def fig_cohort_size(name="cohort_size") -> None:
+    """Exposure against donors (genes fixed) and against genes (donors fixed).
+
+    Columns: the number of training donors at 978 genes (TCGA-COMBINED, generators
+    retrained on subsamples), and the number of genes at 871 training donors
+    (TCGA-BRCA).  Rows: AUC and TPR at 1% FPR.
+    """
     import matplotlib.pyplot as plt
 
-    t = cohort_size_table()
-    p = 978
-    fig, axes = plt.subplots(1, 2, figsize=(3.5, 1.75), sharex=True,
-                             gridspec_kw=dict(wspace=0.38))
+    donors = cohort_size_table().assign(axis="donors")
+    genes = gene_count_table().assign(axis="genes")
+    blue = FAMILY_COLOR["MahalaMIA"]
+    fig, axes = plt.subplots(2, 2, figsize=(3.5, 2.55), sharey="row", sharex="col",
+                             gridspec_kw=dict(wspace=0.10, hspace=0.16))
     styles = {"mvn": ("MVN", "o", "-"), "cvae": ("CVAE", "s", (0, (3, 1.5)))}
-    for ax, m in zip(axes, METRICS):
-        ax.axvline(p, color=AXIS, lw=0.8, zorder=1)
-        for g, (label, marker, ls) in styles.items():
-            d = t[t.generator == g].sort_values("n")
-            ax.plot(d.n, d[m], ls=ls, color=FAMILY_COLOR["MahalaMIA"], lw=1.4, zorder=3)
-            ax.plot(d.n, d[m], marker, ms=3.6, mfc=FAMILY_COLOR["MahalaMIA"], mec="white",
-                    mew=0.5, ls="", zorder=4)
-            last = d.iloc[-1]
-            ax.text(last.n * 1.07, last[m], label, va="center", ha="left", fontsize=6,
-                    color=INK2)
-        ax.set_xscale("log")
-        ax.set_xticks([500, 1000, 2000])
-        ax.set_xticklabels(["500", "1,000", "2,000"])
-        ax.minorticks_off()
-        ax.set_xlim(430, 6000)
-        if m == "auc":
-            ax.set_ylim(0.5, 1.01)  # chance at the bottom, as for TPR
-            ax.set_yticks([0.5, 0.75, 1.0])
-            ax.set_ylabel("AUC")
-        else:
-            ax.set_ylim(0, 1.03)
-            ax.set_yticks([0, 0.5, 1.0])
-            ax.set_ylabel("TPR at 1% FPR")
-        ax.grid(axis="y", color=GRID, lw=0.5, zorder=0)
-        ax.set_axisbelow(True)
-        for s in ("top", "right"):
-            ax.spines[s].set_visible(False)
-        ax.tick_params(axis="y", length=2.5, width=0.6)
-        ax.set_xlabel("training donors (log scale)")
-        lo = ax.get_ylim()[0]
-        ax.text(p * 0.96, lo + 0.02 * (ax.get_ylim()[1] - lo), "978 genes",
-                rotation=90, ha="right", va="bottom", fontsize=5.5, color=MUTED)
-    save(fig, name, t)
+    cols = [
+        dict(t=donors, mark=978, mark_label="978 genes", xlim=(430, 4100),
+             ticks=[500, 1000, 2000, 3458], xlabel="training donors (978 genes)",
+             title="More donors"),
+        dict(t=genes, mark=871, mark_label="871 donors", xlim=(4, 1150),
+             ticks=[5, 20, 98, 300, 978], xlabel="genes (871 training donors)",
+             title="Fewer genes"),
+    ]
+    for j, col in enumerate(cols):
+        for i, m in enumerate(METRICS):
+            ax = axes[i, j]
+            ax.axvline(col["mark"], color=AXIS, lw=0.8, zorder=1)
+            for g, (label, marker, ls) in styles.items():
+                d = col["t"][col["t"].generator == g].sort_values("n")
+                ax.plot(d.n, d[m], ls=ls, color=blue, lw=1.3, zorder=3)
+                ax.plot(d.n, d[m], marker, ms=3.2, mfc=blue, mec="white", mew=0.5, ls="", zorder=4)
+            ax.set_xscale("log")
+            ax.set_xticks(col["ticks"])
+            ax.set_xticklabels([f"{v:,}" for v in col["ticks"]])
+            ax.minorticks_off()
+            ax.set_xlim(*col["xlim"])
+            if m == "auc":
+                ax.set_ylim(0.5, 1.02)
+                ax.set_yticks([0.5, 0.75, 1.0])
+                ax.set_title(col["title"], fontsize=7, color=INK, loc="left", pad=3)
+            else:
+                ax.set_ylim(0, 1.04)
+                ax.set_yticks([0, 0.5, 1.0])
+                ax.set_xlabel(col["xlabel"])
+            if j == 0:
+                ax.set_ylabel("AUC" if m == "auc" else "TPR at 1% FPR")
+            ax.grid(axis="y", color=GRID, lw=0.5, zorder=0)
+            ax.set_axisbelow(True)
+            for sp in ("top", "right"):
+                ax.spines[sp].set_visible(False)
+            ax.tick_params(axis="y", length=2.5 if j == 0 else 0, width=0.6)
+            if i == j:   # where the panel is empty beside the line
+                lo, hi = ax.get_ylim()
+                ax.text(col["mark"] * 0.95, lo + 0.04 * (hi - lo), col["mark_label"], rotation=90,
+                        ha="right", va="bottom", fontsize=5.5, color=MUTED)
+    # Direct labels, once per column, where the two curves are apart.
+    lab = dict(fontsize=6, color=INK2)
+    axes[0, 0].text(3300, 0.955, "MVN", ha="right", va="top", **lab)
+    axes[0, 0].text(2500, 0.80, "CVAE", ha="right", va="top", **lab)
+    axes[0, 1].text(125, 0.80, "MVN", ha="right", va="center", **lab)
+    axes[0, 1].text(330, 0.70, "CVAE", ha="left", va="center", **lab)
+    save(fig, name, pd.concat([donors, genes]).rename(columns={"n": "donors_or_genes"}))
     plt.close(fig)
 
 
@@ -550,9 +590,9 @@ def main() -> None:
         return
     if not args.cells:
         style()
-        fig_attack_grid(c)
+        fig_attack_grid(c, gens=MAIN_GENERATORS)
         fig_attack_grid(c, rows=HEAT_ROWS, name="attack_grid_backends", width=5.6)
-        fig_exposure(c)
+        fig_exposure(c, gens=MAIN_GENERATORS)
         fig_cohort_size()
         fig_epsilon()
         return

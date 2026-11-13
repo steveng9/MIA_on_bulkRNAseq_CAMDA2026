@@ -74,7 +74,7 @@
 
 % generator
 \node[box,minimum width=1.75cm,minimum height=1.0cm,fill=grid!40] (gen) at (5.15,8.3)
-  {\textbf{Generator}\\[1pt]{\ann code and settings}\\[-1pt]{\ann are public}};
+  {\textbf{Generator}};
 \draw[flow] (3.75,8.3) -- node[above,ann] {train} (gen.west);
 
 % synthetic release
@@ -83,13 +83,14 @@
 \node[txt,anchor=north,align=center] at (8.0,7.3) {\textbf{Synthetic data} $D_{\mathrm{syn}}$\\{\ann released}};
 
 % adversary
-\draw[draw=ink2,dashed,line width=0.6pt,rounded corners=3pt] (9.75,6.75) rectangle (14.75,9.15);
+\draw[draw=ink2,dashed,line width=0.6pt,rounded corners=3pt] (9.75,6.55) rectangle (14.75,9.15);
 \node[anchor=north west,txt,text width=4.8cm] at (9.83,9.08) {%
   \textbf{The adversary holds}\\[1.5pt]
   \textbullet\ the release $D_{\mathrm{syn}}$\\[0.5pt]
   \textbullet\ each candidate $x$, membership hidden\\[0.5pt]
   \textbullet\ the generator's public description\\[0.5pt]
-  \textbullet\ optionally, known non-members $D_{\mathrm{ref}}$\\[2.5pt]
+  \textbullet\ optionally, an auxiliary set $D_{\mathrm{aux}}$\\[-0.5pt]
+  \phantom{\textbullet}\ of known non-members\\[2.5pt]
   and gives every candidate a score $s(x)$};
 \draw[flow] (9.15,8.3) -- (9.7,8.3);
 
@@ -112,47 +113,50 @@
 
 % ---------------- MahalaMIA ----------------
 \card{0}{mahala}{MahalaMIA}{reads the covariance}{MVN and the CVAE}
-\begin{scope}[shift={(2.85,2.4)},rotate=15]
-  \fill[mahala!10] (0,0) ellipse (2.3 and 0.17);
-  \draw[mahala!60,line width=0.5pt] (0,0) ellipse (2.3 and 0.17);
-  \pgfmathsetseed{5}
-  \foreach \k in {1,...,28}{
-    \pgfmathsetmacro{\u}{2.05*rand}\pgfmathsetmacro{\w}{0.075*rand}
-    \fill[ink2!75] (\u,\w) circle (0.032);}
-  \node[member,minimum size=4.6pt] at (-0.9,0.0) {};
-  \node[nonmember,minimum size=4.6pt] (n) at (0.9,0.85) {};
-  \draw[mahala!80!black,densely dashed,line width=0.6pt] (n) -- (0.9,0.17);
+\begin{scope}[shift={(2.85,2.55)},rotate=15]
+  \fill[mahala!7] (0,0) ellipse (2.4 and 0.2);
+  \draw[mahala!45,line width=0.4pt] (0,0) ellipse (2.4 and 0.2);
+  \draw[mahala!45,line width=0.4pt] (0,0) ellipse (1.2 and 0.1);
+  \pgfmathsetseed{7}
+  \foreach \k in {1,...,90}{
+    \pgfmathsetmacro{\r}{sqrt(-2*ln(0.02+0.98*rnd))}
+    \pgfmathsetmacro{\t}{360*rnd}
+    \pgfmathsetmacro{\u}{0.95*\r*cos(\t)}\pgfmathsetmacro{\w}{0.075*\r*sin(\t)}
+    \fill[ink2!55] (\u,\w) circle (0.022);}
+  \node[member,minimum size=4.2pt] (m) at (-0.8,0.02) {};
+  \node[nonmember,minimum size=4.2pt] (n) at (0.75,0.95) {};
+  \draw[mahala!80!black,densely dashed,line width=0.6pt] (n) -- (0.75,0.03);
 \end{scope}
-\node[ann,anchor=west,align=left] at (3.72,3.53) {non-member: off the\\sheet, so far away};
-\node[ann,anchor=north,align=center] at (1.75,1.8) {member: inside the sheet\\that $D_{\mathrm{syn}}$ spans};
-\draw[ink2,line width=0.4pt] (1.98,2.12) -- (1.88,1.83);
+\node[ann,anchor=east] at ($(n.west)+(-0.03,0)$) {non-member: off the sheet};
+\node[ann,anchor=north west,inner sep=1pt] (ml) at ($(m)+(0.25,-0.38)$) {member: in the sheet};
+\draw[ink2,line width=0.4pt] (m) -- ($(ml.north west)+(0.05,0)$);
+\node[ann,anchor=south east,text=muted] at ($(m)+(-0.15,0.2)$) {synthetic profiles};
 \node[txt,anchor=south west,text width=5.6cm] at (0.1,0.12) {%
-  $s(x)$ is minus the Mahalanobis distance from $x$ to\\
-  $D_{\mathrm{syn}}$. No shadow models; seconds to run.};
+  $s(x)$ is minus the Mahalanobis distance from $x$\\to the synthetic profiles of its class.};
 
 % ---------------- MeLoMIA ----------------
 \card{6.1}{melo}{MeLoMIA}{reads the losses}{CVAE, NoisyDiffusion, TabSyn, TabPFN}
 \begin{scope}[shift={(6.1,0)}]
   \node[ann,anchor=west] at (0.1,3.72) {repeated $K$ times, on known splits of $D$:};
-  \node[box,minimum width=1.3cm] (bs) at (0.75,3.12) {shadow\\generator};
+  \node[box,minimum width=1.2cm] (bs) at (0.74,3.12) {shadow\\generator};
   \node[synth,minimum width=1.3cm] (ss) at (2.95,3.12) {synth-\\shadow $h_k$};
   \draw[flow] (bs) -- node[above,ann] {samples} (ss);
   \node[ann,anchor=west] at (0.1,2.38) {at attack time:};
-  \node[box,minimum width=1.3cm] (rel) at (0.75,1.8) {release\\$D_{\mathrm{syn}}$};
+  \node[box,minimum width=1.2cm] (rel) at (0.74,1.8) {release\\$D_{\mathrm{syn}}$};
   \node[synth,minimum width=1.3cm] (px) at (2.95,1.8) {proxy\\$h^{\ast}$};
   \draw[flow] (rel) -- node[above,ann] {train} (px);
-  \node[box,minimum width=1.25cm,minimum height=2.0cm] (clf) at (5.08,2.46)
-    {classifier\\$\mathcal{M}$\\[3pt]{\ann learns from $h_k$,}\\[-1pt]{\ann scores with $h^{\ast}$}};
+  \node[box,minimum width=1.2cm,minimum height=2.0cm] (clf) at (5.0,2.46)
+    {classifier\\$\mathcal{M}$};
   \draw[flow] (ss.east) -- node[above,ann] {losses} (clf.west|-ss.east);
   \draw[flow] (px.east) -- node[above,ann] {losses} (clf.west|-px.east);
   \node[ann,anchor=north west,text=melo!75!black,align=left] at (0.1,1.33)
-    {\textcolor{melo!65}{\rule{5pt}{5pt}}\ trained on synthetic data only, so the\\\phantom{\rule{5pt}{5pt}}\ classifier sees the same kind of model twice};
+    {\textcolor{melo!65}{\rule{5pt}{5pt}}\ trained on synthetic data only, so $\mathcal{M}$ learns from\\\phantom{\rule{5pt}{5pt}}\ $h_k$ and scores with $h^{\ast}$, the same kind of model};
   \node[txt,anchor=south west,text width=5.6cm] at (0.1,0.12) {%
     Each loss is calibrated against the same profile's\\losses under the $K$ synth-shadows.};
 \end{scope}
 
 % ---------------- MAMA-MIA ----------------
-\card{12.2}{mama}{MAMA-MIA}{reads the measured marginals}{the DP graphical models}
+\card{12.2}{mama}{MAMA-MIA}{reads the measured marginals}{DP graphical models}
 \begin{scope}[shift={(12.2,0)}]
   % one measured table: a gene cut at its quartiles; synthetic vs reference counts
   \draw[dashed,draw=ink2,line width=0.4pt,rounded corners=1.5pt] (2.07,1.4) rectangle (2.83,3.38);
@@ -166,11 +170,14 @@
   \node[member,minimum size=4.6pt] (cx) at (2.45,3.78) {};
   \node[ann,anchor=west] at (2.58,3.78) {candidate $x$ falls in Q3};
   \draw[->,ink2,line width=0.5pt] (cx) -- (2.45,3.42);
-  \node[ann,anchor=west,align=left] at (4.0,3.3) {\textcolor{mama!55}{\rule{5pt}{5pt}}\ synthetic};
-  \node[ann,anchor=west,align=left] at (4.0,3.0) {\textcolor{muted}{\rule{5pt}{5pt}}\ reference};
+  \fill[mama!55] (4.05,3.21) rectangle ++(0.18,0.18);
+  \node[ann,anchor=west] at (4.27,3.3) {release};
+  \fill[grid] (4.05,2.91) rectangle ++(0.18,0.18);
+  \draw[muted,line width=0.4pt] (4.05,2.91) rectangle ++(0.18,0.18);
+  \node[ann,anchor=west] at (4.27,3.0) {candidates};
   \node[ann,anchor=north west,align=left] at (4.0,2.62) {one of the\\$\approx$2,000 tables\\the generator\\measured};
   \node[txt,anchor=south west,text width=5.6cm] at (0.1,0.12) {%
-    $s(x)=\sum_{t}\log\hat p^{\,t}_{\mathrm{syn}}(x_t)\,/\,\hat p^{\,t}_{\mathrm{ref}}(x_t)$ over the\\measured tables $t$: a member added one count to\\its cell of each, underneath the DP noise.};
+    $s(x)=\sum_{t}\log\hat p^{\,t}_{\mathrm{syn}}(x_t)\,/\,\hat p^{\,t}_{\mathrm{cand}}(x_t)$ over the\\measured tables $t$: a member added one count\\to its cell of each.};
 \end{scope}
 
 \end{tikzpicture}
