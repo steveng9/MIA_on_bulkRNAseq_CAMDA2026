@@ -332,7 +332,11 @@ def preprocess() -> None:
                 h = g[g.preprocess == spec]
                 if h.empty:
                     continue
-                t = h.target.iloc[0]
+                # One recipe per arm: where a spec was rebuilt under another recipe
+                # (TabSyn's 64-PC arm, stabilised after its denoiser died on split 3),
+                # the recipe with the most splits stands for it.
+                t = h.groupby("target").split.nunique().idxmax()
+                h = h[h.target == t]
                 def v(m, s=auc):
                     return s.get((t, m), np.nan)
                 print(f"  {PP_LABEL[spec]} & {h.split.nunique()} & {f2(h.utility_ratio.mean())} & "
