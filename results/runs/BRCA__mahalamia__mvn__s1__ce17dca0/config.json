@@ -1,0 +1,39 @@
+{
+  "run_id": "BRCA__mahalamia__mvn__s1__ce17dca0",
+  "timestamp": "2026-11-13T03:18:31+00:00",
+  "dataset": "BRCA",
+  "attack": "mahalamia",
+  "generator": "mvn",
+  "split": 1,
+  "tag": "aux_ridge0.0001_shrink0.5",
+  "experiment": "whitebox_brca",
+  "variant": "mahalamia",
+  "notes": "white box vs black box: MahalaMIA model moments, MeLoMIA on the target model, MAMA-MIA model marginals",
+  "params": {
+    "seed": 42,
+    "device": "cuda",
+    "name": "mahalamia",
+    "use_reference": true,
+    "covariance": "ridge",
+    "ridge_alpha": 0.0001,
+    "n_components": null,
+    "drop_leading": 0,
+    "pca_basis": "synthetic",
+    "standardize": false,
+    "class_conditional": false,
+    "class_shrink": 0.5,
+    "pca_per_class": false,
+    "calibrate": true,
+    "white_box": false,
+    "model_samples": 100000,
+    "attack": "mahalamia"
+  },
+  "target": {
+    "fingerprint": "e2c665ece9c0033e",
+    "params": {
+      "noise_level": 0.7
+    },
+    "seed": 1080,
+    "source": "trained"
+  }
+}
