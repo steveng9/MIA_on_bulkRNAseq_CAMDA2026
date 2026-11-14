@@ -34,7 +34,7 @@ ROWS = [
      [("model moments", [("mahalamia", MAHALA + "_whitebox100000")])]),
     ("MahalaMIA", "TabSyn", TABSYN, [("mahalamia", MAHALA)],
      [("model moments", [("mahalamia", MAHALA + "_whitebox100000")])]),
-    ("MahalaMIA", "DP-PGM (corrected)", PGM, [("mahalamia", MAHALA)],
+    ("MahalaMIA", "DP-PGM", PGM, [("mahalamia", MAHALA)],
      [("model moments", [("mahalamia", MAHALA + "_whitebox100000")])]),
     ("MeLoMIA-CVAE", "CVAE", "cvae",
      [("melomia_cvae", "k30_n50_prc"), ("melomia_cvae", "k20_n50_prc")],
@@ -44,8 +44,8 @@ ROWS = [
      [("melomia_tabsyn", "k30_n200_prc"), ("melomia_tabsyn", "k20_n200_prc")],
      [("target model", [("melomia_tabsyn", "k30_n200_whitebox_prc"),
                         ("melomia_tabsyn", "k20_n200_whitebox_prc")])]),
-    ("MAMA-MIA", "DP-PGM (corrected)", PGM, [("mamamia_v2", "cl-public_ed-auto_cc")],
-     [("true tables and bins", [("mamamia_v2", "cl-true_ed-known_cc")]),
+    ("MAMA-MIA", "DP-PGM", PGM, [("mamamia_v2", "cl-public_ed-auto_cc")],
+     [("own bin edges", [("mamamia_v2", "cl-true_ed-known_cc")]),
       ("model marginals", [("mamamia_v2", "cl-true_ed-known_cc_sy-model")])]),
 ]
 
