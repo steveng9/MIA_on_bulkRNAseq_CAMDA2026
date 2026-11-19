@@ -1,4 +1,4 @@
-% Figure 1 (draft): the membership game and the three mechanism-aware attacks.
+% Figure 2: the three mechanism-aware attacks (the membership game is Figure 1, hero.tex).
 % Standalone; build with  tectonic -X compile overview.tex  (gives overview.pdf,
 % 18 cm wide, included at \textwidth, so the type sizes below are final:
 % 8 pt titles, 7 pt text, 6 pt annotations).
@@ -59,57 +59,9 @@
 \begin{document}
 \begin{tikzpicture}
 
-% ============================ (a) the membership game ============================
-\node[anchor=west,font=\ttl,text=ink] at (-0.05,9.45) {a\enspace The membership game};
-
-% real cohort: rows are donors, columns genes; 8 members, then 2 held-out donors
-\exprmatrix{1.6}{9.05}{10}{14}{11}{8}
-\foreach \i in {1,...,8} \node[member] at (1.42,{9.05-0.15*\i+0.0675}) {};
-\foreach \i in {9,10} \node[nonmember] at (1.42,{9.05-0.15*\i+0.0675-0.1}) {};
-\draw[decorate,decoration={brace,amplitude=2.5pt,mirror},draw=ink2,line width=0.5pt]
-  (1.25,9.03) -- node[left=2pt,ann,align=right] {members\\(training set)} (1.25,7.88);
-\draw[decorate,decoration={brace,amplitude=2pt,mirror},draw=ink2,line width=0.5pt]
-  (1.25,7.68) -- node[left=2pt,ann,align=right] {non-members} (1.25,7.42);
-\node[txt,anchor=north,align=center] at (2.65,7.3) {\textbf{Real cohort} $D$\\{\ann donors $\times$ 978 genes}};
-
-% generator
-\node[box,minimum width=1.75cm,minimum height=1.0cm,fill=grid!40] (gen) at (5.15,8.3)
-  {\textbf{Generator}};
-\draw[flow] (3.75,8.3) -- node[above,ann] {train} (gen.west);
-
-% synthetic release
-\exprmatrix{6.95}{9.05}{10}{14}{29}{10}
-\draw[flow] (gen.east) -- node[above,ann] {sample} (6.85,8.3);
-\node[txt,anchor=north,align=center] at (8.0,7.3) {\textbf{Synthetic data} $D_{\mathrm{syn}}$\\{\ann released}};
-
-% adversary
-\draw[draw=ink2,dashed,line width=0.6pt,rounded corners=3pt] (9.75,6.55) rectangle (14.75,9.15);
-\node[anchor=north west,txt,text width=4.8cm] at (9.83,9.08) {%
-  \textbf{The adversary holds}\\[1.5pt]
-  \textbullet\ the release $D_{\mathrm{syn}}$\\[0.5pt]
-  \textbullet\ each candidate $x$, membership hidden\\[0.5pt]
-  \textbullet\ the generator's public description\\[0.5pt]
-  \textbullet\ optionally, an auxiliary set $D_{\mathrm{aux}}$\\[-0.5pt]
-  \phantom{\textbullet}\ of known non-members\\[2.5pt]
-  and gives every candidate a score $s(x)$};
-\draw[flow] (9.15,8.3) -- (9.7,8.3);
-
-% outcome: score distributions of members and non-members
-\begin{scope}[shift={(15.3,7.3)}]
-  \fill[ink!13] plot[domain=0:2.65,samples=50,smooth] (\x,{1.05*exp(-((\x-1.7)^2)/0.17)}) -- (2.65,0) -- (0,0) -- cycle;
-  \draw[ink,line width=0.7pt] plot[domain=0:2.65,samples=50,smooth] (\x,{1.05*exp(-((\x-1.7)^2)/0.17)});
-  \draw[ink,line width=0.7pt,densely dashed] plot[domain=0:2.65,samples=50,smooth] (\x,{1.05*exp(-((\x-0.95)^2)/0.17)});
-  \draw[hair,line width=0.5pt] (0,0) -- (2.65,0);
-  \node[ann,anchor=south] at (0.62,1.1) {non-members};
-  \node[ann,anchor=south] at (2.05,1.1) {members};
-  \node[ann,anchor=north] at (1.32,-0.02) {score $s(x)$ \textrightarrow};
-  \node[txt,anchor=north,align=center] at (1.32,-0.4) {measured by AUC\\and TPR at 1\% FPR};
-\end{scope}
-\draw[flow] (14.8,8.3) -- (15.25,8.3);
-
 % ======================= (b) where each attack reads ===========================
 \node[anchor=west,font=\ttl,text=ink] at (-0.05,5.45)
-  {b\enspace Three attacks, each reading the place where a generator family keeps its training donors};
+  {Three attacks, each reading the place where a generator family keeps its training donors};
 
 % ---------------- MahalaMIA ----------------
 \card{0}{mahala}{MahalaMIA}{reads the covariance}{MVN and the CVAE}

@@ -1,0 +1,256 @@
+\documentclass[tikz,border=2pt]{standalone}
+\usepackage{fontspec}
+\setmainfont{texgyreheros}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+\usetikzlibrary{arrows.meta,calc,decorations.pathreplacing}
+\definecolor{ink}{HTML}{0B0B0B}
+\definecolor{ink2}{HTML}{52514E}
+\definecolor{muted}{HTML}{898781}
+\definecolor{hair}{HTML}{C3C2B7}
+\definecolor{grid}{HTML}{E1E0D9}
+\definecolor{expr}{HTML}{3D4A5C}
+\definecolor{syn}{HTML}{1E9A6A}
+\definecolor{risk}{HTML}{D23A2E}
+\newcommand{\ttl}{\fontsize{8}{9.6}\selectfont\bfseries}
+\newcommand{\txt}{\fontsize{7}{8.4}\selectfont}
+\newcommand{\ann}{\fontsize{6}{7.2}\selectfont}
+\tikzset{
+  >={Stealth[length=4pt,width=3.4pt]},
+  flow/.style={->,draw=ink2,line width=0.7pt},
+  ann/.style={font=\ann,text=ink2,align=center,inner sep=1.5pt},
+  txt/.style={font=\txt,text=ink,align=center,inner sep=1.5pt},
+  pname/.style={font=\ann,text=muted,anchor=east,inner sep=1pt},
+  box/.style={draw=hair,rounded corners=2pt,line width=0.6pt,fill=white,
+              font=\txt,text=ink,align=center,inner sep=2pt},
+  nn/.style={circle,draw=ink2,fill=white,line width=0.45pt,inner sep=0pt,minimum size=4.2pt},
+}
+\begin{document}
+\begin{tikzpicture}
+
+\fill[expr!37!white] (1.000,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!8!white] (1.170,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!52!white] (1.340,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!8!white] (1.510,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!8!white] (1.680,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!35!white] (1.850,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!61!white] (2.020,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!56!white] (2.190,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!66!white] (2.360,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!32!white] (2.530,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!46!white] (2.700,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!24!white] (2.870,-0.170) rectangle ++(0.152,0.152);
+\fill[expr!36!white] (1.000,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!20!white] (1.170,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!20!white] (1.340,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!78!white] (1.510,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!55!white] (1.680,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!66!white] (1.850,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!71!white] (2.020,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!21!white] (2.190,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!22!white] (2.360,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!56!white] (2.530,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!52!white] (2.700,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!60!white] (2.870,-0.340) rectangle ++(0.152,0.152);
+\fill[expr!57!white] (1.000,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!29!white] (1.170,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!43!white] (1.340,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!68!white] (1.510,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!47!white] (1.680,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!17!white] (1.850,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!49!white] (2.020,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!17!white] (2.190,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!74!white] (2.360,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!52!white] (2.530,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!47!white] (2.700,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!39!white] (2.870,-0.510) rectangle ++(0.152,0.152);
+\fill[expr!30!white] (1.000,-0.680) rectangle ++(0.152,0.152);
+\fill[expr!27!white] (1.170,-0.680) rectangle ++(0.152,0.152);
+\fill[expr!53!white] (1.340,-0.680) rectangle ++(0.152,0.152);
+\fill[expr!23!white] (1.510,-0.680) rectangle ++(0.152,0.152);
+\fill[expr!36!white] (1.680,-0.680) rectangle ++(0.152,0.152);
+\fill[expr!18!white] (1.850,-0.680) rectangle ++(0.152,0.152);
+\fill[expr!69!white] (2.020,-0.680) rectangle ++(0.152,0.152);
+\fill[expr!33!white] (2.190,-0.680) rectangle ++(0.152,0.152);
+\fill[expr!71!white] (2.360,-0.680) rectangle ++(0.152,0.152);
+\fill[expr!24!white] (2.530,-0.680) rectangle ++(0.152,0.152);
+\fill[expr!65!white] (2.700,-0.680) rectangle ++(0.152,0.152);
+\fill[expr!23!white] (2.870,-0.680) rectangle ++(0.152,0.152);
+\node[pname] at (0.96,-0.094) {Ana};
+\node[pname] at (0.96,-0.264) {Ben};
+\node[pname] at (0.96,-0.434) {Cal};
+\node[pname] at (0.96,-0.604) {Dee};
+\node[txt,anchor=north] at (2.02,-0.74) {\textbf{Training data}\\{\ann patients $\times$ genes}};
+\node[box,minimum width=1.55cm,minimum height=1.0cm] (gen) at (4.79,-0.34) {};
+\node[font=\txt,text=ink,anchor=south] at (4.79,0.18) {\textbf{Generator}};
+\draw[hair!80!ink2,line width=0.45pt] (4.310,-0.120) -- (4.610,0.020);
+\draw[hair!80!ink2,line width=0.45pt] (4.310,-0.120) -- (4.410,-0.540);
+\draw[hair!80!ink2,line width=0.45pt] (4.610,0.020) -- (4.910,-0.220);
+\draw[hair!80!ink2,line width=0.45pt] (4.910,-0.220) -- (5.240,-0.040);
+\draw[hair!80!ink2,line width=0.45pt] (4.910,-0.220) -- (4.770,-0.640);
+\draw[hair!80!ink2,line width=0.45pt] (4.410,-0.540) -- (4.770,-0.640);
+\draw[hair!80!ink2,line width=0.45pt] (4.770,-0.640) -- (5.150,-0.500);
+\draw[hair!80!ink2,line width=0.45pt] (5.150,-0.500) -- (5.240,-0.040);
+\draw[hair!80!ink2,line width=0.45pt] (5.150,-0.500) -- (5.290,-0.720);
+\draw[hair!80!ink2,line width=0.45pt] (4.610,0.020) -- (5.240,-0.040);
+\node[nn] at (4.310,-0.120) {};
+\node[nn] at (4.610,0.020) {};
+\node[nn] at (4.910,-0.220) {};
+\node[nn] at (5.240,-0.040) {};
+\node[nn] at (4.410,-0.540) {};
+\node[nn] at (4.770,-0.640) {};
+\node[nn] at (5.150,-0.500) {};
+\node[nn] at (5.290,-0.720) {};
+\draw[flow] (3.12,-0.34) -- node[above,ann] {train} (gen.west);
+\fill[syn!16!white] (6.540,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!19!white] (6.710,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!24!white] (6.880,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!41!white] (7.050,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!10!white] (7.220,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!41!white] (7.390,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!44!white] (7.560,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!51!white] (7.730,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!47!white] (7.900,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!8!white] (8.070,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!44!white] (8.240,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!24!white] (8.410,-0.000) rectangle ++(0.152,0.152);
+\fill[syn!26!white] (6.540,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!19!white] (6.710,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!40!white] (6.880,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!54!white] (7.050,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!75!white] (7.220,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!59!white] (7.390,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!52!white] (7.560,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!8!white] (7.730,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!16!white] (7.900,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!34!white] (8.070,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!42!white] (8.240,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!64!white] (8.410,-0.170) rectangle ++(0.152,0.152);
+\fill[syn!73!white] (6.540,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!8!white] (6.710,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!39!white] (6.880,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!63!white] (7.050,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!49!white] (7.220,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!12!white] (7.390,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!35!white] (7.560,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!8!white] (7.730,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!60!white] (7.900,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!78!white] (8.070,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!47!white] (8.240,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!19!white] (8.410,-0.340) rectangle ++(0.152,0.152);
+\fill[syn!36!white] (6.540,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!8!white] (6.710,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!22!white] (6.880,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!21!white] (7.050,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!8!white] (7.220,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!42!white] (7.390,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!74!white] (7.560,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!56!white] (7.730,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!70!white] (7.900,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!37!white] (8.070,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!45!white] (8.240,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!39!white] (8.410,-0.510) rectangle ++(0.152,0.152);
+\fill[syn!30!white] (6.540,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!8!white] (6.710,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!28!white] (6.880,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!67!white] (7.050,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!60!white] (7.220,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!55!white] (7.390,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!78!white] (7.560,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!8!white] (7.730,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!15!white] (7.900,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!54!white] (8.070,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!62!white] (8.240,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!68!white] (8.410,-0.680) rectangle ++(0.152,0.152);
+\fill[syn!78!white] (6.540,-0.850) rectangle ++(0.152,0.152);
+\fill[syn!24!white] (6.710,-0.850) rectangle ++(0.152,0.152);
+\fill[syn!49!white] (6.880,-0.850) rectangle ++(0.152,0.152);
+\fill[syn!75!white] (7.050,-0.850) rectangle ++(0.152,0.152);
+\fill[syn!48!white] (7.220,-0.850) rectangle ++(0.152,0.152);
+\fill[syn!21!white] (7.390,-0.850) rectangle ++(0.152,0.152);
+\fill[syn!59!white] (7.560,-0.850) rectangle ++(0.152,0.152);
+\fill[syn!8!white] (7.730,-0.850) rectangle ++(0.152,0.152);
+\fill[syn!70!white] (7.900,-0.850) rectangle ++(0.152,0.152);
+\fill[syn!78!white] (8.070,-0.850) rectangle ++(0.152,0.152);
+\fill[syn!73!white] (8.240,-0.850) rectangle ++(0.152,0.152);
+\fill[syn!42!white] (8.410,-0.850) rectangle ++(0.152,0.152);
+\draw[flow] (gen.east) -- node[above,ann] {sample} (6.46,-0.34);
+\node[txt,anchor=north] at (7.56,-0.91) {\textbf{Synthetic data} {\ann (released)}};
+\fill[expr!57!white] (1.000,-2.320) rectangle ++(0.152,0.152);
+\fill[expr!29!white] (1.170,-2.320) rectangle ++(0.152,0.152);
+\fill[expr!43!white] (1.340,-2.320) rectangle ++(0.152,0.152);
+\fill[expr!68!white] (1.510,-2.320) rectangle ++(0.152,0.152);
+\fill[expr!47!white] (1.680,-2.320) rectangle ++(0.152,0.152);
+\fill[expr!17!white] (1.850,-2.320) rectangle ++(0.152,0.152);
+\fill[expr!49!white] (2.020,-2.320) rectangle ++(0.152,0.152);
+\fill[expr!8!white] (1.000,-2.490) rectangle ++(0.152,0.152);
+\fill[expr!30!white] (1.170,-2.490) rectangle ++(0.152,0.152);
+\fill[expr!8!white] (1.340,-2.490) rectangle ++(0.152,0.152);
+\fill[expr!57!white] (1.510,-2.490) rectangle ++(0.152,0.152);
+\fill[expr!63!white] (1.680,-2.490) rectangle ++(0.152,0.152);
+\fill[expr!71!white] (1.850,-2.490) rectangle ++(0.152,0.152);
+\fill[expr!57!white] (2.020,-2.490) rectangle ++(0.152,0.152);
+\fill[expr!37!white] (1.000,-2.660) rectangle ++(0.152,0.152);
+\fill[expr!8!white] (1.170,-2.660) rectangle ++(0.152,0.152);
+\fill[expr!52!white] (1.340,-2.660) rectangle ++(0.152,0.152);
+\fill[expr!8!white] (1.510,-2.660) rectangle ++(0.152,0.152);
+\fill[expr!8!white] (1.680,-2.660) rectangle ++(0.152,0.152);
+\fill[expr!35!white] (1.850,-2.660) rectangle ++(0.152,0.152);
+\fill[expr!61!white] (2.020,-2.660) rectangle ++(0.152,0.152);
+\fill[expr!76!white] (1.000,-2.830) rectangle ++(0.152,0.152);
+\fill[expr!16!white] (1.170,-2.830) rectangle ++(0.152,0.152);
+\fill[expr!52!white] (1.340,-2.830) rectangle ++(0.152,0.152);
+\fill[expr!43!white] (1.510,-2.830) rectangle ++(0.152,0.152);
+\fill[expr!42!white] (1.680,-2.830) rectangle ++(0.152,0.152);
+\fill[expr!25!white] (1.850,-2.830) rectangle ++(0.152,0.152);
+\fill[expr!53!white] (2.020,-2.830) rectangle ++(0.152,0.152);
+\fill[expr!30!white] (1.000,-3.000) rectangle ++(0.152,0.152);
+\fill[expr!27!white] (1.170,-3.000) rectangle ++(0.152,0.152);
+\fill[expr!53!white] (1.340,-3.000) rectangle ++(0.152,0.152);
+\fill[expr!23!white] (1.510,-3.000) rectangle ++(0.152,0.152);
+\fill[expr!36!white] (1.680,-3.000) rectangle ++(0.152,0.152);
+\fill[expr!18!white] (1.850,-3.000) rectangle ++(0.152,0.152);
+\fill[expr!69!white] (2.020,-3.000) rectangle ++(0.152,0.152);
+\fill[expr!21!white] (1.000,-3.170) rectangle ++(0.152,0.152);
+\fill[expr!9!white] (1.170,-3.170) rectangle ++(0.152,0.152);
+\fill[expr!49!white] (1.340,-3.170) rectangle ++(0.152,0.152);
+\fill[expr!22!white] (1.510,-3.170) rectangle ++(0.152,0.152);
+\fill[expr!12!white] (1.680,-3.170) rectangle ++(0.152,0.152);
+\fill[expr!77!white] (1.850,-3.170) rectangle ++(0.152,0.152);
+\fill[expr!78!white] (2.020,-3.170) rectangle ++(0.152,0.152);
+\fill[expr!20!white] (1.000,-3.340) rectangle ++(0.152,0.152);
+\fill[expr!27!white] (1.170,-3.340) rectangle ++(0.152,0.152);
+\fill[expr!35!white] (1.340,-3.340) rectangle ++(0.152,0.152);
+\fill[expr!75!white] (1.510,-3.340) rectangle ++(0.152,0.152);
+\fill[expr!66!white] (1.680,-3.340) rectangle ++(0.152,0.152);
+\fill[expr!78!white] (1.850,-3.340) rectangle ++(0.152,0.152);
+\fill[expr!70!white] (2.020,-3.340) rectangle ++(0.152,0.152);
+\node[pname] at (0.96,-2.244) {Cal};
+\node[pname] at (0.96,-2.414) {Ian};
+\node[pname] at (0.96,-2.584) {Ana};
+\node[pname] at (0.96,-2.754) {Joy};
+\node[pname] at (0.96,-2.924) {Dee};
+\node[pname] at (0.96,-3.094) {Max};
+\node[pname] at (0.96,-3.264) {Liv};
+\node[txt,anchor=north] at (1.60,-3.40) {\textbf{Candidates}};
+\draw[draw=ink2,dashed,line width=0.5pt,rounded corners=3pt] (0.40,-1.53) rectangle (8.38,-3.84);
+\node[ann,anchor=north west,text=ink2] at (0.42,-1.55) {\textbf{The adversary}};
+\node[box,minimum width=1.55cm,minimum height=0.8cm,fill=risk!6,draw=risk!45] (atk) at (4.79,-2.75) {\textbf{Attack}};
+\draw[flow] (2.27,-2.75) -- (atk.west);
+\draw[flow] (6.46,-0.68) to[out=-150,in=60] (atk.north east);
+\node[pname] at (7.03,-2.244) {Cal};
+\fill[risk!84!white] (7.09,-2.320) rectangle ++(0.334,0.152);
+\node[pname] at (7.03,-2.414) {Ian};
+\fill[risk!19!white] (7.09,-2.490) rectangle ++(0.334,0.152);
+\node[pname] at (7.03,-2.584) {Ana};
+\fill[risk!74!white] (7.09,-2.660) rectangle ++(0.334,0.152);
+\node[pname] at (7.03,-2.754) {Joy};
+\fill[risk!52!white] (7.09,-2.830) rectangle ++(0.334,0.152);
+\node[pname] at (7.03,-2.924) {Dee};
+\fill[risk!37!white] (7.09,-3.000) rectangle ++(0.334,0.152);
+\node[pname] at (7.03,-3.094) {Max};
+\fill[risk!14!white] (7.09,-3.170) rectangle ++(0.334,0.152);
+\node[pname] at (7.03,-3.264) {Liv};
+\fill[risk!26!white] (7.09,-3.340) rectangle ++(0.334,0.152);
+\draw[flow] (atk.east) -- (6.54,-2.75);
+\node[ann,anchor=south,align=center] at (7.26,-2.15) {membership\\confidence};
+\end{tikzpicture}
+\end{document}
