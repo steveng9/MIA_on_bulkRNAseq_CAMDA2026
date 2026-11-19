@@ -1,0 +1,41 @@
+# MeLoMIA-TabPFN (Daniil Filienko's design; mia/attacks/melomia_tabpfn.py):
+# TabPFN's conditional densities with the release as the prompt, against the
+# cross-fitted candidate pool, typicality-corrected, then LiRA-calibrated on 30
+# truncated TabPFN shadow releases.  `melomia_tabpfn` is the paper setting;
+# the other rows are the steps of the ladder that led to it.  Shadows and pool
+# terms are per cohort, so one stack serves all five splits and every generator.
+# Run order and GPU: scripts/queue_melomia_tabpfn.sh.
+name: melomia_tabpfn_brca
+dataset: BRCA
+notes: "MeLoMIA-TabPFN: TabPFN conditional-density probe, typicality residual, LiRA on TabPFN shadows"
+device: cuda
+
+generators:
+  - tabpfn                         # the diagonal; everything below is off-diagonal
+  - mvn
+  - cvae
+  - nd
+  - "tabsyn@class_freq=train,diff_schedule=steps,latent_scale=std,preprocess=clip:0.001:0.999+standard"
+  - pgg
+  - "pgm@binning=dp_quantile,edge_estimator=threshold,n_bins=16"
+splits: [1, 2, 3, 4, 5]
+
+attacks:
+  melomia_tabpfn:                  # paper setting: first 200 genes, typicality, 30 shadows
+    class: melomia_tabpfn
+    params: {n_workers: 2}
+  melomia_tabpfn_noshadow:         # step 1 on the same 200 genes, no calibration
+    class: melomia_tabpfn
+    params: {n_shadows: 0}
+  melomia_tabpfn_g200_raw:         # ... and without the typicality correction
+    class: melomia_tabpfn
+    params: {n_shadows: 0, typicality: false}
+  melomia_tabpfn_allgenes:         # all genes, typicality, no calibration
+    class: melomia_tabpfn
+    params: {n_genes: null, n_shadows: 0, n_workers: 2}
+  melomia_tabpfn_stride10:         # every 10th gene, typicality
+    class: melomia_tabpfn
+    params: {n_genes: null, gene_stride: 10, n_shadows: 0}
+  melomia_tabpfn_stride10_raw:     # Daniil's first version: every 10th gene, no correction
+    class: melomia_tabpfn
+    params: {n_genes: null, gene_stride: 10, typicality: false, n_shadows: 0}

@@ -7,6 +7,8 @@
     melomia_cvae -- loss-trajectory attack instrumented with a CVAE
     melomia_tabsyn -- the same, instrumented with a TabSyn latent diffusion model
     melomia_e2e_cvae -- synth-shadows, proxy and classifier trained as one module
+    melomia_tabpfn -- TabPFN's conditional densities as the probe, TabPFN releases
+                    as LiRA shadows (Daniil Filienko's design)
 
 Every attack can be pointed at every generator: the two MeLoMIA variants train
 their proxy on whatever synthetic data they are given, and the two statistical
@@ -23,8 +25,9 @@ from .mamamia import MAMAMIA  # noqa: F401
 from .mamamia_v2 import MAMAMIAv2  # noqa: F401
 from .melomia import MeLoMIACVAE, MeLoMIAND, MeLoMIATabSyn  # noqa: F401
 from .melomia_e2e.attack import MeLoMIAE2E  # noqa: F401
+from .melomia_tabpfn import MeLoMIATabPFN  # noqa: F401
 from .redsigma import RedSigma  # noqa: F401
 
 __all__ = ["Attack", "build", "register", "REGISTRY",
            "GenericBaseline", "MahalaMIA", "MAMAMIA", "MAMAMIAv2", "MeLoMIAND", "MeLoMIACVAE",
-           "MeLoMIATabSyn", "MeLoMIAE2E", "RedSigma"]
+           "MeLoMIATabSyn", "MeLoMIAE2E", "MeLoMIATabPFN", "RedSigma"]
