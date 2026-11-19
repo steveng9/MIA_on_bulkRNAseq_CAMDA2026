@@ -1,0 +1,8 @@
+# The first 200 genes of TCGA-BRCA in file order -- the order in which the
+# TabPFN generator fills columns.  A TabPFN release cut after gene 200 is then
+# exactly what generating these 200 genes would give, so the TabPFN shadow
+# releases of scripts/tabpfn_mia/shadows.py (first 200 genes) can serve as
+# MeLoMIA base shadows on this cohort.  Same samples, labels and member /
+# non-member splits as BRCA.  Paths are relative to the repository root.
+parent: BRCA
+prepare: genes:configs/datasets/BRCA_G200_genes.txt

@@ -28,3 +28,7 @@ results/*.tmp.*
 # experiments (scripts/perturb/); the CSVs beside them are tracked.
 results/perturb/donor_linked_scores*/
 results/perturb/*_parts*/
+
+# TabPFN attack matrices and shadow releases (large; regenerable with scripts/tabpfn_mia)
+results/tabpfn_mia/**/*.npz
+results/tabpfn_mia/**/*.lock
