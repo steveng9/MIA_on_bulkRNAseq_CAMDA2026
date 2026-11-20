@@ -148,6 +148,31 @@ def run_shadow(unit: dict, cache: dict) -> None:
           f"{time.time() - t0:.0f}s", flush=True)
 
 
+def _is_oom(e: BaseException) -> bool:
+    return "out of memory" in str(e).lower()
+
+
+def _run_unit(unit: dict, cache: dict, retries: int = 30, wait: int = 120) -> None:
+    """Run one unit, retrying on CUDA out-of-memory: the GPU is shared, so an
+    OOM usually means another process holds memory for a while."""
+    for attempt in range(retries + 1):
+        try:
+            if unit["kind"] == "terms":
+                return run_terms(unit, cache)
+            if unit["kind"] == "shadow":
+                return run_shadow(unit, cache)
+            raise ValueError(unit["kind"])
+        except Exception as e:  # noqa: BLE001 -- re-raised unless OOM
+            if not _is_oom(e) or attempt == retries:
+                raise
+            import torch
+            cache.pop("reg", None)
+            torch.cuda.empty_cache()
+            print(f"[pfn] OOM on {Path(unit['out']).name} (attempt {attempt + 1}); "
+                  f"retrying in {wait}s", flush=True)
+            time.sleep(wait)
+
+
 def main(job_file: str) -> None:
     job = json.loads(Path(job_file).read_text())
     cache: dict = {}
@@ -160,12 +185,7 @@ def main(job_file: str) -> None:
         if not _claim(out):
             continue
         try:
-            if unit["kind"] == "terms":
-                run_terms(unit, cache)
-            elif unit["kind"] == "shadow":
-                run_shadow(unit, cache)
-            else:
-                raise ValueError(unit["kind"])
+            _run_unit(unit, cache)
         finally:
             _release(out)
         # Keep the data cache from growing across releases.

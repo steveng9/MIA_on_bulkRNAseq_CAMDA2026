@@ -281,6 +281,7 @@ class MeLoMIATabPFN(Attack):
         paths.ensure(jobs)
         python = paths.ENV_PYTHON["sota"]
         waited = 0
+        failures = 0
         while True:
             todo = [u for u in units if not Path(u["out"]).exists()]
             if not todo:
@@ -300,7 +301,13 @@ class MeLoMIATabPFN(Attack):
                 codes = [p.wait() for p in procs]
                 job.unlink()
                 if any(codes):
-                    raise RuntimeError(f"pfn_density worker failed ({codes}) on {what}")
+                    # Finished units are saved, so a respawn resumes the rest.
+                    failures += 1
+                    if failures > 3:
+                        raise RuntimeError(f"pfn_density worker failed ({codes}) on {what}")
+                    print(f"[melomia_tabpfn] {what}: worker failed ({codes}); "
+                          f"respawning ({failures}/3)", flush=True)
+                    time.sleep(60)
                 continue
             if waited % 600 == 0 and self.verbose:
                 print(f"[melomia_tabpfn] {what}: waiting on {len(todo)} units claimed "
