@@ -65,12 +65,14 @@ def bio(lfc=0.0, cutoff=0.5) -> pd.DataFrame:
 
 
 def exposure() -> pd.DataFrame:
-    """Strongest of our attacks per cohort and generator (AUC and TPR chosen separately)."""
-    e = pd.read_csv(ROOT / "paper" / "Fig" / "data" / "exposure.csv")
-    e = e[e.group == "ours"]
-    back = {v: k for k, v in GEN.items()}
-    e = e.assign(generator=e.generator.map(back))
-    return e.pivot_table(index=["dataset", "generator"], columns="metric", values="value")
+    """Strongest of our attacks per cohort and generator (AUC and TPR chosen separately).
+
+    Computed from the runs, as the exposure figure is, but for every generator:
+    the figure's data file holds only the main-text generators."""
+    import paper_figures as PF
+    c = PF.cells(PF.load_runs())
+    c = c[c.group == "ours"]
+    return c.groupby(["dataset", "generator"])[PF.METRICS].max()
 
 
 def quality(cohorts=("BRCA",), extra=("COMBINED",)) -> None:
@@ -80,8 +82,8 @@ def quality(cohorts=("BRCA",), extra=("COMBINED",)) -> None:
               "co-expression recall / precision, attack AUC, TPR at 1% FPR"
               + "".join(f"; {COHORT[x]} utility, attack AUC" for x in extra))
         for g, name in GEN.items():
-            if (ds, g) not in fid.index:
-                continue
+            if (ds, g) not in fid.index or (ds, g) not in ex.index:
+                continue        # not built, or not yet in the paper (PF.NOT_IN_PAPER)
             if g == "pgg":
                 print("  \\midrule")
             r, q, x = fid.loc[(ds, g)], b.loc[(ds, g)], ex.loc[(ds, g)]

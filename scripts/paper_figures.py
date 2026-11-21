@@ -13,7 +13,7 @@ diagram) is TikZ: paper/Fig/overview.tex.
                      MeLoMIA is one row: the backend built for the generator's
                      family (the diffusion backend where there is none).
   attack_grid_backends
-                     the same with MeLoMIA's three backends as separate rows
+                     the same with MeLoMIA's four backends as separate rows
                      (appendix): how each backend does off its own family.
   exposure           per generator and cohort, the strongest of our attacks
                      against the strongest generic attack and RedSigma, as AUC
@@ -71,13 +71,18 @@ OURS = {
     "MeLoMIA-CVAE": [("melomia_cvae", "k30_n50_prc"), ("melomia_cvae", "k20_n50_prc")],
     "MeLoMIA-ND": [("melomia_nd", "k30_n600_prc"), ("melomia_nd", "k20_n600_prc")],
     "MeLoMIA-TabSyn": [("melomia_tabsyn", "k30_n200_prc"), ("melomia_tabsyn", "k20_n200_prc")],
+    # TabPFN shadows (Daniil Filienko's design): TabPFN's conditional densities on
+    # the first 200 genes, typicality residual, LiRA on 30 TabPFN shadow releases.
+    "MeLoMIA-TabPFN": [("melomia_tabpfn", "g200_typ_k30_e2")],
     "MAMA-MIA": [("mamamia_v2", "cl-public_ed-auto_cc")],
 }
 FAMILY = {"MahalaMIA": "MahalaMIA", "MeLoMIA": "MeLoMIA", "MeLoMIA-CVAE": "MeLoMIA",
-          "MeLoMIA-ND": "MeLoMIA", "MeLoMIA-TabSyn": "MeLoMIA", "MAMA-MIA": "MAMA-MIA"}
+          "MeLoMIA-ND": "MeLoMIA", "MeLoMIA-TabSyn": "MeLoMIA", "MeLoMIA-TabPFN": "MeLoMIA",
+          "MAMA-MIA": "MAMA-MIA"}
 # In the main text MeLoMIA is one attack: the backend built for the generator's
 # family, and the diffusion backend for generators that have none.
-MELOMIA_BACKEND = {"cvae": "MeLoMIA-CVAE", "nd": "MeLoMIA-ND", TABSYN: "MeLoMIA-TabSyn"}
+MELOMIA_BACKEND = {"cvae": "MeLoMIA-CVAE", "nd": "MeLoMIA-ND", TABSYN: "MeLoMIA-TabSyn",
+                   "tabpfn": "MeLoMIA-TabPFN"}
 MELOMIA_DEFAULT = "MeLoMIA-ND"
 MAIN_OURS = ["MahalaMIA", "MeLoMIA", "MAMA-MIA"]
 REDSIGMA = [("redsigma", "auto")]  # rule chosen by generator, as submitted
@@ -89,9 +94,16 @@ GENERIC_LABELS = {"mc": "MC", "gan_leaks": "GAN-leaks", "conf_lr": "Conf-LR",
 METRICS = ["auc", "tpr_at_fpr_0.01"]
 
 
+# Generators run on a cohort that the paper does not yet report there.  GTEx
+# TabSyn and TabPFN exist (2026-11) but have no MeLoMIA runs; the draft says they
+# are TCGA-only.  Empty this set when the paper takes them in.
+NOT_IN_PAPER = {("GTEX", TABSYN), ("GTEX", "tabpfn")}
+
+
 def load_runs() -> pd.DataFrame:
     df = R.load_index()
     df = df[(df.status == "ok") & df.generator.isin(GENERATORS) & df.dataset.isin(COHORTS)]
+    df = df[[(d, g) not in NOT_IN_PAPER for d, g in zip(df.dataset, df.generator)]]
     for m in METRICS:
         df[m] = pd.to_numeric(df[m], errors="coerce")
     df["tag"] = df["tag"].fillna("")
@@ -182,7 +194,7 @@ def save(fig, name: str, data: pd.DataFrame) -> None:
 
 
 # ---- Figure: attack x generator heatmap -----------------------------------------
-HEAT_ROWS = ["MahalaMIA", "MeLoMIA-CVAE", "MeLoMIA-ND", "MeLoMIA-TabSyn", "MAMA-MIA",
+HEAT_ROWS = ["MahalaMIA", "MeLoMIA-CVAE", "MeLoMIA-ND", "MeLoMIA-TabSyn", "MeLoMIA-TabPFN", "MAMA-MIA",
              None, "RedSigma", "Best generic attack"]          # appendix: one row per backend
 MAIN_ROWS = MAIN_OURS + [None, "RedSigma", "Best generic attack"]  # main text
 
